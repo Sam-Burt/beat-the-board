@@ -24,6 +24,7 @@ export default function HomePage() {
     saveError,
     createPlayerAccount,
     removePlayer,
+    sendMission,
     updateMyIcon,
     saveEvent,
     deleteEvent,
@@ -77,6 +78,7 @@ export default function HomePage() {
           events={events}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
+          onSendMission={sendMission}
         />
       )}
 

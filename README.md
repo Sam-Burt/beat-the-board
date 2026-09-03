@@ -74,6 +74,8 @@ No git or command line needed:
      same page. This one is what lets you create real logins for other
      players from the Players panel — don't add the `NEXT_PUBLIC_` prefix
      to it, or it would be exposed to every visitor's browser.
+   - *(Optional — only needed for mission-alert phone notifications, see
+     step 7)* `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY`.
 3. Click **Deploy**. Takes a minute or two the first time.
 4. Once it's live, Vercel gives you a URL like
    `beat-the-board-yourname.vercel.app` — that's your new board.
@@ -99,18 +101,19 @@ Open the **Players** panel (only visible while you're signed in as admin):
 
 - **You (Sam) as a player too:** tick "This is me" so your entry links to
   your existing admin login — no second password to remember.
-- **Everyone else:** untick it, enter a made-up email (it doesn't need to
-  be real or confirmable — no email actually gets sent) and a password
-  (there's a "New" button to generate a random one). After you hit **Create
-  account**, their email and password are shown once in a banner — write
-  those down or read them out, since they won't be shown again. Give that
-  family member the email/password and point them at `your-site.vercel.app/login`.
+- **Everyone else:** untick it, pick a short username for them (just
+  letters/numbers, e.g. `dan` — this is what they'll type to sign in, not
+  a real email) and a password (there's a "New" button to generate a
+  random one). After you hit **Create account**, their username and
+  password are shown once in a banner — write those down or read them
+  out, since they won't be shown again. Give that family member the
+  username/password and point them at `your-site.vercel.app/login`.
 - Once someone signs in for the first time, they're prompted to pick a
-  profile icon (small placeholder icons for now — see "What's not built"
-  below for swapping in real artwork).
+  profile icon (small placeholder icons for now — see "Swapping in real
+  profile icons" below).
 - Signed-in players who aren't admin get a read-only board, same as anyone
-  without an account — the account is there for the profile/icon and for
-  future features (see below), not for editing results.
+  without an account, plus their own **profile page** (see step 7) — the
+  account is there for the profile/icon/missions, not for editing results.
 
 ## 6. Test it
 
@@ -124,6 +127,48 @@ Open the **Players** panel (only visible while you're signed in as admin):
   well.
 - Delete a test result if you ran the optional seed step and want to tidy
   up the "test" entries that came over from the old board.
+
+## 7. Secret missions & phone alerts (optional)
+
+Every signed-in player has a **profile page** (linked from the footer): a
+big version of their icon (tap it to change any time), their username, and
+a face-down card labelled **"My Eyes Only"** — tap it to flip it over and
+reveal any secret missions you've sent them, and tap again to flip it back
+down. Nobody but them (not even you, unless you check the database
+directly) can see it there.
+
+**To send someone a mission:** in the Players panel, tap **Mission** next
+to their name, type it, and hit **Send mission**. It appears on their
+profile page immediately.
+
+**For an actual phone alert** ("ping!") when a mission lands, instead of
+them having to check the app:
+
+1. Generate a key pair once, from a terminal with Node installed:
+   ```
+   npx web-push generate-vapid-keys
+   ```
+   (Or ask whoever set this up for you to run it and send you the two
+   keys.)
+2. In Vercel's Environment Variables, add `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
+   (the public key) and `VAPID_PRIVATE_KEY` (the private one — keep this
+   one secret, same as the Supabase service role key) for all environments,
+   then redeploy.
+3. Each player taps **Turn on mission alerts** on their own profile page
+   (has to be them, on their own device — it's a permission only a person
+   can grant for themselves).
+
+The notification itself never shows the mission text — just "you've got a
+new secret mission" — so a locked phone on the coffee table doesn't spoil
+anything. The real text only ever shows up behind My Eyes Only, after
+signing in.
+
+**On iPhone specifically:** Apple only allows push alerts for a site
+that's been added to the Home Screen and opened from there — a regular
+Safari tab can't receive them. The profile page explains this and walks
+through it (Share → Add to Home Screen) if it detects you're on an iPhone
+and haven't done that yet. Missions still show up on the profile page
+either way, with or without phone alerts turned on.
 
 ---
 
@@ -145,21 +190,14 @@ Open the **Players** panel (only visible while you're signed in as admin):
 
 The six icons players pick from (`public/icons/icon-1.png` … `icon-6.png`)
 are simple placeholders. When your illustrated versions are ready, replace
-those six files with your own artwork — same file names, ideally similar
-size (256×256, transparent or square background) — and re-deploy. Nothing
+those six files with your own artwork — same file names, ideally square,
+512×512px works well (they're always shown small, but that keeps them
+sharp on retina phone screens) — and re-deploy. Nothing
 else in the code needs to change; players who already picked an icon just
 see the new artwork next time they load the board.
 
 ## What's not built (on purpose, for now)
 
-- **Push notifications ("secret missions").** Now that there are real
-  accounts, this is genuinely buildable, but it's a separate chunk of work
-  (a service worker, web push keys, and — since you said you'd rather send
-  these yourself than have them scheduled automatically — a small "send a
-  mission" screen only you can see). Worth knowing up front: on iPhone,
-  push only works for a player who's added the site to their home screen
-  (Safari tabs can't receive push) — that's an Apple restriction, not
-  something this app can work around. Ask for it by name when you're ready.
 - **Cross-trip crowns/badges.** Carrying a "won the trip" badge across
   separate future trips/events is a natural next step once there's more
   than one trip in the database, but it hasn't been built yet — this

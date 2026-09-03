@@ -4,14 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { loginInputToEmail } from "../../lib/username";
 
 // Shared sign-in for anyone with an account — the admin and any player
 // Sam has created a login for. What you can actually do once you're in
 // depends on your account (admin vs. a linked player row), decided
 // server-side by the RLS policies, not by anything on this page.
+//
+// Everyone except the admin signs in with a short username; the admin
+// signs in with their real email. Whatever's typed here is expanded into
+// the right Supabase email behind the scenes by loginInputToEmail — see
+// lib/username.js.
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [working, setWorking] = useState(false);
@@ -22,7 +28,10 @@ export default function LoginPage() {
     if (!supabase) return;
     setWorking(true);
     setError("");
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: loginInputToEmail(loginId),
+      password,
+    });
     setWorking(false);
     if (signInError) {
       setError(signInError.message);
@@ -33,13 +42,23 @@ export default function LoginPage() {
 
   async function handleForgotPassword() {
     if (!supabase) return;
-    if (!email.trim()) {
-      setError("Enter your email above first, then tap “Forgot password” again.");
+    const trimmed = loginId.trim();
+    if (!trimmed) {
+      setError("Enter your username or email above first, then tap “Forgot password” again.");
+      return;
+    }
+    if (!trimmed.includes("@")) {
+      // Usernames map to a made-up address with no real inbox behind it —
+      // a reset email there would silently go nowhere. Send them to the
+      // person who can actually reset it instead of pretending it worked.
+      setError(
+        "Since you sign in with a username rather than an email, ask whoever set up your account to reset your password for you."
+      );
       return;
     }
     setError("");
     setWorking(true);
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmed, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setWorking(false);
@@ -58,14 +77,20 @@ export default function LoginPage() {
       </div>
       <form className="card" onSubmit={handleSubmit}>
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="login-id">Username</label>
           <input
-            id="email"
-            type="email"
+            id="login-id"
+            type="text"
+            autoCapitalize="none"
+            autoCorrect="off"
+            placeholder="the username you were given"
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={loginId}
+            onChange={(e) => setLoginId(e.target.value)}
           />
+          <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+            Set the board up? Use your email instead.
+          </p>
         </div>
         <div className="field">
           <label htmlFor="password">Password</label>

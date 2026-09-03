@@ -1,0 +1,17 @@
+{
+  "name": "Beat The Board",
+  "short_name": "Beat The Board",
+  "description": "Player leaderboard — 1 point per person beaten.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0b",
+  "theme_color": "#0b0b0b",
+  "icons": [
+    {
+      "src": "/icons/icon-1.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { playerUsedInEvents } from "../lib/points";
 import { iconSrc } from "../lib/icons";
+import { normalizeUsername } from "../lib/username";
 
 function randomPassword() {
   // Not cryptographically fussy — this is a temporary password Sam reads
@@ -13,28 +14,45 @@ function randomPassword() {
   return out;
 }
 
-export default function PlayersPanel({ players, events, onCreate, onRemove }) {
+export default function PlayersPanel({ players, events, onCreate, onRemove, onSendMission }) {
   const [open, setOpen] = useState(players.length === 0);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState(randomPassword());
   const [isSelf, setIsSelf] = useState(false);
   const [working, setWorking] = useState(false);
-  const [justCreated, setJustCreated] = useState(null); // { name, email, password }
+  const [justCreated, setJustCreated] = useState(null); // { name, username, password }
+  const [missionOpenFor, setMissionOpenFor] = useState(null); // player id
+  const [missionText, setMissionText] = useState("");
+  const [missionSending, setMissionSending] = useState(false);
+  const [missionSentFor, setMissionSentFor] = useState(null);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) return;
-    if (!isSelf && (!email.trim() || password.length < 6)) return;
+    if (!isSelf && (!username.trim() || password.length < 6)) return;
     setWorking(true);
-    const result = await onCreate({ name, email, password, isSelf });
+    const result = await onCreate({ name, username, password, isSelf });
     setWorking(false);
     if (result?.ok) {
-      setJustCreated(isSelf ? null : { name, email, password });
+      setJustCreated(isSelf ? null : { name, username: normalizeUsername(username), password });
       setName("");
-      setEmail("");
+      setUsername("");
       setPassword(randomPassword());
       setIsSelf(false);
+    }
+  }
+
+  async function handleSendMission(playerId) {
+    if (!missionText.trim()) return;
+    setMissionSending(true);
+    const result = await onSendMission({ playerId, text: missionText.trim() });
+    setMissionSending(false);
+    if (result?.ok) {
+      setMissionText("");
+      setMissionOpenFor(null);
+      setMissionSentFor(playerId);
+      setTimeout(() => setMissionSentFor((id) => (id === playerId ? null : id)), 4000);
     }
   }
 
@@ -54,34 +72,84 @@ export default function PlayersPanel({ players, events, onCreate, onRemove }) {
               players.map((p) => {
                 const used = playerUsedInEvents(events, p.id);
                 const src = iconSrc(p.icon_id);
+                const missionOpen = missionOpenFor === p.id;
                 return (
-                  <div className="player-row" key={p.id}>
-                    <div className="player-emoji">
-                      {src ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={src} alt="" width={28} height={28} style={{ borderRadius: "50%" }} />
+                  <div className="player-row-wrap" key={p.id}>
+                    <div className="player-row">
+                      <div className="player-emoji">
+                        {src ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={src} alt="" width={28} height={28} style={{ borderRadius: "50%" }} />
+                        ) : (
+                          p.emoji || "👤"
+                        )}
+                      </div>
+                      <div className="pname">
+                        {p.name}
+                        {!p.user_id && (
+                          <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
+                            no account
+                          </span>
+                        )}
+                      </div>
+                      {p.user_id && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() =>
+                            setMissionOpenFor((cur) => (cur === p.id ? null : p.id))
+                          }
+                        >
+                          {missionSentFor === p.id ? "Sent! 🎯" : "Mission"}
+                        </button>
+                      )}
+                      {used ? (
+                        <div className="used">in results</div>
                       ) : (
-                        p.emoji || "👤"
+                        <button
+                          className="btn btn-ghost"
+                          aria-label="Remove"
+                          onClick={() => onRemove(p.id)}
+                        >
+                          Remove
+                        </button>
                       )}
                     </div>
-                    <div className="pname">
-                      {p.name}
-                      {!p.user_id && (
-                        <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
-                          no account
-                        </span>
-                      )}
-                    </div>
-                    {used ? (
-                      <div className="used">in results</div>
-                    ) : (
-                      <button
-                        className="btn btn-ghost"
-                        aria-label="Remove"
-                        onClick={() => onRemove(p.id)}
-                      >
-                        Remove
-                      </button>
+                    {missionOpen && (
+                      <div className="mission-composer">
+                        <textarea
+                          placeholder={`Secret mission for ${p.name}…`}
+                          maxLength={280}
+                          value={missionText}
+                          onChange={(e) => setMissionText(e.target.value)}
+                          rows={3}
+                        />
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={missionSending || !missionText.trim()}
+                            onClick={() => handleSendMission(p.id)}
+                          >
+                            {missionSending ? "Sending…" : "Send mission"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => {
+                              setMissionOpenFor(null);
+                              setMissionText("");
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+                          They&#39;ll see it on their profile page under &quot;My Eyes
+                          Only&quot; — and get a phone alert if they&#39;ve turned mission
+                          alerts on (it won&#39;t reveal the text on their lock screen).
+                        </p>
+                      </div>
                     )}
                   </div>
                 );
@@ -94,7 +162,7 @@ export default function PlayersPanel({ players, events, onCreate, onRemove }) {
               Account created for <strong>{justCreated.name}</strong>. Give them these to sign in
               at <code>/login</code> (they won&#39;t be shown again):
               <br />
-              Email: <code>{justCreated.email}</code>
+              Username: <code>{justCreated.username}</code>
               <br />
               Password: <code>{justCreated.password}</code>
             </div>
@@ -128,10 +196,11 @@ export default function PlayersPanel({ players, events, onCreate, onRemove }) {
             {!isSelf && (
               <>
                 <input
-                  type="email"
-                  placeholder="their email (made up is fine, no confirmation needed)"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="username they'll sign in with, e.g. dan"
+                  maxLength={20}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   style={{ marginTop: 8, marginBottom: 8 }}
                 />
                 <div style={{ display: "flex", gap: 8 }}>

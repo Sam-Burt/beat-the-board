@@ -119,6 +119,69 @@ create policy "admins bootstrap while empty" on admins
   );
 
 -- ---------------------------------------------------------------------------
+-- Login usernames — everyone except the admin signs in with a short
+-- username instead of typing an email (see lib/username.js for how that
+-- turns into a real, made-up Supabase Auth email behind the scenes).
+-- Nullable/no-op for existing accounts created before this existed.
+-- ---------------------------------------------------------------------------
+
+alter table players add column if not exists username text;
+create unique index if not exists players_username_key on players (lower(username));
+
+-- ---------------------------------------------------------------------------
+-- Secret missions — short bits of text only the named player can read,
+-- shown on their profile page under "My Eyes Only". Sam writes these from
+-- the Players panel; sending one also fires a push notification (see
+-- push_subscriptions below) if that player has alerts turned on.
+-- ---------------------------------------------------------------------------
+
+create table if not exists missions (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players (id) on delete cascade,
+  text text not null,
+  created_at timestamptz not null default now()
+);
+alter table missions enable row level security;
+
+drop policy if exists "missions read own" on missions;
+create policy "missions read own" on missions
+  for select using (
+    exists (select 1 from players p where p.id = missions.player_id and p.user_id = auth.uid())
+  );
+
+drop policy if exists "missions write for admins" on missions;
+create policy "missions write for admins" on missions
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- ---------------------------------------------------------------------------
+-- Push notification subscriptions — one row per device/browser a player has
+-- turned mission alerts on for. A player manages their own rows (added when
+-- they tap "Turn on mission alerts" on their profile page); the admin route
+-- that sends missions reads across all of them using the service role key,
+-- which bypasses RLS, so no separate admin-read policy is needed here.
+-- ---------------------------------------------------------------------------
+
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players (id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth_key text not null,
+  created_at timestamptz not null default now()
+);
+alter table push_subscriptions enable row level security;
+
+drop policy if exists "push_subscriptions manage own" on push_subscriptions;
+create policy "push_subscriptions manage own" on push_subscriptions
+  for all using (
+    exists (select 1 from players p where p.id = push_subscriptions.player_id and p.user_id = auth.uid())
+  )
+  with check (
+    exists (select 1 from players p where p.id = push_subscriptions.player_id and p.user_id = auth.uid())
+  );
+
+-- ---------------------------------------------------------------------------
 -- Realtime — so every open tab sees Sam's edits live, the same way the
 -- original Claude Artifact version did.
 -- ---------------------------------------------------------------------------
@@ -142,5 +205,11 @@ begin
     where pubname = 'supabase_realtime' and tablename = 'trip_settings'
   ) then
     alter publication supabase_realtime add table trip_settings;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'missions'
+  ) then
+    alter publication supabase_realtime add table missions;
   end if;
 end $$;
