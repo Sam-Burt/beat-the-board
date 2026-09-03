@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
-import { supabase } from "../../lib/supabaseClient";
 import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
+import Footer from "../../components/Footer";
+import BottomNav from "../../components/BottomNav";
 import {
   pushSupported,
   runningStandalone,
@@ -27,9 +28,6 @@ export default function ProfilePage() {
   const [usernameSaving, setUsernameSaving] = useState(false);
   const [usernameError, setUsernameError] = useState("");
 
-  const [missions, setMissions] = useState([]);
-  const [revealed, setRevealed] = useState(false);
-
   const [alertsState, setAlertsState] = useState("checking"); // checking | off | on | unsupported
   const [alertsWorking, setAlertsWorking] = useState(false);
   const [alertsError, setAlertsError] = useState("");
@@ -39,39 +37,6 @@ export default function ProfilePage() {
       router.replace("/login");
     }
   }, [loading, configured, session, router]);
-
-  // This player's secret missions, newest first, live-updated so a mission
-  // sent while this page is open shows up without a reload.
-  useEffect(() => {
-    if (!supabase || !me) return;
-    let cancelled = false;
-
-    function load() {
-      supabase
-        .from("missions")
-        .select("id, text, created_at")
-        .eq("player_id", me.id)
-        .order("created_at", { ascending: false })
-        .then(({ data }) => {
-          if (!cancelled && data) setMissions(data);
-        });
-    }
-    load();
-
-    const channel = supabase
-      .channel(`missions-${me.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "missions", filter: `player_id=eq.${me.id}` },
-        load
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
-  }, [me]);
 
   useEffect(() => {
     if (!pushSupported()) {
@@ -248,41 +213,6 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div className="mission-flip-wrap">
-        <div className={`mission-flip-card${revealed ? " flipped" : ""}`}>
-          <div className="mission-flip-front" onClick={() => setRevealed(true)}>
-            <div className="flip-hint">👁 My Eyes Only</div>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              {missions.length === 0
-                ? "Tap to check for secret missions."
-                : `Tap to reveal ${missions.length} mission${missions.length === 1 ? "" : "s"}.`}
-            </p>
-          </div>
-          <div className="mission-flip-back" onClick={() => setRevealed(false)}>
-            {missions.length === 0 ? (
-              <div className="empty">No missions yet — check back later.</div>
-            ) : (
-              <div className="mission-list">
-                {missions.map((m) => (
-                  <div className="mission-item" key={m.id}>
-                    <div className="mission-date">
-                      {new Date(m.created_at).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </div>
-                    <div className="mission-text">{m.text}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <p className="muted" style={{ fontSize: 11, marginTop: 10 }}>
-              Tap to flip back
-            </p>
-          </div>
-        </div>
-      </div>
-
       <div className="card" style={{ marginTop: 16 }}>
         <h2>Mission alerts</h2>
         {alertsState === "unsupported" && (
@@ -302,7 +232,7 @@ export default function ProfilePage() {
           <>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
               Get a ping on your phone the moment a new mission lands (it won&#39;t show what it
-              says — that stays behind My Eyes Only above).
+              says — that stays behind My Eyes Only on the Missions tab).
             </p>
             <div className="btn-row">
               <button className="btn btn-primary" disabled={alertsWorking} onClick={handleTurnOnAlerts}>
@@ -324,9 +254,8 @@ export default function ProfilePage() {
         {alertsError && <div className="banner-note error">{alertsError}</div>}
       </div>
 
-      <div className="footer">
-        <Link href="/">Back to board</Link>
-      </div>
+      <Footer session={session} isAdmin={isAdmin} me={me} />
+      <BottomNav session={session} me={me} />
     </div>
   );
 }

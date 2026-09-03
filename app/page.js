@@ -10,6 +10,7 @@ import PlayersPanel from "../components/PlayersPanel";
 import IconPicker from "../components/IconPicker";
 import History from "../components/History";
 import Footer from "../components/Footer";
+import BottomNav from "../components/BottomNav";
 
 export default function HomePage() {
   const {
@@ -85,6 +86,7 @@ export default function HomePage() {
       <History players={players} events={events} isAdmin={isAdmin} onDelete={deleteEvent} />
 
       <Footer session={session} isAdmin={isAdmin} me={me} />
+      <BottomNav session={session} me={me} />
     </div>
   );
 }

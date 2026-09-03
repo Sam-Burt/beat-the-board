@@ -42,7 +42,7 @@ body {
 .wrap {
   max-width: 640px;
   margin: 0 auto;
-  padding: 20px 16px 80px;
+  padding: 20px 16px 100px;
 }
 h1,
 h2,
@@ -606,6 +606,48 @@ label {
   text-decoration: underline;
 }
 
+/* bottom tab bar (Board / Missions / Profile), shown to signed-in players */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  background: rgba(11, 11, 11, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.75);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-inner {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+}
+.bottom-nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px 8px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bottom-nav-tab svg {
+  width: 22px;
+  height: 22px;
+}
+.bottom-nav-tab.active {
+  color: var(--acid);
+}
+
 /* mission composer (admin, inside a player row) */
 .mission-composer {
   background: var(--card-2);
@@ -645,6 +687,7 @@ label {
 .profile-icon-btn img,
 .profile-icon-btn .profile-icon-fallback {
   position: absolute;
+  z-index: 1;
   inset: 10px;
   width: calc(100% - 20px);
   height: calc(100% - 20px);
@@ -657,6 +700,7 @@ label {
 }
 .profile-icon-edit-hint {
   position: absolute;
+  z-index: 2;
   right: 2px;
   bottom: 2px;
   background: var(--ink);

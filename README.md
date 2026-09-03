@@ -92,8 +92,10 @@ board (or an empty one, if you skipped the seed data).
    page. You should now see the "Log a result" and "Players" panels, and
    the pencil icon next to the trip name.
 
-Bookmark `/login` on your phone so signing back in later is quick. Signing
-out is a link in the footer while you're signed in.
+Bookmark `/login` on your phone so signing back in later is quick. Once
+you're signed in, a tab bar appears at the bottom of the screen (Board /
+Missions / Profile) — that's how everyone gets around, including signing
+out (a small link at the bottom of the Board tab).
 
 ## 5. Add players and their accounts
 
@@ -112,34 +114,42 @@ Open the **Players** panel (only visible while you're signed in as admin):
   profile icon (small placeholder icons for now — see "Swapping in real
   profile icons" below).
 - Signed-in players who aren't admin get a read-only board, same as anyone
-  without an account, plus their own **profile page** (see step 7) — the
-  account is there for the profile/icon/missions, not for editing results.
+  without an account, plus their own **Profile and Missions tabs** at the
+  bottom of the screen (see step 7) — the account is there for the
+  profile/icon/missions, not for editing results.
 
 ## 6. Test it
 
 - Add a player, log a result, confirm the champion star and leaderboard
   update.
 - Sign in as a non-admin player (in a private/incognito window, or on
-  another device) and confirm the icon-picker shows up once, the board is
-  read-only, and it updates live when you log something from your admin
-  device.
+  another device) and confirm the icon-picker shows up once, their chosen
+  icon shows properly on their Profile tab (not a blank/dark circle), the
+  board is read-only, and it updates live when you log something from your
+  admin device.
 - Open the board fully signed out too — confirm it's read-only there as
   well.
 - Delete a test result if you ran the optional seed step and want to tidy
   up the "test" entries that came over from the old board.
 
-## 7. Secret missions & phone alerts (optional)
+## 7. The bottom tab bar, secret missions & phone alerts (optional)
 
-Every signed-in player has a **profile page** (linked from the footer): a
-big version of their icon (tap it to change any time), their username, and
-a face-down card labelled **"My Eyes Only"** — tap it to flip it over and
-reveal any secret missions you've sent them, and tap again to flip it back
-down. Nobody but them (not even you, unless you check the database
-directly) can see it there.
+Every signed-in player gets a tab bar fixed to the bottom of the screen —
+**Board**, **Missions**, **Profile**:
+
+- **Board** is the leaderboard (and, for you, the "Log a result" and
+  "Players" panels).
+- **Profile** has a big version of their icon (tap it to change any time)
+  and their username (editable), plus the "Turn on mission alerts" switch
+  described below.
+- **Missions** has a face-down card labelled **"My Eyes Only"** — tap it to
+  flip it over and reveal any secret missions you've sent them, and tap
+  again to flip it back down. Nobody but them (not even you, unless you
+  check the database directly) can see it there.
 
 **To send someone a mission:** in the Players panel, tap **Mission** next
 to their name, type it, and hit **Send mission**. It appears on their
-profile page immediately.
+Missions tab immediately.
 
 **For an actual phone alert** ("ping!") when a mission lands, instead of
 them having to check the app:
@@ -154,7 +164,7 @@ them having to check the app:
    (the public key) and `VAPID_PRIVATE_KEY` (the private one — keep this
    one secret, same as the Supabase service role key) for all environments,
    then redeploy.
-3. Each player taps **Turn on mission alerts** on their own profile page
+3. Each player taps **Turn on mission alerts** on their own Profile tab
    (has to be them, on their own device — it's a permission only a person
    can grant for themselves).
 
@@ -165,9 +175,9 @@ signing in.
 
 **On iPhone specifically:** Apple only allows push alerts for a site
 that's been added to the Home Screen and opened from there — a regular
-Safari tab can't receive them. The profile page explains this and walks
+Safari tab can't receive them. The Profile tab explains this and walks
 through it (Share → Add to Home Screen) if it detects you're on an iPhone
-and haven't done that yet. Missions still show up on the profile page
+and haven't done that yet. Missions still show up on the Missions tab
 either way, with or without phone alerts turned on.
 
 ---

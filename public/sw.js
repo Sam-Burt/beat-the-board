@@ -1,7 +1,7 @@
 // Minimal service worker whose only job is showing "you've got a mission"
-// push alerts and taking a tap on one to the profile page. It never shows
+// push alerts and taking a tap on one to the missions page. It never shows
 // the mission text itself — that only appears after signing in and hitting
-// "My Eyes Only" on /profile, so a locked phone's notification banner never
+// "My Eyes Only" on /missions, so a locked phone's notification banner never
 // gives the secret away.
 
 self.addEventListener("install", () => {
@@ -37,18 +37,18 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const clientsList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      const existing = clientsList.find((c) => c.url.includes("/profile"));
+      const existing = clientsList.find((c) => c.url.includes("/missions"));
       if (existing) {
         existing.focus();
         return;
       }
       const anyClient = clientsList[0];
       if (anyClient) {
-        anyClient.navigate("/profile");
+        anyClient.navigate("/missions");
         anyClient.focus();
         return;
       }
-      self.clients.openWindow("/profile");
+      self.clients.openWindow("/missions");
     })()
   );
 });

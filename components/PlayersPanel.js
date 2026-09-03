@@ -145,7 +145,7 @@ export default function PlayersPanel({ players, events, onCreate, onRemove, onSe
                           </button>
                         </div>
                         <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                          They&#39;ll see it on their profile page under &quot;My Eyes
+                          They&#39;ll see it on their Missions tab under &quot;My Eyes
                           Only&quot; — and get a phone alert if they&#39;ve turned mission
                           alerts on (it won&#39;t reveal the text on their lock screen).
                         </p>
