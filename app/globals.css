@@ -193,6 +193,16 @@ textarea {
   font-size: 15px;
   font-family: inherit;
 }
+input[type="date"] {
+  /* iOS Safari ignores width: 100% on its native date control's internal
+     layout unless the default appearance is stripped first — without this
+     it can render wider than its container and spill past the card edges
+     on a phone. */
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+}
 input::placeholder,
 textarea::placeholder {
   color: #6b6b6b;
