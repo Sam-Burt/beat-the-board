@@ -50,8 +50,19 @@ export default function SetupPage() {
 
     const { error: insertError } = await supabase.from("admins").insert({ user_id: userId });
     if (insertError) {
-      // Most likely cause: an admin already exists, so the bootstrap policy
-      // refused the insert. That's expected once setup has already run.
+      if (insertError.code === "42P01") {
+        // The admins table (and likely the whole schema) doesn't exist yet —
+        // supabase/schema.sql was never run against this Supabase project.
+        // This is NOT "someone already set up an admin" — don't say that.
+        setStatus("error");
+        setMessage(
+          "The database isn't set up yet — run supabase/schema.sql in your Supabase project's SQL Editor (see the README), then come back and try again."
+        );
+        return;
+      }
+      // Most likely cause otherwise: an admin already exists, so the
+      // bootstrap policy refused the insert. That's expected once setup has
+      // already run.
       setStatus("already");
       setMessage(
         "This board already has an admin set up. If that's you, sign in instead — otherwise ask whoever set it up."

@@ -120,7 +120,9 @@ export default function PlayersPanel({ players, events, onCreate, onRemove }) {
                 onChange={(e) => setIsSelf(e.target.checked)}
                 style={{ width: "auto" }}
               />
-              This is me (link to my own admin account, no new login needed)
+              This is me — links this entry to my own admin login instead of
+              creating a new one (only tick this when you're adding
+              yourself; leave it unticked for everyone else)
             </label>
 
             {!isSelf && (
