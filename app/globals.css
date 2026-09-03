@@ -42,7 +42,7 @@ body {
 .wrap {
   max-width: 640px;
   margin: 0 auto;
-  padding: 20px 16px 100px;
+  padding: 20px 16px 128px;
 }
 h1,
 h2,
@@ -265,6 +265,15 @@ label {
   background: var(--danger);
   border-color: var(--danger);
   color: #0b0b0b;
+}
+.btn-signout {
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--ink);
+}
+.btn-signout:hover {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
 }
 .btn-row {
   display: flex;
@@ -620,7 +629,10 @@ label {
   -webkit-backdrop-filter: blur(10px);
   border-top: 1px solid var(--border);
   box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, 0.75);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* Extra fixed padding on top of the safe-area inset, so there's visible
+     breathing room below the tabs even on phones with no home-indicator
+     inset (or in a desktop browser) — not just flush with the screen edge. */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 14px);
 }
 .bottom-nav-inner {
   width: 100%;
@@ -632,17 +644,20 @@ label {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 10px 4px 8px;
+  gap: 5px;
+  /* Sized to leave room for hand-drawn custom icons (not just the current
+     placeholder SVGs) without the bar feeling cramped. */
+  padding: 16px 4px 6px;
   color: var(--ink-dim);
   text-decoration: none;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-.bottom-nav-tab svg {
-  width: 22px;
-  height: 22px;
+.bottom-nav-tab svg,
+.bottom-nav-tab img {
+  width: 28px;
+  height: 28px;
 }
 .bottom-nav-tab.active {
   color: var(--acid);
@@ -717,20 +732,23 @@ label {
   font-family: "Striker", "Archivo", sans-serif;
   font-size: 30px;
   margin-bottom: 4px;
-}
-.profile-username-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
+}
+.profile-name .edit-pencil {
+  font-size: 16px;
+}
+.profile-username-row {
   color: var(--ink-dim);
   font-size: 14px;
   margin-bottom: 4px;
 }
-.profile-username-row .rename-row {
+.profile-hero .rename-row {
   justify-content: center;
 }
-.profile-username-row .rename-row input {
+.profile-hero .rename-row input {
   max-width: 180px;
 }
 

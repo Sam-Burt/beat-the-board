@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
 import { supabase } from "../../lib/supabaseClient";
-import Footer from "../../components/Footer";
 import BottomNav from "../../components/BottomNav";
 
 export default function MissionsPage() {
   const router = useRouter();
-  const { configured, loading, session, isAdmin, me } = useBoardData();
+  const { configured, loading, session, me } = useBoardData();
 
   const [missions, setMissions] = useState([]);
   const [revealed, setRevealed] = useState(false);
@@ -121,7 +120,6 @@ export default function MissionsPage() {
         </div>
       </div>
 
-      <Footer session={session} isAdmin={isAdmin} me={me} />
       <BottomNav session={session} me={me} />
     </div>
   );

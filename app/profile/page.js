@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
+import { supabase } from "../../lib/supabaseClient";
 import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
-import Footer from "../../components/Footer";
 import BottomNav from "../../components/BottomNav";
 import {
   pushSupported,
@@ -19,14 +19,15 @@ import {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { configured, loading, session, isAdmin, me, updateMyIcon } = useBoardData();
+  const { configured, loading, session, isAdmin, me, updateMyIcon, updateMyName } =
+    useBoardData();
 
   const [changingIcon, setChangingIcon] = useState(false);
 
-  const [editingUsername, setEditingUsername] = useState(false);
-  const [usernameDraft, setUsernameDraft] = useState("");
-  const [usernameSaving, setUsernameSaving] = useState(false);
-  const [usernameError, setUsernameError] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameError, setNameError] = useState("");
 
   const [alertsState, setAlertsState] = useState("checking"); // checking | off | on | unsupported
   const [alertsWorking, setAlertsWorking] = useState(false);
@@ -54,29 +55,20 @@ export default function ProfilePage() {
     [updateMyIcon]
   );
 
-  async function saveUsername() {
-    if (!session) return;
-    setUsernameError("");
-    setUsernameSaving(true);
-    try {
-      const res = await fetch("/api/profile/update-username", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ username: usernameDraft }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setUsernameError(json.error || "Couldn't save that.");
-        return;
-      }
-      setEditingUsername(false);
-    } catch {
-      setUsernameError("Couldn't reach the server. Check your connection and try again.");
-    } finally {
-      setUsernameSaving(false);
+  async function saveName() {
+    const trimmed = nameDraft.trim();
+    if (!trimmed) {
+      setNameError("Name can't be empty.");
+      return;
+    }
+    setNameError("");
+    setNameSaving(true);
+    const ok = await updateMyName(trimmed);
+    setNameSaving(false);
+    if (ok) {
+      setEditingName(false);
+    } else {
+      setNameError("Couldn't save that — check your connection and try again.");
     }
   }
 
@@ -104,6 +96,10 @@ export default function ProfilePage() {
     } finally {
       setAlertsWorking(false);
     }
+  }
+
+  function signOut() {
+    supabase?.auth.signOut();
   }
 
   if (!configured || loading || !session) {
@@ -155,56 +151,49 @@ export default function ProfilePage() {
           <span className="profile-icon-edit-hint">✎</span>
         </button>
 
-        <div className="profile-name">{me.name}</div>
+        {editingName ? (
+          <div className="rename-row">
+            <input
+              type="text"
+              value={nameDraft}
+              autoFocus
+              maxLength={30}
+              onChange={(e) => setNameDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveName();
+                if (e.key === "Escape") setEditingName(false);
+              }}
+            />
+            <button className="btn btn-primary" disabled={nameSaving} onClick={saveName}>
+              {nameSaving ? "Saving…" : "Save"}
+            </button>
+            <button className="btn btn-ghost" onClick={() => setEditingName(false)}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="profile-name">
+            {me.name}
+            <button
+              className="edit-pencil"
+              aria-label="Edit display name"
+              onClick={() => {
+                setNameDraft(me.name || "");
+                setNameError("");
+                setEditingName(true);
+              }}
+            >
+              ✎
+            </button>
+          </div>
+        )}
+        {nameError && <div className="banner-note error">{nameError}</div>}
 
         <div className="profile-username-row">
-          {editingUsername ? (
-            <div className="rename-row">
-              <input
-                type="text"
-                value={usernameDraft}
-                autoFocus
-                maxLength={20}
-                onChange={(e) => setUsernameDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveUsername();
-                  if (e.key === "Escape") setEditingUsername(false);
-                }}
-              />
-              <button className="btn btn-primary" disabled={usernameSaving} onClick={saveUsername}>
-                {usernameSaving ? "Saving…" : "Save"}
-              </button>
-              <button className="btn btn-ghost" onClick={() => setEditingUsername(false)}>
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <>
-              @{me.username || "no-username-set"}
-              <button
-                className="edit-pencil"
-                aria-label="Edit username"
-                onClick={() => {
-                  setUsernameDraft(me.username || "");
-                  setUsernameError("");
-                  setEditingUsername(true);
-                }}
-              >
-                ✎
-              </button>
-            </>
-          )}
+          {isAdmin && !me.username
+            ? "You sign in with your email."
+            : `Signs in as @${me.username}`}
         </div>
-        {usernameError && <div className="banner-note error">{usernameError}</div>}
-        {isAdmin ? (
-          <p className="muted" style={{ fontSize: 12 }}>
-            This is just a label — you&#39;ll always sign in with your email.
-          </p>
-        ) : (
-          <p className="muted" style={{ fontSize: 12 }}>
-            This is what you type to sign in.
-          </p>
-        )}
 
         {changingIcon && (
           <div style={{ marginTop: 14, textAlign: "left" }}>
@@ -254,7 +243,12 @@ export default function ProfilePage() {
         {alertsError && <div className="banner-note error">{alertsError}</div>}
       </div>
 
-      <Footer session={session} isAdmin={isAdmin} me={me} />
+      <div className="btn-row" style={{ marginTop: 16, marginBottom: 4 }}>
+        <button type="button" className="btn btn-signout" onClick={signOut}>
+          Sign out
+        </button>
+      </div>
+
       <BottomNav session={session} me={me} />
     </div>
   );

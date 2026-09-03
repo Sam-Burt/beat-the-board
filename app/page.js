@@ -85,7 +85,7 @@ export default function HomePage() {
 
       <History players={players} events={events} isAdmin={isAdmin} onDelete={deleteEvent} />
 
-      <Footer session={session} isAdmin={isAdmin} me={me} />
+      <Footer session={session} />
       <BottomNav session={session} me={me} />
     </div>
   );

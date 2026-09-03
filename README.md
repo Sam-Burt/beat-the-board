@@ -94,8 +94,8 @@ board (or an empty one, if you skipped the seed data).
 
 Bookmark `/login` on your phone so signing back in later is quick. Once
 you're signed in, a tab bar appears at the bottom of the screen (Board /
-Missions / Profile) — that's how everyone gets around, including signing
-out (a small link at the bottom of the Board tab).
+Missions / Profile) — that's how everyone gets around. Signing out is a
+button at the bottom of the Profile tab.
 
 ## 5. Add players and their accounts
 
@@ -104,8 +104,9 @@ Open the **Players** panel (only visible while you're signed in as admin):
 - **You (Sam) as a player too:** tick "This is me" so your entry links to
   your existing admin login — no second password to remember.
 - **Everyone else:** untick it, pick a short username for them (just
-  letters/numbers, e.g. `dan` — this is what they'll type to sign in, not
-  a real email) and a password (there's a "New" button to generate a
+  letters/numbers, e.g. `alfie` — this is what they'll always type to sign
+  in, not a real email, and it's permanent — nobody can change it
+  themselves later) and a password (there's a "New" button to generate a
   random one). After you hit **Create account**, their username and
   password are shown once in a banner — write those down or read them
   out, since they won't be shown again. Give that family member the
@@ -139,9 +140,10 @@ Every signed-in player gets a tab bar fixed to the bottom of the screen —
 
 - **Board** is the leaderboard (and, for you, the "Log a result" and
   "Players" panels).
-- **Profile** has a big version of their icon (tap it to change any time)
-  and their username (editable), plus the "Turn on mission alerts" switch
-  described below.
+- **Profile** has a big version of their icon (tap it to change any time),
+  their display name (editable any time — this is what shows on the board,
+  separate from the fixed username they sign in with), a "Sign out"
+  button, and the "Turn on mission alerts" switch described below.
 - **Missions** has a face-down card labelled **"My Eyes Only"** — tap it to
   flip it over and reveal any secret missions you've sent them, and tap
   again to flip it back down. Nobody but them (not even you, unless you
