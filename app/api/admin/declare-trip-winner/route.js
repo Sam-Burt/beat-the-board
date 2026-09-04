@@ -32,7 +32,7 @@ export async function POST(request) {
     .limit(1)
     .maybeSingle();
   if (!trip) {
-    return NextResponse.json({ error: "There's no tied trip waiting on a decision." }, { status: 400 });
+    return NextResponse.json({ error: "There's no tied event waiting on a decision." }, { status: 400 });
   }
 
   const result = await finalizeTrip(trip, winnerId);

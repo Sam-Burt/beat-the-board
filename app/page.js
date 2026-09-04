@@ -1,6 +1,7 @@
 "use client";
 
 import { useBoardData } from "../lib/useBoardData";
+import { useEventCelebration } from "../lib/useEventCelebration";
 import { totals } from "../lib/points";
 import Header from "../components/Header";
 import Champion from "../components/Champion";
@@ -12,6 +13,7 @@ import IconPicker from "../components/IconPicker";
 import History from "../components/History";
 import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
+import EventCelebration from "../components/EventCelebration";
 
 export default function HomePage() {
   const {
@@ -24,6 +26,7 @@ export default function HomePage() {
     rosterIdSet,
     events,
     adjustments,
+    trophies,
     trophyCounts,
     session,
     isAdmin,
@@ -41,6 +44,10 @@ export default function HomePage() {
     endTripNow,
     declareTripWinner,
   } = useBoardData();
+
+  // Hooks must run every render regardless of the early returns below, so
+  // this lives here rather than after the loading/configured checks.
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
 
   if (!configured) {
     return (
@@ -75,6 +82,13 @@ export default function HomePage() {
 
   return (
     <div className="wrap">
+      {celebrating && (
+        <EventCelebration
+          trophy={celebrating.trophy}
+          winner={celebrating.winner}
+          onDismiss={dismiss}
+        />
+      )}
       <Header
         tripName={tripName}
         badgeId={currentTrip?.badge_id}

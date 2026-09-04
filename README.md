@@ -12,7 +12,7 @@ clicking the right buttons.
 
 ## What you're setting up
 
-- **Supabase** — the database. Holds players, results, and the trip name.
+- **Supabase** — the database. Holds players, results, and the event name.
 - **GitHub** — where the code lives, so Vercel can build it.
 - **Vercel** — hosts the live site everyone visits.
 
@@ -32,10 +32,10 @@ You said you already have accounts on all three, so skip straight to step 1.
    the security rules that only let you edit the board. (If you deployed
    this project before, re-running this same file is always safe — it only
    adds new bits, never touches existing data. If your board already had
-   players and results before trips existed, running this file once
-   automatically creates "Trip #1" from what was already there — current
-   name, players and history — so nothing is lost; you don't need to do
-   anything else.)
+   players and results before events existed, running this file once
+   automatically creates your first event from what was already there —
+   current name, players and history — so nothing is lost; you don't need
+   to do anything else.)
 4. *(Optional)* If you want to bring over the players and results already
    on the Claude Artifact version instead of starting empty: open a new
    query, paste in `supabase/seed.sql`, and run it too. You can always add
@@ -96,7 +96,7 @@ board (or an empty one, if you skipped the seed data).
    edit the board. Nobody else can create one from the site itself.
 3. You'll land back at `/login` — sign in there, then go back to the home
    page. You should now see the "Log a result" and "Players" panels, and
-   the pencil icon next to the trip name.
+   the pencil icon next to the event name.
 
 Bookmark `/login` on your phone so signing back in later is quick. Once
 you're signed in, a tab bar appears at the bottom of the screen (Board /
@@ -190,54 +190,59 @@ either way, with or without phone alerts turned on.
 
 ---
 
-## 8. Trips, bonus points & trophies (optional)
+## 8. Events, bonus points & trophies (optional)
 
-The board now runs in **trips** — a trip is the overall "game weekend"
-(what you called a "game/trip/event"), with its own name, badge, roster,
-date window and deadline. Every logged round and bonus/penalty point
-belongs to whichever trip is current; only one trip can be running at a
-time.
+The board now runs in **events** — an event is the overall "game weekend"
+(what you called a "game/trip/event"; internally the database still calls
+these "trips", but everything you actually see in the app says "Event"),
+with its own name, badge, roster, date window and deadline. Every logged
+round and bonus/penalty point belongs to whichever event is current; only
+one event can be running at a time.
 
-**Starting a trip:** open the **Trip** panel (admin only, above "Log a
+**Starting an event:** open the **Event** panel (admin only, above "Log a
 result"), give it a name, pick a badge from the small placeholder
 collection (swap in your own artwork any time — see below), optionally set
 a start/end date window, set a **deadline** (the moment that decides the
 winner), and tick who's playing from your player accounts. Hit **Start
-trip** and the board, "Log a result" and the Players panel all scope to
+event** and the board, "Log a result" and the Players panel all scope to
 that roster.
 
-**Ending a trip:** once the deadline passes, the trip finalizes itself
+**Ending an event:** once the deadline passes, the event finalizes itself
 automatically the next time you (the admin) have the app open — there's no
 server running in the background to do it on the dot, so this is a
 "catches up next time you look" design, which is fine for a family trip.
-You can also end it early any time with **End trip now** in the Trip
+You can also end it early any time with **End event now** in the Event
 panel. Either way, whoever's top of the board at that moment wins the
-trophy — unless it's an exact tie, in which case the trip is marked "tied"
-and the Trip panel shows a **pick the winner** prompt so you make the call
-by hand rather than the app guessing.
+trophy — unless it's an exact tie, in which case the event is marked
+"tied" and the Event panel shows a **pick the winner** prompt so you make
+the call by hand rather than the app guessing. The moment a winner is
+decided (automatically or by hand), whoever has the app open gets a
+full-screen celebration — badge, winner's name/icon and final score — the
+next time that happens on their device; each person only sees it once per
+event, but it fires fresh again next time an event finalizes.
 
 **Bonus/penalty points:** in the Players panel, anyone currently on the
-trip roster gets a **±Points** button — award points on demand (e.g. "+3
+event roster gets a **±Points** button — award points on demand (e.g. "+3
 for doing the washing up without being asked") or dock them (e.g. "-2 for
 getting caught on a secret mission"), with an optional note. These stack
 on top of the normal per-round scoring and show up in the History list
 alongside logged rounds, so it's always clear where someone's points came
 from.
 
-**Trophies & crowns:** winning a trip adds a trophy to that player's
+**Trophies & crowns:** winning an event adds a trophy to that player's
 **Trophies** card on their Profile tab — a 3×3 (or bigger, once they've
 won enough to need it) grid of circular slots that fill in as they win.
-Tap a filled slot for a popup with that trip's name, dates and final
+Tap a filled slot for a popup with that event's name, dates and final
 score. Anyone with at least one trophy also gets a small crown next to
 their name on the leaderboard, with a number next to it once they've won
 more than once.
 
-**Trip badges:** the 9 trophy badges under `public/badges/` are simple
+**Event badges:** the 9 trophy badges under `public/badges/` are simple
 placeholders in the app's own colours. Replace `badge-1.png` …
 `badge-9.png` with your own illustrated artwork whenever it's ready (same
 file names, square, 512×512px works well) and re-deploy — nothing else
-needs to change, and trips that already picked a placeholder just show the
-new artwork next time the badge loads.
+needs to change, and events that already picked a placeholder just show
+the new artwork next time the badge loads.
 
 ---
 
@@ -253,7 +258,7 @@ new artwork next time the badge loads.
   Realtime).
 - **Design and the core scoring rule are unchanged** — same fonts, colours,
   dice-pattern background, champion star, and the standard "1 point per
-  player beaten" rule for logged rounds — with trips, bonus/penalty points
+  player beaten" rule for logged rounds — with events, bonus/penalty points
   and trophies layered on top (see step 8 above).
 
 ## Swapping in real profile icons
@@ -268,15 +273,15 @@ see the new artwork next time they load the board.
 
 ## What's not built (on purpose, for now)
 
-- **A frame for winning a big trip.** The idea of a special frame around a
+- **A frame for winning a big event.** The idea of a special frame around a
   player's icon or trophy for a standout event (like this Centre Parcs
   trip) is a nice future addition but isn't built — right now every trophy
-  looks the same regardless of how big the trip was.
-- **No server-side cron for the trip deadline.** Finalizing a trip relies
-  on an admin having the app open some time after the deadline passes (or
-  using "End trip now" manually) — see step 8. Fine for a small family app,
-  but worth knowing if a trip's deadline passes while nobody signed in as
-  admin opens the site for a while.
+  looks the same regardless of how big the event was.
+- **No server-side cron for the event deadline.** Finalizing an event
+  relies on an admin having the app open some time after the deadline
+  passes (or using "End event now" manually) — see step 8. Fine for a
+  small family app, but worth knowing if an event's deadline passes while
+  nobody signed in as admin opens the site for a while.
 - **No automated tests**, and the "delete" actions are immediate once
   confirmed (no undo) — same as the old version.
 

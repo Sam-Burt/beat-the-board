@@ -988,8 +988,22 @@ label {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
+/* Forces each slot square via the classic padding-top: 100% trick rather
+   than `aspect-ratio` — a grid item's default stretch behaviour can
+   override aspect-ratio once its content differs from its siblings (seen
+   on iOS Safari as an oval trophy next to circular empty slots), and this
+   sidesteps that entirely: the cell's height is always 100% of its own
+   width, and the actual button just fills it via inset: 0. */
+.trophy-cell {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+}
 .trophy-slot {
-  aspect-ratio: 1;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1004,6 +1018,7 @@ label {
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
 }
 .trophy-slot.earned {
   border-style: solid;
@@ -1047,6 +1062,125 @@ label {
 }
 .modal-close {
   margin-top: 16px;
+}
+
+/* event-won celebration takeover */
+.celebration-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(6, 4, 8, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow: hidden;
+}
+.celebration-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: -10%;
+  left: calc(var(--i) * 5.5%);
+  width: 9px;
+  height: 15px;
+  opacity: 0;
+  border-radius: 2px;
+  animation: confetti-fall 2.8s linear infinite;
+  animation-delay: calc(var(--i) * 0.15s);
+}
+.confetti-piece.c0 {
+  background: var(--pink);
+}
+.confetti-piece.c1 {
+  background: var(--acid);
+}
+.confetti-piece.c2 {
+  background: var(--pink-deep);
+}
+.confetti-piece.c3 {
+  background: var(--acid-deep);
+}
+.confetti-piece.c4 {
+  background: var(--ink);
+}
+.confetti-piece.c5 {
+  background: var(--pink);
+  border-radius: 50%;
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(115vh) rotate(360deg);
+    opacity: 0.85;
+  }
+}
+.celebration-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  margin: 0;
+  animation: celebration-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+}
+@keyframes celebration-pop {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.celebration-kicker {
+  color: var(--acid);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.celebration-badge {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: block;
+  object-fit: cover;
+  border: 3px solid var(--acid);
+  box-shadow: 0 0 0 6px rgba(214, 255, 51, 0.15);
+}
+.celebration-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.celebration-name {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 32px;
+}
+.celebration-points {
+  color: var(--acid);
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+.celebration-trip {
+  color: var(--ink-dim);
+  font-size: 14px;
+  margin-top: 4px;
 }
 
 /* admin sign-in / setup pages */

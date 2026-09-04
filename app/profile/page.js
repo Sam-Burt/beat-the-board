@@ -4,11 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
+import { useEventCelebration } from "../../lib/useEventCelebration";
 import { supabase } from "../../lib/supabaseClient";
 import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
 import TrophyCabinet from "../../components/TrophyCabinet";
 import BottomNav from "../../components/BottomNav";
+import EventCelebration from "../../components/EventCelebration";
 import {
   pushSupported,
   runningStandalone,
@@ -20,8 +22,21 @@ import {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { configured, loading, session, isAdmin, me, myTrophies, updateMyIcon, updateMyName } =
-    useBoardData();
+  const {
+    configured,
+    loading,
+    session,
+    isAdmin,
+    me,
+    players,
+    currentTrip,
+    trophies,
+    myTrophies,
+    updateMyIcon,
+    updateMyName,
+  } = useBoardData();
+
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
 
   const [changingIcon, setChangingIcon] = useState(false);
 
@@ -136,6 +151,13 @@ export default function ProfilePage() {
 
   return (
     <div className="wrap">
+      {celebrating && (
+        <EventCelebration
+          trophy={celebrating.trophy}
+          winner={celebrating.winner}
+          onDismiss={dismiss}
+        />
+      )}
       <div className="card profile-hero">
         <button
           type="button"

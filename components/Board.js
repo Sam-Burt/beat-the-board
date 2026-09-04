@@ -24,7 +24,7 @@ export default function Board({ standings, trophyCounts }) {
                     {p.roundsPlayed} round{p.roundsPlayed === 1 ? "" : "s"}
                   </span>
                   {wins > 0 && (
-                    <span className="crown" title={`${wins} trip${wins === 1 ? "" : "s"} won`}>
+                    <span className="crown" title={`${wins} event${wins === 1 ? "" : "s"} won`}>
                       👑{wins > 1 && <span className="crown-count">{wins}</span>}
                     </span>
                   )}

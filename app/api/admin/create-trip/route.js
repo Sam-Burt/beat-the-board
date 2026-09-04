@@ -29,7 +29,7 @@ export async function POST(request) {
   const playerIds = Array.isArray(body.playerIds) ? [...new Set(body.playerIds)] : [];
 
   if (!name) {
-    return NextResponse.json({ error: "Give the trip a name." }, { status: 400 });
+    return NextResponse.json({ error: "Give the event a name." }, { status: 400 });
   }
   if (playerIds.length < 1) {
     return NextResponse.json(
@@ -47,7 +47,7 @@ export async function POST(request) {
     .maybeSingle();
   if (existingCurrent) {
     return NextResponse.json(
-      { error: "There's already a trip running — finalize it before starting a new one." },
+      { error: "There's already an event running — finalize it before starting a new one." },
       { status: 400 }
     );
   }

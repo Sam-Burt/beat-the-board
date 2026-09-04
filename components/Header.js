@@ -52,7 +52,7 @@ export default function Header({ tripName, badgeId, isAdmin, onRename }) {
           <>
             <h1>{tripName}</h1>
             {isAdmin && (
-              <button className="edit-pencil" aria-label="Rename trip" onClick={startRename}>
+              <button className="edit-pencil" aria-label="Rename event" onClick={startRename}>
                 ✎
               </button>
             )}

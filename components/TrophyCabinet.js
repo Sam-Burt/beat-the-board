@@ -15,8 +15,17 @@ function fmtDate(iso) {
 
 // The "Trophies" card on a player's profile — a 3x3 (or bigger, once they've
 // won enough to outgrow it) grid of circular slots. Earned trophies show
-// their trip's badge and can be tapped for a summary popup; the rest stay
+// their event's badge and can be tapped for a summary popup; the rest stay
 // empty dashed placeholders waiting to be filled in.
+//
+// Each slot is wrapped in a `.trophy-cell` that uses the padding-top: 100%
+// trick to force a perfect square before anything inside is laid out. Plain
+// `aspect-ratio: 1` on a CSS Grid item looks right in most browsers, but
+// grid's default `align-items: stretch` can override it in some engines
+// (notably iOS Safari) once a slot's content differs from its siblings —
+// that's what was making the first (image-filled) trophy render as an oval
+// next to perfectly circular empty ones. The padding hack sidesteps the
+// stretch behaviour entirely instead of fighting it.
 export default function TrophyCabinet({ trophies }) {
   const [open, setOpen] = useState(null); // trophy object, or null
 
@@ -28,28 +37,29 @@ export default function TrophyCabinet({ trophies }) {
       <h2>Trophies</h2>
       <p className="muted" style={{ fontSize: 13, margin: "4px 0 14px" }}>
         {trophies.length === 0
-          ? "Win a trip to start filling the cabinet."
-          : `${trophies.length} trip${trophies.length === 1 ? "" : "s"} won.`}
+          ? "Win an event to start filling the cabinet."
+          : `${trophies.length} event${trophies.length === 1 ? "" : "s"} won.`}
       </p>
       <div className="trophy-grid">
-        {slots.map((t, i) =>
-          t ? (
-            <button
-              key={t.id}
-              type="button"
-              className="trophy-slot earned"
-              onClick={() => setOpen(t)}
-              aria-label={`${t.trip_name} — view details`}
-            >
-              {badgeSrc(t.badge_id) && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={badgeSrc(t.badge_id)} alt="" />
-              )}
-            </button>
-          ) : (
-            <button key={`empty-${i}`} type="button" className="trophy-slot" disabled />
-          )
-        )}
+        {slots.map((t, i) => (
+          <div className="trophy-cell" key={t ? t.id : `empty-${i}`}>
+            {t ? (
+              <button
+                type="button"
+                className="trophy-slot earned"
+                onClick={() => setOpen(t)}
+                aria-label={`${t.trip_name} — view details`}
+              >
+                {badgeSrc(t.badge_id) && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={badgeSrc(t.badge_id)} alt="" />
+                )}
+              </button>
+            ) : (
+              <button type="button" className="trophy-slot" disabled />
+            )}
+          </div>
+        ))}
       </div>
 
       {open && (

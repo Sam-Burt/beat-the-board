@@ -98,7 +98,7 @@ export default function TripPanel({
   return (
     <div className="card">
       <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
-        <h2>Trip</h2>
+        <h2>Event</h2>
         <span className={`chevron${open ? " open" : ""}`}>▾</span>
       </button>
 
@@ -127,7 +127,7 @@ export default function TripPanel({
               {confirmEnd ? (
                 <div className="btn-row">
                   <span className="muted" style={{ fontSize: 13 }}>
-                    Finalize this trip now and award the trophy?
+                    Finalize this event now and award the trophy?
                   </span>
                   <button className="btn btn-danger" disabled={endingNow} onClick={handleEndNow}>
                     {endingNow ? "Ending…" : "Yes, end it"}
@@ -138,7 +138,7 @@ export default function TripPanel({
                 </div>
               ) : (
                 <button className="btn btn-ghost" onClick={() => setConfirmEnd(true)}>
-                  End trip now
+                  End event now
                 </button>
               )}
             </div>
@@ -192,7 +192,7 @@ export default function TripPanel({
                 </p>
               )}
               <div className="field">
-                <label htmlFor="trip-name">Trip name</label>
+                <label htmlFor="trip-name">Event name</label>
                 <input
                   id="trip-name"
                   type="text"
@@ -204,7 +204,7 @@ export default function TripPanel({
               </div>
 
               <div className="field">
-                <label>Badge (this trip&#39;s trophy)</label>
+                <label>Badge (this event&#39;s trophy)</label>
                 <BadgePicker value={badgeId} onChange={setBadgeId} />
               </div>
 
@@ -239,7 +239,7 @@ export default function TripPanel({
                 />
                 <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
                   Once this passes, the trophy goes to whoever&#39;s top of the board next time you
-                  open the app (or leave it blank and use &quot;End trip now&quot; whenever you&#39;re
+                  open the app (or leave it blank and use &quot;End event now&quot; whenever you&#39;re
                   ready).
                 </p>
               </div>
@@ -272,7 +272,7 @@ export default function TripPanel({
 
               <div className="btn-row">
                 <button className="btn btn-primary" disabled={!canCreate || working} onClick={handleCreate}>
-                  {working ? "Starting…" : "Start trip"}
+                  {working ? "Starting…" : "Start event"}
                 </button>
               </div>
             </>

@@ -3,15 +3,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
+import { useEventCelebration } from "../../lib/useEventCelebration";
 import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
+import EventCelebration from "../../components/EventCelebration";
 
 export default function MissionsPage() {
   const router = useRouter();
-  const { configured, loading, session, me } = useBoardData();
+  const { configured, loading, session, me, players, currentTrip, trophies } = useBoardData();
 
   const [missions, setMissions] = useState([]);
   const [revealed, setRevealed] = useState(false);
+
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -78,6 +82,13 @@ export default function MissionsPage() {
 
   return (
     <div className="wrap">
+      {celebrating && (
+        <EventCelebration
+          trophy={celebrating.trophy}
+          winner={celebrating.winner}
+          onDismiss={dismiss}
+        />
+      )}
       <div className="card header-card">
         <h2>Secret missions</h2>
         <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
