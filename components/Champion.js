@@ -1,4 +1,11 @@
+import { useChampionStar } from "../lib/useChampionStar";
+import { starSrc } from "../lib/stars";
+
 export default function Champion({ standings }) {
+  // Hooks must run every render, so this is called before the early return
+  // below — it no-ops until there's a real leader id to key off of.
+  const starId = useChampionStar(standings[0]?.id);
+
   if (standings.length === 0) return null;
   const leader = standings[0];
   const second = standings[1];
@@ -17,7 +24,7 @@ export default function Champion({ standings }) {
     <div className="champion">
       <div className="champion-star-wrap">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="champion-star-img" src="/champion-star.png" alt="" width={663} height={700} />
+        <img className="champion-star-img" src={starSrc(starId)} alt="" width={663} height={700} />
         <div className="champion-overlay">
           <div className="name">{leader.name}</div>
           <div className="pts">
