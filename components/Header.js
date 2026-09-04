@@ -1,23 +1,11 @@
-"use client";
-
-import { useState } from "react";
 import { badgeSrc } from "../lib/badges";
 
-export default function Header({ tripName, badgeId, isAdmin, onRename }) {
-  const [renaming, setRenaming] = useState(false);
-  const [draft, setDraft] = useState(tripName);
-
-  function startRename() {
-    setDraft(tripName);
-    setRenaming(true);
-  }
-
-  function save() {
-    const trimmed = draft.trim();
-    if (trimmed) onRename(trimmed);
-    setRenaming(false);
-  }
-
+// Pure display now — no inline rename here (that used to add a pencil
+// button next to the title, which threw the centering off since the title
+// was no longer the only thing in the row). Renaming/editing the current
+// event's details lives in the Event panel instead (see TripPanel's "Edit
+// event" button), right next to the rest of the event's settings.
+export default function Header({ tripName, badgeId, isAdmin }) {
   const src = badgeSrc(badgeId);
 
   return (
@@ -28,36 +16,7 @@ export default function Header({ tripName, badgeId, isAdmin, onRename }) {
         <img className="header-trip-badge" src={src} alt="" />
       )}
       <div className="trip-name">
-        {renaming ? (
-          <div className="rename-row" style={{ width: "100%", justifyContent: "center" }}>
-            <input
-              type="text"
-              value={draft}
-              maxLength={60}
-              autoFocus
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") save();
-                if (e.key === "Escape") setRenaming(false);
-              }}
-            />
-            <button className="btn btn-primary" onClick={save}>
-              Save
-            </button>
-            <button className="btn btn-ghost" onClick={() => setRenaming(false)}>
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <>
-            <h1>{tripName}</h1>
-            {isAdmin && (
-              <button className="edit-pencil" aria-label="Rename event" onClick={startRename}>
-                ✎
-              </button>
-            )}
-          </>
-        )}
+        <h1>{tripName}</h1>
       </div>
     </div>
   );

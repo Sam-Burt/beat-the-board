@@ -26,7 +26,6 @@ export default function ProfilePage() {
     configured,
     loading,
     session,
-    isAdmin,
     me,
     players,
     currentTrip,
@@ -38,9 +37,11 @@ export default function ProfilePage() {
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
 
-  const [changingIcon, setChangingIcon] = useState(false);
-
-  const [editingName, setEditingName] = useState(false);
+  // A single "Edit profile" toggle (top-right of the hero card) now covers
+  // both the display name and the icon, instead of separate pencils on
+  // each — see the request that prompted this: individual edit affordances
+  // were throwing the centered layout off.
+  const [editingProfile, setEditingProfile] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [nameSaving, setNameSaving] = useState(false);
   const [nameError, setNameError] = useState("");
@@ -64,12 +65,20 @@ export default function ProfilePage() {
   }, []);
 
   const handlePickIcon = useCallback(
-    async (iconId) => {
-      await updateMyIcon(iconId);
-      setChangingIcon(false);
-    },
+    (iconId) => updateMyIcon(iconId),
     [updateMyIcon]
   );
+
+  function toggleEditingProfile() {
+    setEditingProfile((prev) => {
+      const next = !prev;
+      if (next) {
+        setNameDraft(me.name || "");
+        setNameError("");
+      }
+      return next;
+    });
+  }
 
   async function saveName() {
     const trimmed = nameDraft.trim();
@@ -81,9 +90,7 @@ export default function ProfilePage() {
     setNameSaving(true);
     const ok = await updateMyName(trimmed);
     setNameSaving(false);
-    if (ok) {
-      setEditingName(false);
-    } else {
+    if (!ok) {
       setNameError("Couldn't save that — check your connection and try again.");
     }
   }
@@ -159,67 +166,43 @@ export default function ProfilePage() {
         />
       )}
       <div className="card profile-hero">
-        <button
-          type="button"
-          className="profile-icon-btn"
-          onClick={() => setChangingIcon((v) => !v)}
-          aria-label="Change your icon"
-        >
+        <button type="button" className="btn btn-ghost profile-edit-btn" onClick={toggleEditingProfile}>
+          {editingProfile ? "Done" : "Edit profile"}
+        </button>
+
+        <div className="profile-icon-btn">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={src} alt="" />
           ) : (
             <span className="profile-icon-fallback">{me.emoji || "👤"}</span>
           )}
-          <span className="profile-icon-edit-hint">✎</span>
-        </button>
-
-        {editingName ? (
-          <div className="rename-row">
-            <input
-              type="text"
-              value={nameDraft}
-              autoFocus
-              maxLength={30}
-              onChange={(e) => setNameDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") saveName();
-                if (e.key === "Escape") setEditingName(false);
-              }}
-            />
-            <button className="btn btn-primary" disabled={nameSaving} onClick={saveName}>
-              {nameSaving ? "Saving…" : "Save"}
-            </button>
-            <button className="btn btn-ghost" onClick={() => setEditingName(false)}>
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <div className="profile-name">
-            {me.name}
-            <button
-              className="edit-pencil"
-              aria-label="Edit display name"
-              onClick={() => {
-                setNameDraft(me.name || "");
-                setNameError("");
-                setEditingName(true);
-              }}
-            >
-              ✎
-            </button>
-          </div>
-        )}
-        {nameError && <div className="banner-note error">{nameError}</div>}
-
-        <div className="profile-username-row">
-          {isAdmin && !me.username
-            ? "You sign in with your email."
-            : `Signs in as @${me.username}`}
         </div>
 
-        {changingIcon && (
-          <div style={{ marginTop: 14, textAlign: "center" }}>
+        <div className="profile-name">{me.name}</div>
+
+        {editingProfile && (
+          <div className="profile-edit-panel">
+            <div className="field">
+              <label htmlFor="profile-name-input">Display name</label>
+              <input
+                id="profile-name-input"
+                type="text"
+                value={nameDraft}
+                maxLength={30}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveName();
+                }}
+              />
+              <div className="btn-row" style={{ justifyContent: "center", marginTop: 8 }}>
+                <button className="btn btn-primary" disabled={nameSaving} onClick={saveName}>
+                  {nameSaving ? "Saving…" : "Save name"}
+                </button>
+              </div>
+              {nameError && <div className="banner-note error">{nameError}</div>}
+            </div>
+
             <IconPicker onPick={handlePickIcon} />
           </div>
         )}

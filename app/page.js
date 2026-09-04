@@ -39,7 +39,7 @@ export default function HomePage() {
     saveEvent,
     deleteEvent,
     addPointAdjustment,
-    renameTrip,
+    updateTripDetails,
     createTrip,
     endTripNow,
     declareTripWinner,
@@ -89,12 +89,7 @@ export default function HomePage() {
           onDismiss={dismiss}
         />
       )}
-      <Header
-        tripName={tripName}
-        badgeId={currentTrip?.badge_id}
-        isAdmin={isAdmin}
-        onRename={renameTrip}
-      />
+      <Header tripName={tripName} badgeId={currentTrip?.badge_id} isAdmin={isAdmin} />
 
       {saveError && <div className="banner-note error">{saveError}</div>}
 
@@ -111,6 +106,7 @@ export default function HomePage() {
           onCreateTrip={createTrip}
           onEndTripNow={endTripNow}
           onDeclareWinner={declareTripWinner}
+          onUpdateTrip={updateTripDetails}
         />
       )}
 

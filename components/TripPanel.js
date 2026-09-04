@@ -23,6 +23,18 @@ function fmtDeadline(iso) {
   });
 }
 
+// Converts an ISO timestamp into the local "YYYY-MM-DDTHH:mm" value a
+// datetime-local input expects, so editing an existing deadline shows it
+// pre-filled in the admin's own timezone instead of blank/UTC-shifted.
+function toDatetimeLocalValue(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
 export default function TripPanel({
   currentTrip,
   players,
@@ -30,10 +42,11 @@ export default function TripPanel({
   onCreateTrip,
   onEndTripNow,
   onDeclareWinner,
+  onUpdateTrip,
 }) {
   const [open, setOpen] = useState(!currentTrip || currentTrip.status === "finalized");
 
-  // "Start a new trip" form state
+  // "Start a new event" form state
   const [name, setName] = useState("");
   const [badgeId, setBadgeId] = useState(null);
   const [startsOn, setStartsOn] = useState("");
@@ -46,6 +59,16 @@ export default function TripPanel({
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [decidingWinner, setDecidingWinner] = useState(null); // player id
   const [decidingWorking, setDecidingWorking] = useState(false);
+
+  // "Edit event" form state — separate from the "start a new event" state
+  // above so opening one never clobbers the other.
+  const [editingTrip, setEditingTrip] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editBadgeId, setEditBadgeId] = useState(null);
+  const [editStartsOn, setEditStartsOn] = useState("");
+  const [editEndsOn, setEditEndsOn] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+  const [editWorking, setEditWorking] = useState(false);
 
   const topScore = standings?.[0]?.points;
   const tiedPlayerIds =
@@ -95,6 +118,31 @@ export default function TripPanel({
     setDecidingWinner(null);
   }
 
+  function startEditTrip() {
+    setEditName(currentTrip.name || "");
+    setEditBadgeId(currentTrip.badge_id || null);
+    setEditStartsOn(currentTrip.starts_on || "");
+    setEditEndsOn(currentTrip.ends_on || "");
+    setEditDeadline(toDatetimeLocalValue(currentTrip.deadline));
+    setEditingTrip(true);
+  }
+
+  const canSaveEdit = editName.trim().length > 0;
+
+  async function handleSaveEdit() {
+    if (!canSaveEdit) return;
+    setEditWorking(true);
+    const result = await onUpdateTrip({
+      name: editName,
+      badgeId: editBadgeId,
+      startsOn: editStartsOn || null,
+      endsOn: editEndsOn || null,
+      deadline: editDeadline ? new Date(editDeadline).toISOString() : null,
+    });
+    setEditWorking(false);
+    if (result !== false) setEditingTrip(false);
+  }
+
   return (
     <div className="card">
       <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
@@ -104,7 +152,7 @@ export default function TripPanel({
 
       {open && (
         <div style={{ marginTop: 14 }}>
-          {currentTrip && currentTrip.status !== "finalized" && (
+          {currentTrip && currentTrip.status !== "finalized" && !editingTrip && (
             <div className="trip-status-card">
               {badgeSrc(currentTrip.badge_id) && (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -119,10 +167,82 @@ export default function TripPanel({
                   {currentTrip.deadline && ` · deadline ${fmtDeadline(currentTrip.deadline)}`}
                 </div>
               </div>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{ flex: "none" }}
+                onClick={startEditTrip}
+              >
+                Edit event
+              </button>
             </div>
           )}
 
-          {currentTrip?.status === "active" && (
+          {currentTrip && currentTrip.status !== "finalized" && editingTrip && (
+            <div style={{ marginTop: 4 }}>
+              <div className="field">
+                <label htmlFor="edit-trip-name">Event name</label>
+                <input
+                  id="edit-trip-name"
+                  type="text"
+                  maxLength={60}
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
+              </div>
+
+              <div className="field">
+                <label>Badge (this event&#39;s trophy)</label>
+                <BadgePicker value={editBadgeId} onChange={setEditBadgeId} />
+              </div>
+
+              <div className="field" style={{ display: "flex", gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="edit-trip-starts">Starts</label>
+                  <input
+                    id="edit-trip-starts"
+                    type="date"
+                    value={editStartsOn}
+                    onChange={(e) => setEditStartsOn(e.target.value)}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label htmlFor="edit-trip-ends">Ends</label>
+                  <input
+                    id="edit-trip-ends"
+                    type="date"
+                    value={editEndsOn}
+                    onChange={(e) => setEditEndsOn(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="field">
+                <label htmlFor="edit-trip-deadline">Deadline (triggers the winner)</label>
+                <input
+                  id="edit-trip-deadline"
+                  type="datetime-local"
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                />
+              </div>
+
+              <div className="btn-row">
+                <button
+                  className="btn btn-primary"
+                  disabled={!canSaveEdit || editWorking}
+                  onClick={handleSaveEdit}
+                >
+                  {editWorking ? "Saving…" : "Save event"}
+                </button>
+                <button className="btn btn-ghost" onClick={() => setEditingTrip(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {currentTrip?.status === "active" && !editingTrip && (
             <div style={{ marginTop: 12 }}>
               {confirmEnd ? (
                 <div className="btn-row">
@@ -144,7 +264,7 @@ export default function TripPanel({
             </div>
           )}
 
-          {currentTrip?.status === "tied" && (
+          {currentTrip?.status === "tied" && !editingTrip && (
             <div className="banner-note" style={{ marginTop: 12 }}>
               <div style={{ marginBottom: 8 }}>
                 It&#39;s a tie at the deadline — pick who takes the trophy:

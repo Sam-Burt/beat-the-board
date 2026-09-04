@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, requireAdmin } from "../../../../lib/supabaseAdmin";
 import { normalizeUsername, usernameToEmail } from "../../../../lib/username";
+import { ICON_IDS } from "../../../../lib/icons";
 
 export async function POST(request) {
   if (!supabaseAdmin) {
@@ -70,9 +71,15 @@ export async function POST(request) {
     userId = created.user.id;
   }
 
+  // Every player starts with a real icon rather than none — leaving one
+  // unset made the leaderboard row for that person sit differently from
+  // everyone else's (no avatar, so no space reserved before the name).
+  // They can still change it any time from their Profile tab.
+  const defaultIconId = ICON_IDS[Math.floor(Math.random() * ICON_IDS.length)];
+
   const { data: player, error: insertError } = await supabaseAdmin
     .from("players")
-    .insert({ name, emoji: "", user_id: userId, username })
+    .insert({ name, emoji: "", user_id: userId, username, icon_id: defaultIconId })
     .select()
     .single();
 

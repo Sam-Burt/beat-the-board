@@ -29,6 +29,11 @@ html,
 body {
   margin: 0;
   padding: 0;
+  /* Belt-and-braces against any sideways scroll (e.g. a momentary layout
+     overflow while something's still loading) — the app is only ever
+     meant to scroll vertically. */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 body {
   background: linear-gradient(180deg, rgba(6, 4, 8, 0.1), rgba(6, 4, 8, 0.28)),
@@ -61,7 +66,7 @@ h3 {
   letter-spacing: 0.02em;
 }
 button {
-  font-family: inherit;
+  font-family: "Striker", "Archivo", sans-serif;
 }
 a {
   color: var(--acid);
@@ -176,14 +181,6 @@ a {
   top: 14px;
   right: 14px;
 }
-.rename-row {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0;
-}
-.rename-row input {
-  flex: 1;
-}
 @media (max-width: 480px) {
   .trip-name h1 {
     font-size: 26px;
@@ -202,7 +199,11 @@ textarea {
   border-radius: 10px;
   background: var(--card-2);
   color: var(--ink);
-  font-size: 15px;
+  /* 16px, not the design's 15px: iOS Safari auto-zooms the whole page in
+     when a focused input's computed font-size is under 16px, which is what
+     was happening here — this keeps the zoom from triggering in the first
+     place rather than fighting it after the fact. */
+  font-size: 16px;
   font-family: inherit;
 }
 input[type="date"] {
@@ -768,6 +769,7 @@ label {
 .trip-status-card {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
 }
 .trip-status-badge {
@@ -783,7 +785,13 @@ label {
 
 /* profile page */
 .profile-hero {
+  position: relative;
   text-align: center;
+}
+.profile-edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
 }
 .profile-icon-btn {
   position: relative;
@@ -793,7 +801,7 @@ label {
   border-radius: 50%;
   border: none;
   padding: 0;
-  cursor: pointer;
+  cursor: default;
   display: block;
   background: conic-gradient(from 180deg, var(--pink), var(--acid), var(--pink));
 }
@@ -818,37 +826,18 @@ label {
   justify-content: center;
   font-size: 48px;
 }
-.profile-icon-edit-hint {
-  position: absolute;
-  z-index: 2;
-  right: 2px;
-  bottom: 2px;
-  background: var(--ink);
-  color: #0b0b0b;
-  font-size: 12px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .profile-name {
   font-family: "Striker", "Archivo", sans-serif;
   font-size: 30px;
   margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
-.profile-name .edit-pencil {
-  font-size: 16px;
+.profile-edit-panel {
+  margin-top: 16px;
+  text-align: center;
 }
-.profile-username-row {
-  color: var(--ink-dim);
-  font-size: 14px;
-  margin-bottom: 4px;
+.profile-edit-panel .field {
+  max-width: 260px;
+  margin: 0 auto 18px;
 }
 .profile-hero .rename-row {
   justify-content: center;
