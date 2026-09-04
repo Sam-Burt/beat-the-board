@@ -12,10 +12,19 @@ function fmtDate(iso) {
   return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
 }
 
-export default function History({ players, events, isAdmin, onDelete }) {
+function fmtWhen(iso) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+export default function History({ players, events, adjustments = [], isAdmin, onDelete }) {
   const [confirmId, setConfirmId] = useState(null);
 
-  if (events.length === 0) return null;
+  if (events.length === 0 && adjustments.length === 0) return null;
 
   function playerLabel(id) {
     const p = players.find((pl) => pl.id === id);
@@ -32,6 +41,24 @@ export default function History({ players, events, isAdmin, onDelete }) {
       <div className="card-head">
         <h2>History</h2>
       </div>
+
+      {adjustments.length > 0 && (
+        <div style={{ marginBottom: events.length > 0 ? 18 : 0 }}>
+          {adjustments.map((adj) => (
+            <div className="history-item" key={`adj-${adj.id}`}>
+              <div className="history-top">
+                <h3>
+                  {adj.amount > 0 ? "+" : ""}
+                  {adj.amount} pt{Math.abs(adj.amount) === 1 ? "" : "s"} — {playerLabel(adj.player_id)}
+                </h3>
+                <span className="history-date">{fmtWhen(adj.created_at)}</span>
+              </div>
+              {adj.note && <div className="history-note">{adj.note}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+
       {events.map((ev) => {
         const pts = eventPoints(ev);
         const deleting = confirmId === ev.id;

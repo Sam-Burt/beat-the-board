@@ -1,9 +1,11 @@
 # Beat The Board
 
-The real Centre Parcs leaderboard — same design, same "1 point per player
-beaten" scoring — running on your own GitHub + Supabase + Vercel accounts
-instead of a Claude Artifact. This gets you real accounts (you sign in as
-admin from any device) and a real database, so it's yours to keep and grow.
+The real Centre Parcs leaderboard — same design, same standard "1 point per
+player beaten" scoring for every logged round, plus the ability to hand out
+one-off bonus/penalty points — running on your own GitHub + Supabase +
+Vercel accounts instead of a Claude Artifact. This gets you real accounts
+(you sign in as admin from any device) and a real database, so it's yours
+to keep and grow.
 
 No coding experience needed for the steps below — just following along and
 clicking the right buttons.
@@ -28,8 +30,12 @@ You said you already have accounts on all three, so skip straight to step 1.
 3. Open `supabase/schema.sql` from this project, copy the whole file, paste
    it into the SQL editor, and click **Run**. This creates the tables and
    the security rules that only let you edit the board. (If you deployed
-   this project before player accounts existed, re-running this same file
-   is safe — it adds the new bits without touching your existing data.)
+   this project before, re-running this same file is always safe — it only
+   adds new bits, never touches existing data. If your board already had
+   players and results before trips existed, running this file once
+   automatically creates "Trip #1" from what was already there — current
+   name, players and history — so nothing is lost; you don't need to do
+   anything else.)
 4. *(Optional)* If you want to bring over the players and results already
    on the Claude Artifact version instead of starting empty: open a new
    query, paste in `supabase/seed.sql`, and run it too. You can always add
@@ -184,6 +190,57 @@ either way, with or without phone alerts turned on.
 
 ---
 
+## 8. Trips, bonus points & trophies (optional)
+
+The board now runs in **trips** — a trip is the overall "game weekend"
+(what you called a "game/trip/event"), with its own name, badge, roster,
+date window and deadline. Every logged round and bonus/penalty point
+belongs to whichever trip is current; only one trip can be running at a
+time.
+
+**Starting a trip:** open the **Trip** panel (admin only, above "Log a
+result"), give it a name, pick a badge from the small placeholder
+collection (swap in your own artwork any time — see below), optionally set
+a start/end date window, set a **deadline** (the moment that decides the
+winner), and tick who's playing from your player accounts. Hit **Start
+trip** and the board, "Log a result" and the Players panel all scope to
+that roster.
+
+**Ending a trip:** once the deadline passes, the trip finalizes itself
+automatically the next time you (the admin) have the app open — there's no
+server running in the background to do it on the dot, so this is a
+"catches up next time you look" design, which is fine for a family trip.
+You can also end it early any time with **End trip now** in the Trip
+panel. Either way, whoever's top of the board at that moment wins the
+trophy — unless it's an exact tie, in which case the trip is marked "tied"
+and the Trip panel shows a **pick the winner** prompt so you make the call
+by hand rather than the app guessing.
+
+**Bonus/penalty points:** in the Players panel, anyone currently on the
+trip roster gets a **±Points** button — award points on demand (e.g. "+3
+for doing the washing up without being asked") or dock them (e.g. "-2 for
+getting caught on a secret mission"), with an optional note. These stack
+on top of the normal per-round scoring and show up in the History list
+alongside logged rounds, so it's always clear where someone's points came
+from.
+
+**Trophies & crowns:** winning a trip adds a trophy to that player's
+**Trophies** card on their Profile tab — a 3×3 (or bigger, once they've
+won enough to need it) grid of circular slots that fill in as they win.
+Tap a filled slot for a popup with that trip's name, dates and final
+score. Anyone with at least one trophy also gets a small crown next to
+their name on the leaderboard, with a number next to it once they've won
+more than once.
+
+**Trip badges:** the 9 trophy badges under `public/badges/` are simple
+placeholders in the app's own colours. Replace `badge-1.png` …
+`badge-9.png` with your own illustrated artwork whenever it's ready (same
+file names, square, 512×512px works well) and re-deploy — nothing else
+needs to change, and trips that already picked a placeholder just show the
+new artwork next time the badge loads.
+
+---
+
 ## How this differs from the old Claude Artifact version
 
 - **Real accounts, for everyone.** Your one admin login can edit — enforced
@@ -194,9 +251,10 @@ either way, with or without phone alerts turned on.
 - **A real database**, not a single self-publishing page. Multiple people
   can have the board open at once and it stays in sync live (Supabase
   Realtime).
-- **Design and scoring are unchanged** — same fonts, colours, dice-pattern
-  background, champion star, and the exact "1 point per player beaten"
-  rule.
+- **Design and the core scoring rule are unchanged** — same fonts, colours,
+  dice-pattern background, champion star, and the standard "1 point per
+  player beaten" rule for logged rounds — with trips, bonus/penalty points
+  and trophies layered on top (see step 8 above).
 
 ## Swapping in real profile icons
 
@@ -210,10 +268,15 @@ see the new artwork next time they load the board.
 
 ## What's not built (on purpose, for now)
 
-- **Cross-trip crowns/badges.** Carrying a "won the trip" badge across
-  separate future trips/events is a natural next step once there's more
-  than one trip in the database, but it hasn't been built yet — this
-  version is scoped to the one trip you're running now.
+- **A frame for winning a big trip.** The idea of a special frame around a
+  player's icon or trophy for a standout event (like this Centre Parcs
+  trip) is a nice future addition but isn't built — right now every trophy
+  looks the same regardless of how big the trip was.
+- **No server-side cron for the trip deadline.** Finalizing a trip relies
+  on an admin having the app open some time after the deadline passes (or
+  using "End trip now" manually) — see step 8. Fine for a small family app,
+  but worth knowing if a trip's deadline passes while nobody signed in as
+  admin opens the site for a while.
 - **No automated tests**, and the "delete" actions are immediate once
   confirmed (no undo) — same as the old version.
 

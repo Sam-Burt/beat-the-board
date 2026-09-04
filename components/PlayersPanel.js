@@ -14,7 +14,15 @@ function randomPassword() {
   return out;
 }
 
-export default function PlayersPanel({ players, events, onCreate, onRemove, onSendMission }) {
+export default function PlayersPanel({
+  players,
+  events,
+  rosterIdSet,
+  onCreate,
+  onRemove,
+  onSendMission,
+  onAddPoints,
+}) {
   const [open, setOpen] = useState(players.length === 0);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -26,6 +34,25 @@ export default function PlayersPanel({ players, events, onCreate, onRemove, onSe
   const [missionText, setMissionText] = useState("");
   const [missionSending, setMissionSending] = useState(false);
   const [missionSentFor, setMissionSentFor] = useState(null);
+  const [pointsOpenFor, setPointsOpenFor] = useState(null); // player id
+  const [pointsAmount, setPointsAmount] = useState(1);
+  const [pointsNote, setPointsNote] = useState("");
+  const [pointsSending, setPointsSending] = useState(false);
+  const [pointsSentFor, setPointsSentFor] = useState(null);
+
+  async function handleAddPoints(playerId) {
+    if (!pointsAmount) return;
+    setPointsSending(true);
+    const result = await onAddPoints({ playerId, amount: pointsAmount, note: pointsNote.trim() });
+    setPointsSending(false);
+    if (result !== false) {
+      setPointsAmount(1);
+      setPointsNote("");
+      setPointsOpenFor(null);
+      setPointsSentFor(playerId);
+      setTimeout(() => setPointsSentFor((id) => (id === playerId ? null : id)), 4000);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -92,6 +119,17 @@ export default function PlayersPanel({ players, events, onCreate, onRemove, onSe
                           </span>
                         )}
                       </div>
+                      {rosterIdSet?.has(p.id) && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() =>
+                            setPointsOpenFor((cur) => (cur === p.id ? null : p.id))
+                          }
+                        >
+                          {pointsSentFor === p.id ? "Added! ✓" : "±Points"}
+                        </button>
+                      )}
                       {p.user_id && (
                         <button
                           type="button"
@@ -149,6 +187,64 @@ export default function PlayersPanel({ players, events, onCreate, onRemove, onSe
                           Only&quot; — and get a phone alert if they&#39;ve turned mission
                           alerts on (it won&#39;t reveal the text on their lock screen).
                         </p>
+                      </div>
+                    )}
+                    {pointsOpenFor === p.id && (
+                      <div className="points-composer">
+                        <div className="points-amount-row">
+                          <button
+                            type="button"
+                            className="points-step-btn"
+                            onClick={() => setPointsAmount((n) => n - 1)}
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            value={pointsAmount}
+                            onChange={(e) => setPointsAmount(Number(e.target.value))}
+                          />
+                          <button
+                            type="button"
+                            className="points-step-btn"
+                            onClick={() => setPointsAmount((n) => n + 1)}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Reason (optional) — e.g. caught on secret mission"
+                          maxLength={140}
+                          value={pointsNote}
+                          onChange={(e) => setPointsNote(e.target.value)}
+                          style={{ marginTop: 8 }}
+                        />
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            disabled={pointsSending || !pointsAmount}
+                            onClick={() => handleAddPoints(p.id)}
+                          >
+                            {pointsSending
+                              ? "Saving…"
+                              : `${pointsAmount > 0 ? "Award" : "Deduct"} ${Math.abs(
+                                  pointsAmount
+                                )} pt${Math.abs(pointsAmount) === 1 ? "" : "s"}`}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => {
+                              setPointsOpenFor(null);
+                              setPointsAmount(1);
+                              setPointsNote("");
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

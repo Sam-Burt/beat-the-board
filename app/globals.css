@@ -89,6 +89,18 @@ a {
 }
 .header-card {
   margin-top: 0;
+  position: relative;
+  text-align: center;
+}
+.header-trip-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 2px auto 12px;
+  border: 2px solid var(--border);
+  background: var(--card-2);
 }
 .card-head {
   display: flex;
@@ -109,17 +121,20 @@ a {
   padding: 10px 2px;
 }
 
-/* header */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 4px;
+.subtitle {
+  color: var(--acid);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+  margin-top: 4px;
 }
+
+/* header */
 .trip-name {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -140,14 +155,6 @@ a {
   color: var(--pink);
   background: var(--card-2);
 }
-.subtitle {
-  color: var(--acid);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-weight: 700;
-  margin-top: 4px;
-}
 .readonly-badge {
   display: inline-flex;
   align-items: center;
@@ -163,6 +170,11 @@ a {
   letter-spacing: 0.04em;
   flex-shrink: 0;
   white-space: nowrap;
+}
+.readonly-badge.corner {
+  position: absolute;
+  top: 14px;
+  right: 14px;
 }
 .rename-row {
   display: flex;
@@ -351,7 +363,7 @@ label {
 .board-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 4px;
   border-radius: 10px;
 }
@@ -388,22 +400,62 @@ label {
   color: #fff;
   border-color: var(--pink);
 }
+/* the avatar sits directly in the row now, same size as the rank badge */
+.board-row > img {
+  flex: none;
+  width: 34px;
+  height: 34px;
+}
 .board-name {
   flex: 1;
   min-width: 0;
 }
 .board-name .n {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.board-name .name-text {
   font-family: "Striker", "Archivo", sans-serif;
   font-weight: 400;
   letter-spacing: 0.02em;
-  font-size: 19px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 23px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .board-name .stat {
   color: var(--ink-dim);
   font-size: 12px;
+  flex: none;
+  white-space: nowrap;
+}
+.crown {
+  position: relative;
+  flex: none;
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+.crown-count {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  background: var(--acid);
+  color: #0b0b0b;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 999px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .board-pts {
   font-size: 27px;
@@ -676,6 +728,59 @@ label {
   resize: vertical;
 }
 
+/* points composer (admin, inside a player row) — same shape as the mission
+   composer above, plus a quick +/- amount stepper. */
+.points-composer {
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 6px 0 14px;
+}
+.points-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.points-amount-row input[type="number"] {
+  width: 90px;
+  text-align: center;
+  flex: none;
+}
+.points-step-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  flex: none;
+}
+.points-step-btn:hover {
+  border-color: var(--pink);
+}
+
+/* trip panel (admin) */
+.trip-status-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.trip-status-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex: none;
+}
+.trip-status-name {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 20px;
+}
+
 /* profile page */
 .profile-hero {
   text-align: center;
@@ -850,6 +955,10 @@ label {
 .icon-picker-btn:hover {
   border-color: var(--pink);
 }
+.icon-picker-btn.selected {
+  border-color: var(--acid);
+  box-shadow: 0 0 0 1px var(--acid);
+}
 .icon-picker-btn img {
   border-radius: 50%;
   display: block;
@@ -871,6 +980,73 @@ label {
   background: rgba(11, 11, 11, 0.75);
   border-radius: 14px;
   color: var(--acid);
+}
+
+/* trophies (profile page) */
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.trophy-slot {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  background: var(--card-2);
+  padding: 0;
+  cursor: default;
+}
+.trophy-slot img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.trophy-slot.earned {
+  border-style: solid;
+  border-color: var(--acid);
+  cursor: pointer;
+  background: conic-gradient(from 180deg, var(--pink), var(--acid), var(--pink));
+  padding: 4px;
+}
+.trophy-slot.earned img {
+  border: 2px solid var(--card);
+}
+.trophy-slot:disabled {
+  cursor: default;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(6, 4, 8, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  margin: 0;
+}
+.modal-card img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  margin: 4px auto 12px;
+  display: block;
+}
+.modal-card h3 {
+  font-size: 22px;
+}
+.modal-close {
+  margin-top: 16px;
 }
 
 /* admin sign-in / setup pages */

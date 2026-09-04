@@ -5,6 +5,7 @@ import { totals } from "../lib/points";
 import Header from "../components/Header";
 import Champion from "../components/Champion";
 import Board from "../components/Board";
+import TripPanel from "../components/TripPanel";
 import LogResultForm from "../components/LogResultForm";
 import PlayersPanel from "../components/PlayersPanel";
 import IconPicker from "../components/IconPicker";
@@ -17,8 +18,13 @@ export default function HomePage() {
     configured,
     loading,
     tripName,
+    currentTrip,
     players,
+    tripPlayers,
+    rosterIdSet,
     events,
+    adjustments,
+    trophyCounts,
     session,
     isAdmin,
     me,
@@ -29,7 +35,11 @@ export default function HomePage() {
     updateMyIcon,
     saveEvent,
     deleteEvent,
+    addPointAdjustment,
     renameTrip,
+    createTrip,
+    endTripNow,
+    declareTripWinner,
   } = useBoardData();
 
   if (!configured) {
@@ -59,31 +69,59 @@ export default function HomePage() {
     );
   }
 
-  const standings = totals(players, events);
+  // Standings are scoped to the current trip's roster and include any
+  // manual point adjustments on top of the automatic per-round scoring.
+  const standings = totals(tripPlayers, events, adjustments);
 
   return (
     <div className="wrap">
-      <Header tripName={tripName} isAdmin={isAdmin} onRename={renameTrip} />
+      <Header
+        tripName={tripName}
+        badgeId={currentTrip?.badge_id}
+        isAdmin={isAdmin}
+        onRename={renameTrip}
+      />
 
       {saveError && <div className="banner-note error">{saveError}</div>}
 
       <Champion standings={standings} />
-      <Board standings={standings} />
+      <Board standings={standings} trophyCounts={trophyCounts} />
 
       {me && !me.icon_id && <IconPicker onPick={updateMyIcon} />}
 
-      {isAdmin && <LogResultForm players={players} onSave={saveEvent} />}
+      {isAdmin && (
+        <TripPanel
+          currentTrip={currentTrip}
+          players={players}
+          standings={standings}
+          onCreateTrip={createTrip}
+          onEndTripNow={endTripNow}
+          onDeclareWinner={declareTripWinner}
+        />
+      )}
+
+      {isAdmin && currentTrip?.status === "active" && (
+        <LogResultForm players={tripPlayers} onSave={saveEvent} />
+      )}
       {isAdmin && (
         <PlayersPanel
           players={players}
           events={events}
+          rosterIdSet={rosterIdSet}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
           onSendMission={sendMission}
+          onAddPoints={addPointAdjustment}
         />
       )}
 
-      <History players={players} events={events} isAdmin={isAdmin} onDelete={deleteEvent} />
+      <History
+        players={players}
+        events={events}
+        adjustments={adjustments}
+        isAdmin={isAdmin}
+        onDelete={deleteEvent}
+      />
 
       <Footer session={session} />
       <BottomNav session={session} me={me} />

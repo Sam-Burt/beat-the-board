@@ -182,6 +182,138 @@ create policy "push_subscriptions manage own" on push_subscriptions
   );
 
 -- ---------------------------------------------------------------------------
+-- Trips — a "game/trip/event" the board runs for a while, then finalizes.
+-- There can be many of these over time, one after another; the most
+-- recently created one is treated as "the current trip" by the app (see
+-- lib/useBoardData.js). Replaces the old single trip_settings singleton,
+-- which is left in place unused rather than dropped (no need to risk data
+-- loss over a rename).
+-- ---------------------------------------------------------------------------
+
+create table if not exists trips (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  badge_id text,
+  starts_on date,
+  ends_on date,
+  deadline timestamptz,
+  status text not null default 'active' check (status in ('active', 'tied', 'finalized')),
+  winner_player_id uuid references players (id) on delete set null,
+  finalized_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+-- Which existing player accounts are playing in a given trip. Player
+-- accounts (login, icon, missions, push subscriptions) live forever and
+-- are created once; a trip's roster is just which of them are "in" this
+-- particular trip.
+create table if not exists trip_players (
+  trip_id uuid not null references trips (id) on delete cascade,
+  player_id uuid not null references players (id) on delete cascade,
+  primary key (trip_id, player_id)
+);
+
+-- Every logged round now belongs to a trip. Nullable so this column can be
+-- added to a database that already has rows (backfilled below); the app
+-- always sets it on new inserts.
+alter table events add column if not exists trip_id uuid references trips (id) on delete cascade;
+
+-- Free-form point awards/deductions — on top of the automatic "1 point per
+-- person you beat" scoring from logged rounds above, Sam can hand out (or
+-- take away) an arbitrary number of points at any time, e.g. "+3 for doing
+-- the washing up without being asked" or "-2 for getting caught out on a
+-- secret mission". Scoped to a trip the same way logged rounds are.
+create table if not exists point_adjustments (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  player_id uuid not null references players (id) on delete cascade,
+  amount integer not null,
+  note text default '',
+  created_at timestamptz not null default now()
+);
+
+-- One row per trip once it's finalized and has a winner — this is what
+-- powers the "Trophies" collection on a player's profile page and the
+-- crown next to their name on the leaderboard. Snapshots the trip's name,
+-- badge and final point total at the moment of winning, so a trophy still
+-- reads correctly even if the trip row it came from is later renamed.
+create table if not exists trophies (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null unique references trips (id) on delete cascade,
+  player_id uuid not null references players (id) on delete cascade,
+  trip_name text not null,
+  badge_id text,
+  points integer not null default 0,
+  starts_on date,
+  ends_on date,
+  awarded_at timestamptz not null default now()
+);
+
+alter table trips enable row level security;
+alter table trip_players enable row level security;
+alter table point_adjustments enable row level security;
+alter table trophies enable row level security;
+
+drop policy if exists "trips read for everyone" on trips;
+create policy "trips read for everyone" on trips
+  for select using (true);
+drop policy if exists "trips write for admins" on trips;
+create policy "trips write for admins" on trips
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+drop policy if exists "trip_players read for everyone" on trip_players;
+create policy "trip_players read for everyone" on trip_players
+  for select using (true);
+drop policy if exists "trip_players write for admins" on trip_players;
+create policy "trip_players write for admins" on trip_players
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+drop policy if exists "point_adjustments read for everyone" on point_adjustments;
+create policy "point_adjustments read for everyone" on point_adjustments
+  for select using (true);
+drop policy if exists "point_adjustments write for admins" on point_adjustments;
+create policy "point_adjustments write for admins" on point_adjustments
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+drop policy if exists "trophies read for everyone" on trophies;
+create policy "trophies read for everyone" on trophies
+  for select using (true);
+drop policy if exists "trophies write for admins" on trophies;
+create policy "trophies write for admins" on trophies
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- One-time backfill: if this database predates trips entirely, create one
+-- from whatever's already there (the old trip_settings name, every
+-- existing player, every existing logged round) so nothing already on the
+-- board gets lost when this update goes live. Guarded so it only ever
+-- fires once, even though this whole file gets re-run on every update.
+do $$
+declare
+  first_trip_id uuid;
+begin
+  if not exists (select 1 from trips) then
+    insert into trips (name, status)
+    select coalesce(trip_name, 'Centre Parcs Trip'), 'active' from trip_settings where id = 1
+    returning id into first_trip_id;
+
+    if first_trip_id is null then
+      insert into trips (name, status) values ('Centre Parcs Trip', 'active')
+      returning id into first_trip_id;
+    end if;
+
+    insert into trip_players (trip_id, player_id)
+    select first_trip_id, id from players
+    on conflict do nothing;
+
+    update events set trip_id = first_trip_id where trip_id is null;
+  end if;
+end $$;
+
+-- ---------------------------------------------------------------------------
 -- Realtime — so every open tab sees Sam's edits live, the same way the
 -- original Claude Artifact version did.
 -- ---------------------------------------------------------------------------
@@ -211,5 +343,29 @@ begin
     where pubname = 'supabase_realtime' and tablename = 'missions'
   ) then
     alter publication supabase_realtime add table missions;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'trips'
+  ) then
+    alter publication supabase_realtime add table trips;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'trip_players'
+  ) then
+    alter publication supabase_realtime add table trip_players;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'point_adjustments'
+  ) then
+    alter publication supabase_realtime add table point_adjustments;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'trophies'
+  ) then
+    alter publication supabase_realtime add table trophies;
   end if;
 end $$;

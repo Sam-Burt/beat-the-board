@@ -7,6 +7,7 @@ import { useBoardData } from "../../lib/useBoardData";
 import { supabase } from "../../lib/supabaseClient";
 import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
+import TrophyCabinet from "../../components/TrophyCabinet";
 import BottomNav from "../../components/BottomNav";
 import {
   pushSupported,
@@ -19,7 +20,7 @@ import {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { configured, loading, session, isAdmin, me, updateMyIcon, updateMyName } =
+  const { configured, loading, session, isAdmin, me, myTrophies, updateMyIcon, updateMyName } =
     useBoardData();
 
   const [changingIcon, setChangingIcon] = useState(false);
@@ -196,13 +197,15 @@ export default function ProfilePage() {
         </div>
 
         {changingIcon && (
-          <div style={{ marginTop: 14, textAlign: "left" }}>
+          <div style={{ marginTop: 14, textAlign: "center" }}>
             <IconPicker onPick={handlePickIcon} />
           </div>
         )}
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
+      <TrophyCabinet trophies={myTrophies || []} />
+
+      <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
         <h2>Mission alerts</h2>
         {alertsState === "unsupported" && (
           <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
@@ -223,7 +226,7 @@ export default function ProfilePage() {
               Get a ping on your phone the moment a new mission lands (it won&#39;t show what it
               says — that stays behind My Eyes Only on the Missions tab).
             </p>
-            <div className="btn-row">
+            <div className="btn-row" style={{ justifyContent: "center" }}>
               <button className="btn btn-primary" disabled={alertsWorking} onClick={handleTurnOnAlerts}>
                 {alertsWorking ? "Turning on…" : "Turn on mission alerts"}
               </button>
@@ -233,7 +236,7 @@ export default function ProfilePage() {
         {alertsState === "on" && (
           <>
             <p className="alerts-status">🔔 Mission alerts are on for this device.</p>
-            <div className="btn-row">
+            <div className="btn-row" style={{ justifyContent: "center" }}>
               <button className="btn btn-ghost" disabled={alertsWorking} onClick={handleTurnOffAlerts}>
                 {alertsWorking ? "Turning off…" : "Turn off"}
               </button>
@@ -243,7 +246,7 @@ export default function ProfilePage() {
         {alertsError && <div className="banner-note error">{alertsError}</div>}
       </div>
 
-      <div className="btn-row" style={{ marginTop: 16, marginBottom: 4 }}>
+      <div className="btn-row" style={{ marginTop: 16, marginBottom: 4, justifyContent: "center" }}>
         <button type="button" className="btn btn-signout" onClick={signOut}>
           Sign out
         </button>
