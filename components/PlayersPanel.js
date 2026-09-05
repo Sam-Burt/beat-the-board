@@ -20,6 +20,7 @@ export default function PlayersPanel({
   onCreate,
   onRemove,
   onSendMission,
+  onClearSaveError,
 }) {
   const [open, setOpen] = useState(players.length === 0);
   const [name, setName] = useState("");
@@ -32,14 +33,23 @@ export default function PlayersPanel({
   const [missionText, setMissionText] = useState("");
   const [missionSending, setMissionSending] = useState(false);
   const [missionSentFor, setMissionSentFor] = useState(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState(null);
+  const [removing, setRemoving] = useState(false);
   const [removeError, setRemoveError] = useState(null);
 
-  async function handleRemove(playerId) {
+  async function handleConfirmRemove(playerId) {
     setRemoveError(null);
+    setRemoving(true);
     const result = await onRemove(playerId);
+    setRemoving(false);
+    setConfirmRemoveId(null);
     if (!result?.ok) {
       setRemoveError(result?.error || "Couldn't remove that player.");
     }
+    // The same message also lands in the global saveError banner at the top
+    // of the page (every admin action goes through it) — dismiss it so it
+    // isn't shown twice, once up there and once right here.
+    onClearSaveError?.();
   }
 
   async function handleSubmit(e) {
@@ -125,12 +135,38 @@ export default function PlayersPanel({
                         <button
                           className="btn btn-ghost"
                           aria-label="Remove"
-                          onClick={() => handleRemove(p.id)}
+                          onClick={() => setConfirmRemoveId(p.id)}
                         >
                           Remove
                         </button>
                       )}
                     </div>
+                    {confirmRemoveId === p.id && (
+                      <div className="mission-composer">
+                        <p className="muted" style={{ fontSize: 13 }}>
+                          Remove {p.name}? This deletes their account and profile — their
+                          icon, missions and login stop working, and this can&#39;t be undone.
+                        </p>
+                        <div className="btn-row">
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            disabled={removing}
+                            onClick={() => handleConfirmRemove(p.id)}
+                          >
+                            {removing ? "Removing…" : "Remove"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            disabled={removing}
+                            onClick={() => setConfirmRemoveId(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {missionOpen && (
                       <div className="mission-composer">
                         <textarea

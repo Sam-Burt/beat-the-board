@@ -32,6 +32,7 @@ export default function HomePage() {
     isAdmin,
     me,
     saveError,
+    clearSaveError,
     createPlayerAccount,
     removePlayer,
     sendMission,
@@ -125,6 +126,7 @@ export default function HomePage() {
           events={events}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
+          onClearSaveError={clearSaveError}
           onSendMission={sendMission}
         />
       )}
