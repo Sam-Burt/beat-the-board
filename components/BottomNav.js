@@ -46,7 +46,12 @@ const TABS = [
 const HOT_POTATO_TAB = {
   href: "/hot-potato",
   label: "Gay Card",
-  icon: <span style={{ fontSize: 22, lineHeight: 1 }}>🌈</span>,
+  icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="4" y="3" width="16" height="18" rx="2" strokeLinejoin="round" />
+      <path d="M12 8l3 4-3 4-3-4 3-4Z" strokeLinejoin="round" />
+    </svg>
+  ),
 };
 
 // A fixed app-style tab bar, shown only to a signed-in player who has a
