@@ -53,6 +53,7 @@ export default function TripPanel({
   const [endsOn, setEndsOn] = useState("");
   const [deadline, setDeadline] = useState("");
   const [rosterIds, setRosterIds] = useState([]);
+  const [hotPotatoEnabled, setHotPotatoEnabled] = useState(false);
   const [working, setWorking] = useState(false);
 
   const [endingNow, setEndingNow] = useState(false);
@@ -68,6 +69,7 @@ export default function TripPanel({
   const [editStartsOn, setEditStartsOn] = useState("");
   const [editEndsOn, setEditEndsOn] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
+  const [editHotPotatoEnabled, setEditHotPotatoEnabled] = useState(false);
   const [editWorking, setEditWorking] = useState(false);
 
   const topScore = standings?.[0]?.points;
@@ -92,6 +94,7 @@ export default function TripPanel({
       endsOn: endsOn || null,
       deadline: deadline ? new Date(deadline).toISOString() : null,
       playerIds: rosterIds,
+      hotPotatoEnabled,
     });
     setWorking(false);
     if (result?.ok) {
@@ -101,6 +104,7 @@ export default function TripPanel({
       setEndsOn("");
       setDeadline("");
       setRosterIds([]);
+      setHotPotatoEnabled(false);
     }
   }
 
@@ -124,6 +128,7 @@ export default function TripPanel({
     setEditStartsOn(currentTrip.starts_on || "");
     setEditEndsOn(currentTrip.ends_on || "");
     setEditDeadline(toDatetimeLocalValue(currentTrip.deadline));
+    setEditHotPotatoEnabled(!!currentTrip.hot_potato_enabled);
     setEditingTrip(true);
   }
 
@@ -138,6 +143,7 @@ export default function TripPanel({
       startsOn: editStartsOn || null,
       endsOn: editEndsOn || null,
       deadline: editDeadline ? new Date(editDeadline).toISOString() : null,
+      hotPotatoEnabled: editHotPotatoEnabled,
     });
     setEditWorking(false);
     if (result !== false) setEditingTrip(false);
@@ -226,6 +232,16 @@ export default function TripPanel({
                   onChange={(e) => setEditDeadline(e.target.value)}
                 />
               </div>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, textTransform: "none", marginBottom: 14 }}>
+                <input
+                  type="checkbox"
+                  checked={editHotPotatoEnabled}
+                  onChange={(e) => setEditHotPotatoEnabled(e.target.checked)}
+                  style={{ width: "auto" }}
+                />
+                🌈 Gay Card — turn this secret passing game on for this event
+              </label>
 
               <div className="btn-row">
                 <button
@@ -389,6 +405,16 @@ export default function TripPanel({
                   </div>
                 )}
               </div>
+
+              <label style={{ display: "flex", alignItems: "center", gap: 8, textTransform: "none", marginBottom: 14 }}>
+                <input
+                  type="checkbox"
+                  checked={hotPotatoEnabled}
+                  onChange={(e) => setHotPotatoEnabled(e.target.checked)}
+                  style={{ width: "auto" }}
+                />
+                🌈 Gay Card — turn this secret passing game on for this event
+              </label>
 
               <div className="btn-row">
                 <button className="btn btn-primary" disabled={!canCreate || working} onClick={handleCreate}>

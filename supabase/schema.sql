@@ -314,6 +314,137 @@ begin
 end $$;
 
 -- ---------------------------------------------------------------------------
+-- Mission title + a task pool the admin can pre-fill, so "send a mission"
+-- doesn't always mean typing one out fresh. A mission can either be typed
+-- by hand (title/text set directly) or picked at random from the pool —
+-- the send-mission API route resolves "random" server-side so the admin
+-- genuinely doesn't see which one went out.
+-- ---------------------------------------------------------------------------
+
+alter table missions add column if not exists title text;
+
+create table if not exists mission_templates (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  text text not null,
+  created_at timestamptz not null default now()
+);
+alter table mission_templates enable row level security;
+
+drop policy if exists "mission_templates admin only" on mission_templates;
+create policy "mission_templates admin only" on mission_templates
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- A mission queued to go out later, at a time the admin picked but doesn't
+-- have to remember or be present for — see app/api/process-due/route.js,
+-- which any signed-in player's device opportunistically triggers on load
+-- (same "no server cron needed" spirit as the trip auto-finalize check in
+-- lib/useBoardData.js). random=true means "pick from mission_templates at
+-- the moment this actually fires" rather than using a fixed title/text, so
+-- even the admin doesn't know which one landed.
+create table if not exists scheduled_missions (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players (id) on delete cascade,
+  title text,
+  text text,
+  random boolean not null default false,
+  scheduled_for timestamptz not null,
+  sent_at timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table scheduled_missions enable row level security;
+
+drop policy if exists "scheduled_missions admin only" on scheduled_missions;
+create policy "scheduled_missions admin only" on scheduled_missions
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- ---------------------------------------------------------------------------
+-- Hot Potato — a secret item-passing game, toggled on per-event. One player
+-- starts out holding it (assigned at random when the admin triggers the
+-- start); from then on the current holder secretly plants it on another
+-- player and confirms the pass in the app, which is what actually moves
+-- holder_id along and fires that player's "you've been tagged" alert.
+-- Whoever's holding it when the event's deadline hits takes a points hit
+-- (see lib/tripFinalize.js). Holder identity is deliberately NOT surfaced
+-- in the UI to anyone but the holder themselves and the admin — read access
+-- is left open at the database level (small trusted family app, same trust
+-- model as the rest of this schema) but the app just doesn't display it.
+-- ---------------------------------------------------------------------------
+
+alter table trips add column if not exists hot_potato_enabled boolean not null default false;
+
+create table if not exists hot_potato_state (
+  trip_id uuid primary key references trips (id) on delete cascade,
+  holder_id uuid references players (id) on delete set null,
+  note text default '',
+  started_at timestamptz,
+  last_passed_at timestamptz
+);
+alter table hot_potato_state enable row level security;
+
+drop policy if exists "hot_potato_state read for everyone" on hot_potato_state;
+create policy "hot_potato_state read for everyone" on hot_potato_state
+  for select using (true);
+drop policy if exists "hot_potato_state write for admins" on hot_potato_state;
+create policy "hot_potato_state write for admins" on hot_potato_state
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+create table if not exists hot_potato_history (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  from_player_id uuid references players (id) on delete set null,
+  to_player_id uuid not null references players (id) on delete cascade,
+  note text default '',
+  created_at timestamptz not null default now()
+);
+alter table hot_potato_history enable row level security;
+
+drop policy if exists "hot_potato_history read for everyone" on hot_potato_history;
+create policy "hot_potato_history read for everyone" on hot_potato_history
+  for select using (true);
+drop policy if exists "hot_potato_history write for admins" on hot_potato_history;
+create policy "hot_potato_history write for admins" on hot_potato_history
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- ---------------------------------------------------------------------------
+-- Notification history — every push alert (secret mission or Hot Potato
+-- pass) also gets logged here, so a player who missed, misread, or
+-- misclicked the actual phone notification can look it back up from the
+-- bell in the app. Always written server-side with the service role key;
+-- a player can read and mark-read only their own rows.
+-- ---------------------------------------------------------------------------
+
+create table if not exists notifications (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players (id) on delete cascade,
+  kind text not null,
+  title text not null,
+  body text not null,
+  url text,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+alter table notifications enable row level security;
+
+drop policy if exists "notifications read own" on notifications;
+create policy "notifications read own" on notifications
+  for select using (
+    exists (select 1 from players p where p.id = notifications.player_id and p.user_id = auth.uid())
+  );
+drop policy if exists "notifications mark read own" on notifications;
+create policy "notifications mark read own" on notifications
+  for update using (
+    exists (select 1 from players p where p.id = notifications.player_id and p.user_id = auth.uid())
+  )
+  with check (
+    exists (select 1 from players p where p.id = notifications.player_id and p.user_id = auth.uid())
+  );
+
+-- ---------------------------------------------------------------------------
 -- Realtime — so every open tab sees Sam's edits live, the same way the
 -- original Claude Artifact version did.
 -- ---------------------------------------------------------------------------
@@ -367,5 +498,35 @@ begin
     where pubname = 'supabase_realtime' and tablename = 'trophies'
   ) then
     alter publication supabase_realtime add table trophies;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'mission_templates'
+  ) then
+    alter publication supabase_realtime add table mission_templates;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'scheduled_missions'
+  ) then
+    alter publication supabase_realtime add table scheduled_missions;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'hot_potato_state'
+  ) then
+    alter publication supabase_realtime add table hot_potato_state;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'hot_potato_history'
+  ) then
+    alter publication supabase_realtime add table hot_potato_history;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'notifications'
+  ) then
+    alter publication supabase_realtime add table notifications;
   end if;
 end $$;

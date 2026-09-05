@@ -39,19 +39,33 @@ const TABS = [
   },
 ];
 
+// UI-facing name is "Gay Card" (Sam's family in-joke — "gay" as in
+// "happy/daydreamy"); the route, prop name, and every other internal
+// identifier stays "hot potato" for the same reason "trip" stays "trip" in
+// code while the UI says "Event" — see the project doc.
+const HOT_POTATO_TAB = {
+  href: "/hot-potato",
+  label: "Gay Card",
+  icon: <span style={{ fontSize: 22, lineHeight: 1 }}>🌈</span>,
+};
+
 // A fixed app-style tab bar, shown only to a signed-in player who has a
 // profile to navigate to (me). Kept as a separate component (rather than
 // living in Footer) so every page that needs it just renders <BottomNav />
 // with the session/me it already has from useBoardData — no extra fetching.
-export default function BottomNav({ session, me }) {
+// The Gay Card tab only shows up when the current event has that game
+// switched on (see TripPanel's "Edit event"/"Start event" toggle).
+export default function BottomNav({ session, me, hotPotatoEnabled }) {
   const pathname = usePathname();
 
   if (!session || !me) return null;
 
+  const tabs = hotPotatoEnabled ? [TABS[0], TABS[1], HOT_POTATO_TAB, TABS[2]] : TABS;
+
   return (
     <nav className="bottom-nav" aria-label="Main">
       <div className="bottom-nav-inner">
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
           return (
             <Link

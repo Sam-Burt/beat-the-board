@@ -26,6 +26,7 @@ export async function POST(request) {
   const startsOn = body.startsOn || null;
   const endsOn = body.endsOn || null;
   const deadline = body.deadline || null;
+  const hotPotatoEnabled = !!body.hotPotatoEnabled;
   const playerIds = Array.isArray(body.playerIds) ? [...new Set(body.playerIds)] : [];
 
   if (!name) {
@@ -60,6 +61,7 @@ export async function POST(request) {
       starts_on: startsOn,
       ends_on: endsOn,
       deadline,
+      hot_potato_enabled: hotPotatoEnabled,
       status: "active",
     })
     .select()

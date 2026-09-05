@@ -10,6 +10,7 @@ import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
 import TrophyCabinet from "../../components/TrophyCabinet";
 import BottomNav from "../../components/BottomNav";
+import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import {
   pushSupported,
@@ -158,6 +159,7 @@ export default function ProfilePage() {
 
   return (
     <div className="wrap">
+      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}
@@ -257,7 +259,7 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      <BottomNav session={session} me={me} />
+      <BottomNav session={session} me={me} hotPotatoEnabled={currentTrip?.hot_potato_enabled} />
     </div>
   );
 }

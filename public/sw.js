@@ -13,7 +13,10 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let payload = { title: "Beat The Board", body: "You've got a new secret mission 👀" };
+  // "url" says where a tap on the notification should land — missions and
+  // hot-potato passes each point at their own tab. Defaults kept here only
+  // as a last resort if a push ever arrives with no payload at all.
+  let payload = { title: "🤫 Shhh…", body: "You've got a secret mission 👀", url: "/missions" };
   if (event.data) {
     try {
       payload = { ...payload, ...event.data.json() };
@@ -27,28 +30,30 @@ self.addEventListener("push", (event) => {
       body: payload.body,
       icon: "/icons/icon-1.png",
       badge: "/icons/icon-1.png",
-      tag: "beat-the-board-mission",
+      tag: payload.tag || "beat-the-board-mission",
+      data: { url: payload.url || "/missions" },
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
+  const url = event.notification.data?.url || "/missions";
   event.notification.close();
   event.waitUntil(
     (async () => {
       const clientsList = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      const existing = clientsList.find((c) => c.url.includes("/missions"));
+      const existing = clientsList.find((c) => c.url.includes(url));
       if (existing) {
         existing.focus();
         return;
       }
       const anyClient = clientsList[0];
       if (anyClient) {
-        anyClient.navigate("/missions");
+        anyClient.navigate(url);
         anyClient.focus();
         return;
       }
-      self.clients.openWindow("/missions");
+      self.clients.openWindow(url);
     })()
   );
 });

@@ -13,6 +13,7 @@ import IconPicker from "../components/IconPicker";
 import History from "../components/History";
 import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
+import NotificationBell from "../components/NotificationBell";
 import EventCelebration from "../components/EventCelebration";
 
 export default function HomePage() {
@@ -82,6 +83,7 @@ export default function HomePage() {
 
   return (
     <div className="wrap">
+      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}
@@ -94,9 +96,18 @@ export default function HomePage() {
       {saveError && <div className="banner-note error">{saveError}</div>}
 
       <Champion standings={standings} />
-      <Board standings={standings} trophyCounts={trophyCounts} />
+      <Board
+        standings={standings}
+        trophyCounts={trophyCounts}
+        isAdmin={isAdmin}
+        onAddPoints={addPointAdjustment}
+      />
 
       {me && !me.icon_id && <IconPicker onPick={updateMyIcon} />}
+
+      {isAdmin && currentTrip?.status === "active" && (
+        <LogResultForm players={tripPlayers} onSave={saveEvent} />
+      )}
 
       {isAdmin && (
         <TripPanel
@@ -110,18 +121,13 @@ export default function HomePage() {
         />
       )}
 
-      {isAdmin && currentTrip?.status === "active" && (
-        <LogResultForm players={tripPlayers} onSave={saveEvent} />
-      )}
       {isAdmin && (
         <PlayersPanel
           players={players}
           events={events}
-          rosterIdSet={rosterIdSet}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
           onSendMission={sendMission}
-          onAddPoints={addPointAdjustment}
         />
       )}
 
@@ -134,7 +140,7 @@ export default function HomePage() {
       />
 
       <Footer session={session} />
-      <BottomNav session={session} me={me} />
+      <BottomNav session={session} me={me} hotPotatoEnabled={currentTrip?.hot_potato_enabled} />
     </div>
   );
 }
