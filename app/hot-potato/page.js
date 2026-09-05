@@ -174,6 +174,7 @@ export default function HotPotatoPage() {
 
       <div className="card header-card">
         <div className="header-card-title-row">
+          <span className="card-help-btn-spacer" aria-hidden="true" />
           <h1 style={{ fontSize: 26 }}>Gay Card</h1>
           <button
             type="button"
