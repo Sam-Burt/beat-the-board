@@ -177,6 +177,21 @@ export default function HotPotatoPage() {
         <h1 style={{ fontSize: 26 }}>Gay Card</h1>
       </div>
 
+      <div className="card" style={{ marginTop: 16 }}>
+        <p className="muted" style={{ fontSize: 13 }}>
+          A single secret card gets dealt to one player at random when the game starts. If it
+          lands on you, sneak it onto someone else&#39;s person (or something they&#39;re
+          carrying with them) without them noticing, then confirm the pass here — the suitcase
+          under the bed doesn&#39;t count. You&#39;ll get a notification the moment it lands on
+          you; otherwise you&#39;ll never know who has it or when.
+        </p>
+        <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+          What to look out for: anyone getting oddly close to your pockets, bag or jacket.
+          Whoever&#39;s holding it when the event ends loses 10 points — unless that would drop
+          them past 2nd place, in which case they just drop to 2nd.
+        </p>
+      </div>
+
       <div className="card hot-potato-card-face" style={{ marginTop: 16 }}>
         <div className="hot-potato-rainbow" />
         <div className="hot-potato-emoji">🌈</div>
