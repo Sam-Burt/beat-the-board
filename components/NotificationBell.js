@@ -64,8 +64,8 @@ export default function NotificationBell({ me }) {
 
   return (
     <>
-      <button type="button" className="notif-bell" onClick={toggle} aria-label="Notifications">
-        🔔
+      <button type="button" className="btn btn-signout notif-bell" onClick={toggle} aria-label="Notifications">
+        Notifications
         {unread > 0 && <span className="notif-badge">{unread > 9 ? "9+" : unread}</span>}
       </button>
 

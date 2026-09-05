@@ -180,7 +180,7 @@ export default function ProfilePage() {
 
         <div className="profile-hero-actions">
           <NotificationBell me={me} />
-          <button type="button" className="btn btn-ghost profile-edit-btn" onClick={toggleEditingProfile}>
+          <button type="button" className="btn btn-signout profile-edit-btn" onClick={toggleEditingProfile}>
             {editingProfile ? "Done" : "Edit profile"}
           </button>
         </div>

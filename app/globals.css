@@ -100,7 +100,7 @@ a {
 .header-card-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 10px;
 }
 .card-help-btn {
@@ -967,19 +967,9 @@ label {
   color: var(--ink-dim);
 }
 
-/* notification bell, attached to the profile hero card */
+/* notification button, attached to the profile hero card */
 .notif-bell {
   position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: rgba(11, 11, 11, 0.85);
-  font-size: 19px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
 }
 .notif-badge {
   position: absolute;
