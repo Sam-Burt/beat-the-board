@@ -187,8 +187,9 @@ export default function HotPotatoPage() {
         </p>
         <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
           What to look out for: anyone getting oddly close to your pockets, bag or jacket.
-          Whoever&#39;s holding it when the event ends loses 10 points — unless that would drop
-          them past 2nd place, in which case they just drop to 2nd.
+          Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re in 1st
+          by more than 10, in which case they lose the lead entirely and end up 1 point behind
+          whoever was in 2nd.
         </p>
       </div>
 
@@ -328,8 +329,9 @@ export default function HotPotatoPage() {
             </div>
           )}
           <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-            Whoever&#39;s holding it when the event ends loses 10 points — unless that would drop
-            them past 2nd place, in which case they just drop to 2nd.
+            Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re in
+            1st by more than 10, in which case they lose the lead entirely and end up 1 point
+            behind whoever was in 2nd.
           </p>
         </div>
       )}
