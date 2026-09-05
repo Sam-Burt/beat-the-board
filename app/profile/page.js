@@ -159,7 +159,6 @@ export default function ProfilePage() {
 
   return (
     <div className="wrap">
-      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}
@@ -168,10 +167,6 @@ export default function ProfilePage() {
         />
       )}
       <div className="card profile-hero">
-        <button type="button" className="btn btn-ghost profile-edit-btn" onClick={toggleEditingProfile}>
-          {editingProfile ? "Done" : "Edit profile"}
-        </button>
-
         <div className="profile-icon-btn">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -182,6 +177,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="profile-name">{me.name}</div>
+
+        <div className="profile-hero-actions">
+          <NotificationBell me={me} />
+          <button type="button" className="btn btn-ghost profile-edit-btn" onClick={toggleEditingProfile}>
+            {editingProfile ? "Done" : "Edit profile"}
+          </button>
+        </div>
 
         {editingProfile && (
           <div className="profile-edit-panel">

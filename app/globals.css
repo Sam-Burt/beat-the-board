@@ -97,10 +97,14 @@ a {
   position: relative;
   text-align: center;
 }
+.header-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 .card-help-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
+  flex: none;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -815,10 +819,12 @@ label {
   position: relative;
   text-align: center;
 }
-.profile-edit-btn {
-  position: absolute;
-  top: 14px;
-  right: 14px;
+.profile-hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
 }
 .profile-icon-btn {
   position: relative;
@@ -961,19 +967,14 @@ label {
   color: var(--ink-dim);
 }
 
-/* floating notification bell, shown on every signed-in-player page */
+/* notification bell, attached to the profile hero card */
 .notif-bell {
-  position: fixed;
-  top: calc(env(safe-area-inset-top) + 14px);
-  right: 14px;
-  z-index: 60;
+  position: relative;
   width: 42px;
   height: 42px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: rgba(11, 11, 11, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   font-size: 19px;
   display: flex;
   align-items: center;

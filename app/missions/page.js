@@ -6,7 +6,6 @@ import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
 import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
-import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
@@ -415,7 +414,6 @@ export default function MissionsPage() {
 
   return (
     <div className="wrap">
-      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}

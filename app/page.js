@@ -13,7 +13,6 @@ import IconPicker from "../components/IconPicker";
 import History from "../components/History";
 import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
-import NotificationBell from "../components/NotificationBell";
 import EventCelebration from "../components/EventCelebration";
 
 export default function HomePage() {
@@ -83,7 +82,6 @@ export default function HomePage() {
 
   return (
     <div className="wrap">
-      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}

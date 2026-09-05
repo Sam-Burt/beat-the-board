@@ -6,7 +6,6 @@ import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
 import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
-import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
@@ -165,7 +164,6 @@ export default function HotPotatoPage() {
 
   return (
     <div className="wrap">
-      <NotificationBell me={me} />
       {celebrating && (
         <EventCelebration
           trophy={celebrating.trophy}
@@ -175,15 +173,17 @@ export default function HotPotatoPage() {
       )}
 
       <div className="card header-card">
-        <button
-          type="button"
-          className="card-help-btn"
-          onClick={() => setHelpOpen(true)}
-          aria-label="What is this?"
-        >
-          ?
-        </button>
-        <h1 style={{ fontSize: 26 }}>Gay Card</h1>
+        <div className="header-card-title-row">
+          <h1 style={{ fontSize: 26 }}>Gay Card</h1>
+          <button
+            type="button"
+            className="card-help-btn"
+            onClick={() => setHelpOpen(true)}
+            aria-label="What is this?"
+          >
+            ?
+          </button>
+        </div>
       </div>
 
       {helpOpen && (
