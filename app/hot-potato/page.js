@@ -30,6 +30,7 @@ export default function HotPotatoPage() {
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
   const [passOpen, setPassOpen] = useState(false);
@@ -174,24 +175,43 @@ export default function HotPotatoPage() {
       )}
 
       <div className="card header-card">
+        <button
+          type="button"
+          className="card-help-btn"
+          onClick={() => setHelpOpen(true)}
+          aria-label="What is this?"
+        >
+          ?
+        </button>
         <h1 style={{ fontSize: 26 }}>Gay Card</h1>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <p className="muted" style={{ fontSize: 13 }}>
-          A single secret card gets dealt to one player at random when the game starts. If it
-          lands on you, sneak it onto someone else&#39;s person (or something they&#39;re
-          carrying with them) without them noticing, then confirm the pass here — the suitcase
-          under the bed doesn&#39;t count. You&#39;ll get a notification the moment it lands on
-          you; otherwise you&#39;ll never know who has it or when.
-        </p>
-        <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-          What to look out for: anyone getting oddly close to your pockets, bag or jacket.
-          Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re in 1st
-          by more than 10, in which case they lose the lead entirely and end up 1 point behind
-          whoever was in 2nd.
-        </p>
-      </div>
+      {helpOpen && (
+        <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
+          <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>What is this?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              A single secret card gets dealt to one player at random when the game starts. If
+              it lands on you, sneak it onto someone else&#39;s person (or something they&#39;re
+              carrying with them) without them noticing, then confirm the pass here — the
+              suitcase under the bed doesn&#39;t count. You&#39;ll get a notification the
+              moment it lands on you; otherwise you&#39;ll never know who has it or when.
+            </p>
+            <h3 style={{ marginTop: 18 }}>What to look out for?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Anyone getting oddly close to your pockets, bag or jacket. Whoever&#39;s holding
+              it when the event ends loses 10 points — unless they&#39;re in 1st by more than
+              10, in which case they lose the lead entirely and end up 1 point behind whoever
+              was in 2nd.
+            </p>
+            <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
+              <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="card hot-potato-card-face" style={{ marginTop: 16 }}>
         <div className="hot-potato-rainbow" />
