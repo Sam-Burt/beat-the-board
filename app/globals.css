@@ -1201,44 +1201,63 @@ label {
 }
 .confetti-piece {
   position: absolute;
-  top: -10%;
+  top: 100%;
   left: calc(var(--i) * 5.5%);
   width: 9px;
   height: 15px;
   opacity: 0;
   border-radius: 2px;
-  animation: confetti-fall 2.8s linear infinite;
-  animation-delay: calc(var(--i) * 0.15s);
+  animation: confetti-burst 4s cubic-bezier(0.32, 0.72, 0.35, 1) forwards;
+  animation-delay: calc(var(--i) * 0.05s);
 }
 .confetti-piece.c0 {
   background: var(--pink);
+  --dx: -40px;
+  --peak: -95vh;
 }
 .confetti-piece.c1 {
   background: var(--acid);
+  --dx: 30px;
+  --peak: -80vh;
 }
 .confetti-piece.c2 {
   background: var(--pink-deep);
+  --dx: -20px;
+  --peak: -105vh;
 }
 .confetti-piece.c3 {
   background: var(--acid-deep);
+  --dx: 45px;
+  --peak: -75vh;
 }
 .confetti-piece.c4 {
   background: var(--ink);
+  --dx: -35px;
+  --peak: -90vh;
 }
 .confetti-piece.c5 {
   background: var(--pink);
   border-radius: 50%;
+  --dx: 20px;
+  --peak: -100vh;
 }
-@keyframes confetti-fall {
+/* Quick upward burst from the bottom (0–28%), then a much slower drift
+   back down past the bottom of the screen (28–100%) — same keyframe
+   count either way, so the uneven spacing is what makes the rise feel
+   fast and the fall feel slow. */
+@keyframes confetti-burst {
   0% {
-    transform: translateY(-10vh) rotate(0deg);
+    transform: translate(0, 0) rotate(0deg);
     opacity: 0;
   }
-  8% {
-    opacity: 0.95;
+  6% {
+    opacity: 1;
+  }
+  28% {
+    transform: translate(var(--dx), var(--peak)) rotate(250deg);
   }
   100% {
-    transform: translateY(115vh) rotate(360deg);
+    transform: translate(calc(var(--dx) * 1.6), 15vh) rotate(720deg);
     opacity: 0.85;
   }
 }
