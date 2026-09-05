@@ -32,6 +32,15 @@ export default function PlayersPanel({
   const [missionText, setMissionText] = useState("");
   const [missionSending, setMissionSending] = useState(false);
   const [missionSentFor, setMissionSentFor] = useState(null);
+  const [removeError, setRemoveError] = useState(null);
+
+  async function handleRemove(playerId) {
+    setRemoveError(null);
+    const result = await onRemove(playerId);
+    if (!result?.ok) {
+      setRemoveError(result?.error || "Couldn't remove that player.");
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -71,6 +80,7 @@ export default function PlayersPanel({
 
       {open && (
         <>
+          {removeError && <div className="banner-note error" style={{ marginTop: 10 }}>{removeError}</div>}
           <div style={{ marginTop: 10 }}>
             {players.length === 0 ? (
               <div className="empty">No one added yet.</div>
@@ -115,7 +125,7 @@ export default function PlayersPanel({
                         <button
                           className="btn btn-ghost"
                           aria-label="Remove"
-                          onClick={() => onRemove(p.id)}
+                          onClick={() => handleRemove(p.id)}
                         >
                           Remove
                         </button>
