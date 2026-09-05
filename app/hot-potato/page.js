@@ -174,7 +174,7 @@ export default function HotPotatoPage() {
       )}
 
       <div className="card header-card">
-        <h1 style={{ fontSize: 26 }}>🌈 Gay Card</h1>
+        <h1 style={{ fontSize: 26 }}>Gay Card</h1>
       </div>
 
       <div className="card hot-potato-card-face" style={{ marginTop: 16 }}>
