@@ -78,5 +78,42 @@ export async function POST(request) {
     return NextResponse.json({ error: rosterError.message }, { status: 400 });
   }
 
+  // Starting a new event is also the moment the previous one's "View last
+  // results" (and its Secret Missions Review) drop out of reach — currentTrip
+  // becomes this new trip everywhere in the app, so nothing can link back to
+  // the old one's mission photos again. That's the cue to actually delete
+  // them from storage rather than let them sit there forever: only ever the
+  // most-recently-finalized trip needs this, since any trip before that had
+  // its photos cleared the same way when its successor started. Best-effort —
+  // a cleanup hiccup here shouldn't stop the new event from starting.
+  try {
+    const { data: previousTrip } = await supabaseAdmin
+      .from("trips")
+      .select("id")
+      .eq("status", "finalized")
+      .order("finalized_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (previousTrip) {
+      const { data: missionsWithPhotos } = await supabaseAdmin
+        .from("missions")
+        .select("id, photo_url")
+        .eq("trip_id", previousTrip.id)
+        .not("photo_url", "is", null);
+
+      const paths = (missionsWithPhotos || [])
+        .map((m) => m.photo_url.split("/mission-photos/")[1])
+        .filter(Boolean);
+
+      if (paths.length) {
+        await supabaseAdmin.storage.from("mission-photos").remove(paths);
+        await supabaseAdmin.from("missions").update({ photo_url: null }).eq("trip_id", previousTrip.id);
+      }
+    }
+  } catch (err) {
+    console.error("mission photo cleanup failed:", err);
+  }
+
   return NextResponse.json({ trip });
 }
