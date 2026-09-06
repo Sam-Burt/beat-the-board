@@ -320,7 +320,7 @@ export default function HotPotatoPage() {
                 You&#39;ve got the Gay Card!
               </p>
               {receivedInfo && (
-                <div className="banner-note" style={{ marginTop: 10, textAlign: "left" }}>
+                <div className="received-info">
                   {receivedInfo.from_player_id ? (
                     <>
                       <strong>
