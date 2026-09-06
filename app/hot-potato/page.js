@@ -328,11 +328,12 @@ export default function HotPotatoPage() {
                         <>
                           <div className="received-info-from">
                             <PlayerAvatar iconId={fromPlayer?.icon_id} emoji={fromPlayer?.emoji} size={36} />
-                            <span>{fromPlayer?.name || "Someone"} passed this to you!</span>
+                            <span>{fromPlayer?.name || "Someone"}</span>
                           </div>
+                          <p className="received-info-passed">has passed this to you</p>
                           {receivedInfo.note && (
                             <>
-                              <h3 className="received-info-heading">Where to check?</h3>
+                              <h3 className="received-info-heading">Where to find it</h3>
                               <p className="received-info-note">{receivedInfo.note}</p>
                             </>
                           )}
@@ -340,9 +341,7 @@ export default function HotPotatoPage() {
                       );
                     })()
                   ) : (
-                    <div className="received-info-from">
-                      <span>You were dealt it at random to start the game.</span>
-                    </div>
+                    <p className="received-info-passed">You were dealt it at random to start the game.</p>
                   )}
                 </div>
               )}

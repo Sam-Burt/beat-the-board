@@ -701,11 +701,16 @@ label {
   font-family: "Striker", "Archivo", sans-serif;
   font-size: 22px;
   text-transform: uppercase;
-  color: var(--acid);
+  color: var(--ink);
+}
+.received-info-passed {
+  font-size: 15px;
+  color: var(--ink);
+  margin-top: 2px;
 }
 .received-info-heading {
   font-size: 20px;
-  color: var(--pink);
+  color: var(--acid);
   margin-top: 18px;
 }
 .received-info-note {
