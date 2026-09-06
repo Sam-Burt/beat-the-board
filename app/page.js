@@ -23,6 +23,7 @@ export default function HomePage() {
     tripName,
     currentTrip,
     players,
+    activePlayers,
     tripPlayers,
     rosterIdSet,
     events,
@@ -156,7 +157,7 @@ export default function HomePage() {
         <div id="event-panel">
           <TripPanel
             currentTrip={currentTrip}
-            players={players}
+            players={activePlayers}
             standings={standings}
             open={tripPanelOpen}
             onOpenChange={setTripPanelOpen}
@@ -170,7 +171,7 @@ export default function HomePage() {
 
       {isAdmin && (
         <PlayersPanel
-          players={players}
+          players={activePlayers}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
           onClearSaveError={clearSaveError}

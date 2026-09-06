@@ -137,10 +137,9 @@ export default function PlayersPanel({
                     {confirmRemoveId === p.id && (
                       <div className="mission-composer">
                         <p className="muted" style={{ fontSize: 13 }}>
-                          Remove {p.name}? This deletes their account and profile, and takes
-                          them out of any past round results they&#39;re part of (which changes
-                          the points everyone else in those rounds ended up with) — their
-                          icon, missions and login stop working, and this can&#39;t be undone.
+                          Remove {p.name}? Their login stops working and they come off the
+                          current event and player list — this can&#39;t be undone. Past results
+                          they&#39;re already part of keep showing their name, unchanged.
                         </p>
                         <div className="btn-row">
                           <button

@@ -31,6 +31,15 @@ create table if not exists players (
 -- files for real illustrated art later without touching any code).
 alter table players add column if not exists user_id uuid references auth.users (id) on delete set null;
 alter table players add column if not exists icon_id text;
+
+-- "Removing" a player never hard-deletes the row — past rounds
+-- (events.ranking), point adjustments and trophies all still reference
+-- their id, and should keep reading their real name forever, not a
+-- generic "(removed)" placeholder. deleted_at is what "removed" actually
+-- means: their login is revoked and they drop off every active
+-- roster/picker (see app/api/admin/delete-player/route.js), but the row —
+-- and their name — stays for history to resolve against.
+alter table players add column if not exists deleted_at timestamptz;
 create unique index if not exists players_user_id_key on players (user_id);
 
 create table if not exists events (

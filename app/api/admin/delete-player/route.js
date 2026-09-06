@@ -29,36 +29,30 @@ export async function POST(request) {
     return NextResponse.json({ error: "Player not found." }, { status: 404 });
   }
 
-  // events.ranking is a plain uuid[] column, not a foreign key, so it's the
-  // one place a deleted player would leave a dangling reference (everything
-  // else — point_adjustments, trophies, missions, notifications — already
-  // cascades via the schema). Strip them out of every round they're in
-  // before deleting, rather than just refusing. This does shift the points
-  // of whoever else was in that round, since scoring is "1 point per
-  // player you beat" within whatever's left.
-  const { data: events } = await supabaseAdmin
-    .from("events")
-    .select("id, ranking")
-    .contains("ranking", [playerId]);
-  for (const ev of events || []) {
-    const { error: rankingError } = await supabaseAdmin
-      .from("events")
-      .update({ ranking: ev.ranking.filter((id) => id !== playerId) })
-      .eq("id", ev.id);
-    if (rankingError) {
-      return NextResponse.json({ error: rankingError.message }, { status: 400 });
-    }
-  }
+  // "Removing" a player never hard-deletes the row — past rounds
+  // (events.ranking), point adjustments and trophies all reference their
+  // id, and should keep showing their real name forever, not go dangling
+  // or get stripped out and quietly rewrite old scoring. So this just:
+  //   1. drops them off the current trip's roster, so they disappear from
+  //      any active leaderboard/picker right away
+  //   2. revokes their login (unless it's the admin's own account)
+  //   3. marks the row deleted_at instead of deleting it, so History/
+  //      trophies/point adjustments still resolve their name
+  await supabaseAdmin.from("trip_players").delete().eq("player_id", playerId);
 
-  const { error: deleteError } = await supabaseAdmin.from("players").delete().eq("id", playerId);
-  if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 400 });
-  }
-
-  // Only delete the auth account if it isn't the admin's own login (an
-  // admin who is also a player unlinks their player row, not their account).
   if (player.user_id && player.user_id !== callerId) {
     await supabaseAdmin.auth.admin.deleteUser(player.user_id).catch(() => {});
+  }
+
+  // Clear username (not name) so it's free for a new player to reuse —
+  // it's the one field with a uniqueness constraint, and it's only ever
+  // used for logging in, never shown in History/trophies.
+  const { error: deleteError } = await supabaseAdmin
+    .from("players")
+    .update({ deleted_at: new Date().toISOString(), username: null })
+    .eq("id", playerId);
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
