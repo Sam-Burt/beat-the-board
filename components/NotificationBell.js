@@ -57,7 +57,11 @@ export default function NotificationBell({ me }) {
 
   async function clearAll() {
     if (!supabase || !me || items.length === 0) return;
-    await supabase.from("notifications").delete().eq("player_id", me.id);
+    const { error } = await supabase.from("notifications").delete().eq("player_id", me.id);
+    // Don't wait on the realtime round-trip to reflect this on the device
+    // that actually clicked the button — see the replica identity note in
+    // schema.sql for why that delete event could otherwise go unheard.
+    if (!error) setItems([]);
   }
 
   function toggle() {

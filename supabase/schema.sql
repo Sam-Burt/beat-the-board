@@ -478,6 +478,14 @@ create table if not exists notifications (
 );
 alter table notifications enable row level security;
 
+-- Postgres only ships the primary key in a DELETE's "old row" by default, so
+-- the filtered realtime subscriptions in NotificationBell/BottomNav
+-- (`filter: player_id=eq....`) never matched a delete and "Clear all" looked
+-- broken — the row really was gone, the open tab just never heard about it.
+-- Full replica identity puts every column on the old row so those filters
+-- can match deletes too.
+alter table notifications replica identity full;
+
 drop policy if exists "notifications read own" on notifications;
 create policy "notifications read own" on notifications
   for select using (
