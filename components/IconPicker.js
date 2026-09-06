@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ICON_IDS, iconSrc } from "../lib/icons";
+import { PICKER_ICON_IDS, iconSrc } from "../lib/icons";
 
 // Shown once to a signed-in player whose account isn't linked to a profile
 // icon yet. Picking one calls updateMyIcon and the prompt won't come back
@@ -24,7 +24,7 @@ export default function IconPicker({ onPick }) {
         This shows up next to your name on the board. You can change it later.
       </p>
       <div className="icon-picker-grid">
-        {ICON_IDS.map((id) => (
+        {PICKER_ICON_IDS.map((id) => (
           <button
             key={id}
             type="button"
