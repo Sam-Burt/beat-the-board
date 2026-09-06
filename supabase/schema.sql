@@ -160,6 +160,27 @@ alter table missions enable row level security;
 -- trip, which is the right outcome for them anyway.
 alter table missions add column if not exists trip_id uuid references trips (id) on delete cascade;
 
+-- Every mission now needs photo proof: 'pending' until the player either
+-- uploads a photo (-> 'completed', see app/api/missions/upload-proof) or
+-- declines it (-> 'declined', see app/api/missions/decline). Both routes
+-- run server-side with the service role key — a player never gets to set
+-- their own status directly, same trust model as everything else admin-ish
+-- in this app.
+alter table missions add column if not exists status text not null default 'pending'
+  check (status in ('pending', 'completed', 'declined'));
+alter table missions add column if not exists photo_url text;
+alter table missions add column if not exists responded_at timestamptz;
+
+-- Missions stay private to the player they were sent to while their trip is
+-- still live (the existing "read own" policy below) — but once that trip
+-- finalizes, everyone reviews everyone's missions together (see the Secret
+-- Missions Review page), so reads open up for that one trip once it's done.
+drop policy if exists "missions read once trip finalized" on missions;
+create policy "missions read once trip finalized" on missions
+  for select using (
+    exists (select 1 from trips t where t.id = missions.trip_id and t.status = 'finalized')
+  );
+
 drop policy if exists "missions read own" on missions;
 create policy "missions read own" on missions
   for select using (
@@ -170,6 +191,16 @@ drop policy if exists "missions write for admins" on missions;
 create policy "missions write for admins" on missions
   for all using (auth.uid() in (select user_id from admins))
   with check (auth.uid() in (select user_id from admins));
+
+-- Mission proof photos. Public bucket (same trust model as the rest of this
+-- schema — e.g. hot_potato_history is readable at the DB level to anyone,
+-- the app just doesn't surface it in the UI at the wrong time) so plain
+-- <img src> works with no signed URLs. Nobody uploads to it directly: only
+-- app/api/missions/upload-proof, server-side with the service role key,
+-- which is what actually enforces "only your own pending mission".
+insert into storage.buckets (id, name, public)
+values ('mission-photos', 'mission-photos', true)
+on conflict (id) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- Push notification subscriptions — one row per device/browser a player has

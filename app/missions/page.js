@@ -338,6 +338,8 @@ export default function MissionsPage() {
     scheduledMissions,
     sendMission,
     sendRandomMission,
+    declineMission,
+    uploadMissionProof,
     addMissionTemplate,
     deleteMissionTemplate,
     scheduleMission,
@@ -345,7 +347,31 @@ export default function MissionsPage() {
   } = useBoardData();
 
   const [missions, setMissions] = useState([]);
-  const [revealed, setRevealed] = useState(false);
+  const [uploadingId, setUploadingId] = useState(null);
+  const [decliningId, setDecliningId] = useState(null);
+  const [errorFor, setErrorFor] = useState({}); // mission id -> error message
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+
+  async function handleProveIt(missionId, file) {
+    if (!file) return;
+    setErrorFor((prev) => ({ ...prev, [missionId]: null }));
+    setUploadingId(missionId);
+    const result = await uploadMissionProof({ missionId, file });
+    setUploadingId(null);
+    if (!result?.ok) {
+      setErrorFor((prev) => ({ ...prev, [missionId]: result?.error || "Couldn't upload that." }));
+    }
+  }
+
+  async function handleDecline(missionId) {
+    setErrorFor((prev) => ({ ...prev, [missionId]: null }));
+    setDecliningId(missionId);
+    const result = await declineMission(missionId);
+    setDecliningId(null);
+    if (!result?.ok) {
+      setErrorFor((prev) => ({ ...prev, [missionId]: result?.error || "Couldn't decline that." }));
+    }
+  }
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
 
@@ -371,7 +397,7 @@ export default function MissionsPage() {
     function load() {
       supabase
         .from("missions")
-        .select("id, title, text, created_at")
+        .select("id, title, text, status, photo_url, created_at")
         .eq("player_id", me.id)
         .eq("trip_id", currentTrip.id)
         .order("created_at", { ascending: false })
@@ -449,41 +475,90 @@ export default function MissionsPage() {
         </p>
       </div>
 
-      <div className="mission-flip-wrap">
-        <div className={`mission-flip-card${revealed ? " flipped" : ""}`}>
-          <div className="mission-flip-front" onClick={() => setRevealed(true)}>
-            <div className="flip-hint">👁 My Eyes Only</div>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              {missions.length === 0
-                ? "Tap to check for secret missions."
-                : `Tap to reveal ${missions.length} mission${missions.length === 1 ? "" : "s"}.`}
-            </p>
-          </div>
-          <div className="mission-flip-back" onClick={() => setRevealed(false)}>
-            {missions.length === 0 ? (
-              <div className="empty">No missions yet — check back later.</div>
-            ) : (
-              <div className="mission-list">
-                {missions.map((m) => (
-                  <div className="mission-item" key={m.id}>
-                    {m.title && <div className="mission-title">{m.title}</div>}
-                    <div className="mission-date">
-                      {new Date(m.created_at).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </div>
-                    <div className="mission-text">{m.text}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <p className="muted" style={{ fontSize: 11, marginTop: 10 }}>
-              Tap to flip back
-            </p>
-          </div>
+      {missions.length === 0 ? (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="empty">No missions yet — check back later.</div>
         </div>
-      </div>
+      ) : (
+        missions.map((m) => {
+          const pending = m.status === "pending";
+          const uploading = uploadingId === m.id;
+          const declining = decliningId === m.id;
+          return (
+            <div className="card mission-proof-card" key={m.id}>
+              <div className="mission-proof-row">
+                <div className="mission-proof-body">
+                  {m.title && <div className="mission-proof-title">{m.title}</div>}
+                  <div className="mission-proof-date">
+                    {new Date(m.created_at).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </div>
+                  <div className="mission-proof-text">{m.text}</div>
+
+                  {pending && (
+                    <div className="btn-row" style={{ marginTop: 12 }}>
+                      <label className="btn btn-primary" style={{ margin: 0 }}>
+                        {uploading ? "Uploading…" : "Prove it 📸"}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          style={{ display: "none" }}
+                          disabled={uploading || declining}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            handleProveIt(m.id, file);
+                          }}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        disabled={uploading || declining}
+                        onClick={() => handleDecline(m.id)}
+                      >
+                        {declining ? "Declining…" : "Decline"}
+                      </button>
+                    </div>
+                  )}
+                  {m.status === "declined" && (
+                    <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+                      Declined.
+                    </p>
+                  )}
+                  {errorFor[m.id] && (
+                    <div className="banner-note error" style={{ marginTop: 10 }}>
+                      {errorFor[m.id]}
+                    </div>
+                  )}
+                </div>
+
+                {m.photo_url && (
+                  <button
+                    type="button"
+                    className="mission-polaroid"
+                    onClick={() => setLightboxUrl(m.photo_url)}
+                    aria-label="View proof photo full size"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={m.photo_url} alt="" />
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })
+      )}
+
+      {lightboxUrl && (
+        <div className="modal-backdrop" onClick={() => setLightboxUrl(null)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="mission-lightbox-img" src={lightboxUrl} alt="" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
 
       {isAdmin && (
         <AdminMissionComposer

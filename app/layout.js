@@ -10,7 +10,8 @@ export const metadata = {
     title: "Beat The Board",
   },
   icons: {
-    apple: "/icons/icon-1.png",
+    icon: "/favicon-32.png",
+    apple: "/favicon-180.png",
   },
 };
 

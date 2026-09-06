@@ -927,56 +927,62 @@ label {
   max-width: 180px;
 }
 
-/* the "My Eyes Only" flip card */
-.mission-flip-wrap {
-  perspective: 1200px;
-  margin-top: 18px;
+/* individual secret-mission cards (Prove it / Decline / Polaroid photo) */
+.mission-proof-card {
+  margin-top: 16px;
 }
-.mission-flip-card {
-  position: relative;
-  min-height: 160px;
-  transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.3, 1);
-}
-.mission-flip-card.flipped {
-  transform: rotateY(180deg);
-}
-.mission-flip-front,
-.mission-flip-back {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  border-radius: 16px;
-  border: 1px solid var(--border);
+.mission-proof-row {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  text-align: center;
+  align-items: flex-start;
+  gap: 14px;
 }
-.mission-flip-front {
-  background: repeating-linear-gradient(
-      135deg,
-      var(--card-2),
-      var(--card-2) 10px,
-      #1b1b1b 10px,
-      #1b1b1b 20px
-    );
-  cursor: pointer;
+.mission-proof-body {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
-.mission-flip-front .flip-hint {
+.mission-proof-title {
   font-family: "Striker", "Archivo", sans-serif;
-  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  font-size: 17px;
   color: var(--acid);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  margin-bottom: 3px;
 }
-.mission-flip-back {
-  background: var(--card);
-  transform: rotateY(180deg);
+.mission-proof-date {
+  font-size: 11px;
+  color: var(--ink-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 3px;
+}
+.mission-proof-text {
+  font-size: 15px;
+}
+.mission-polaroid {
+  flex: none;
+  width: 88px;
+  padding: 6px 6px 16px;
+  background: #f2f2f2;
+  border-radius: 2px;
+  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.6);
+  transform: rotate(-10deg);
+  border: none;
   cursor: pointer;
+}
+.mission-polaroid img {
+  display: block;
+  width: 100%;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 1px;
+}
+.mission-lightbox-img {
+  max-width: 92vw;
+  max-height: 85vh;
+  border-radius: 8px;
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.8);
 }
 .mission-list {
   width: 100%;

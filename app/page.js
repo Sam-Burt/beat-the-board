@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useBoardData } from "../lib/useBoardData";
 import { useEventCelebration } from "../lib/useEventCelebration";
 import { totals } from "../lib/points";
@@ -137,6 +138,13 @@ export default function HomePage() {
 
       {showResults && (
         <>
+          {!hasActiveEvent && (
+            <div className="btn-row" style={{ justifyContent: "center", marginTop: 16 }}>
+              <Link href="/missions-review" className="btn btn-ghost">
+                🕵️ Secret Missions Review
+              </Link>
+            </div>
+          )}
           <Champion standings={standings} />
           <Board
             standings={standings}
