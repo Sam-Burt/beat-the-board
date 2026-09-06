@@ -274,6 +274,7 @@ label {
   font-family: "Striker", "Archivo", sans-serif;
   font-weight: 700;
   font-size: 14px;
+  text-decoration: none;
   cursor: pointer;
 }
 .btn:hover {
