@@ -460,6 +460,11 @@ create policy "notifications mark read own" on notifications
   with check (
     exists (select 1 from players p where p.id = notifications.player_id and p.user_id = auth.uid())
   );
+drop policy if exists "notifications delete own" on notifications;
+create policy "notifications delete own" on notifications
+  for delete using (
+    exists (select 1 from players p where p.id = notifications.player_id and p.user_id = auth.uid())
+  );
 
 -- ---------------------------------------------------------------------------
 -- Realtime — so every open tab sees Sam's edits live, the same way the

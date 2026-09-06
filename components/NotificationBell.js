@@ -55,6 +55,11 @@ export default function NotificationBell({ me }) {
     await supabase.from("notifications").update({ read_at: new Date().toISOString() }).in("id", unreadIds);
   }
 
+  async function clearAll() {
+    if (!supabase || !me || items.length === 0) return;
+    await supabase.from("notifications").delete().eq("player_id", me.id);
+  }
+
   function toggle() {
     setOpen((wasOpen) => {
       if (!wasOpen) markAllRead();
@@ -73,9 +78,16 @@ export default function NotificationBell({ me }) {
         <div className="notif-panel">
           <div className="notif-panel-head">
             <h3>Notifications</h3>
-            <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
-              Close
-            </button>
+            <div className="btn-row" style={{ gap: 6 }}>
+              {items.length > 0 && (
+                <button type="button" className="btn btn-ghost" onClick={clearAll}>
+                  Clear all
+                </button>
+              )}
+              <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
+                Close
+              </button>
+            </div>
           </div>
           {items.length === 0 ? (
             <div className="empty">Nothing yet.</div>
