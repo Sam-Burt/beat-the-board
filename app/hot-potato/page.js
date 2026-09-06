@@ -31,6 +31,11 @@ export default function HotPotatoPage() {
   const [history, setHistory] = useState([]);
   const [receivedInfo, setReceivedInfo] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
+  // Closed by default, every time — the admin here (Sam) is also a
+  // player, so seeing who currently holds it by default would spoil the
+  // game for them. It's still one tap away for resolving a dispute (card
+  // lost, foul play, etc.), just never shown automatically.
+  const [adminViewOpen, setAdminViewOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
   const [passOpen, setPassOpen] = useState(false);
@@ -405,37 +410,50 @@ export default function HotPotatoPage() {
 
       {isAdmin && enabled && state?.holder_id && (
         <div className="card" style={{ marginTop: 16 }}>
-          <h2>Admin view</h2>
-          <p className="muted" style={{ fontSize: 13 }}>
-            Currently with <strong>{players.find((p) => p.id === state.holder_id)?.name || "—"}</strong>
-            {state.note && <> — &quot;{state.note}&quot;</>}
-          </p>
-          {history.length > 0 && (
-            <div className="mission-list notif-list" style={{ marginTop: 10 }}>
-              {history.map((h) => (
-                <div className="mission-item" key={h.id}>
-                  <div className="mission-date">
-                    {new Date(h.created_at).toLocaleString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                  <div className="mission-text">
-                    {players.find((p) => p.id === h.from_player_id)?.name || "Game start"} →{" "}
-                    {players.find((p) => p.id === h.to_player_id)?.name || "?"}
-                    {h.note && ` (${h.note})`}
-                  </div>
+          <button className="btn toggle-panel-btn" onClick={() => setAdminViewOpen((o) => !o)}>
+            <h2>Admin view</h2>
+            <span className={`chevron${adminViewOpen ? " open" : ""}`}>▾</span>
+          </button>
+          {!adminViewOpen ? (
+            <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+              Hidden by default so playing doesn&#39;t spoil it for you too — tap above if the
+              card&#39;s gone missing or something looks off.
+            </p>
+          ) : (
+            <div style={{ marginTop: 10 }}>
+              <p className="muted" style={{ fontSize: 13 }}>
+                Currently with{" "}
+                <strong>{players.find((p) => p.id === state.holder_id)?.name || "—"}</strong>
+                {state.note && <> — &quot;{state.note}&quot;</>}
+              </p>
+              {history.length > 0 && (
+                <div className="mission-list notif-list" style={{ marginTop: 10 }}>
+                  {history.map((h) => (
+                    <div className="mission-item" key={h.id}>
+                      <div className="mission-date">
+                        {new Date(h.created_at).toLocaleString(undefined, {
+                          day: "numeric",
+                          month: "short",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        })}
+                      </div>
+                      <div className="mission-text">
+                        {players.find((p) => p.id === h.from_player_id)?.name || "Game start"} →{" "}
+                        {players.find((p) => p.id === h.to_player_id)?.name || "?"}
+                        {h.note && ` (${h.note})`}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+              <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+                Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re
+                in 1st by more than 10, in which case they lose the lead entirely and end up 1
+                point behind whoever was in 2nd.
+              </p>
             </div>
           )}
-          <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-            Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re in
-            1st by more than 10, in which case they lose the lead entirely and end up 1 point
-            behind whoever was in 2nd.
-          </p>
         </div>
       )}
 
