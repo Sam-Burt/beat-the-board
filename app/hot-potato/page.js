@@ -322,22 +322,27 @@ export default function HotPotatoPage() {
               {receivedInfo && (
                 <div className="received-info">
                   {receivedInfo.from_player_id ? (
-                    <>
-                      <strong>
-                        {players.find((p) => p.id === receivedInfo.from_player_id)?.name ||
-                          "Someone"}
-                      </strong>{" "}
-                      passed it to you
-                      {receivedInfo.note && (
+                    (() => {
+                      const fromPlayer = players.find((p) => p.id === receivedInfo.from_player_id);
+                      return (
                         <>
-                          {" "}
-                          — hidden in: <strong>{receivedInfo.note}</strong>
+                          <div className="received-info-from">
+                            <PlayerAvatar iconId={fromPlayer?.icon_id} emoji={fromPlayer?.emoji} size={36} />
+                            <span>{fromPlayer?.name || "Someone"} passed this to you!</span>
+                          </div>
+                          {receivedInfo.note && (
+                            <>
+                              <h3 className="received-info-heading">Where to check?</h3>
+                              <p className="received-info-note">{receivedInfo.note}</p>
+                            </>
+                          )}
                         </>
-                      )}
-                      .
-                    </>
+                      );
+                    })()
                   ) : (
-                    "You were dealt it at random to start the game."
+                    <div className="received-info-from">
+                      <span>You were dealt it at random to start the game.</span>
+                    </div>
                   )}
                 </div>
               )}

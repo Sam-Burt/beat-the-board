@@ -700,8 +700,21 @@ label {
   line-height: 1.4;
   text-align: left;
 }
-.received-info strong {
+.received-info-from {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.received-info-heading {
+  font-size: 15px;
   color: var(--acid);
+  margin-top: 12px;
+}
+.received-info-note {
+  font-size: 16px;
+  margin-top: 4px;
 }
 .footer {
   text-align: center;
