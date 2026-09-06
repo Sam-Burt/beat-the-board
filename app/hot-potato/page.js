@@ -309,16 +309,7 @@ export default function HotPotatoPage() {
         <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
           {isHolder ? (
             <>
-              <p
-                style={{
-                  fontFamily: "'Striker', 'Archivo', sans-serif",
-                  fontSize: 20,
-                  color: "var(--acid)",
-                  textTransform: "uppercase",
-                }}
-              >
-                You&#39;ve got the Gay Card!
-              </p>
+              <p className="gay-card-title">You&#39;ve got the Gay Card!</p>
               {receivedInfo && (
                 <div className="received-info">
                   {receivedInfo.from_player_id ? (
@@ -333,7 +324,7 @@ export default function HotPotatoPage() {
                           <p className="received-info-passed">has passed this to you</p>
                           {receivedInfo.note && (
                             <>
-                              <h3 className="received-info-heading">Where to find it</h3>
+                              <h3 className="gay-card-title received-info-heading">Where to find it</h3>
                               <p className="received-info-note">{receivedInfo.note}</p>
                             </>
                           )}
@@ -345,10 +336,14 @@ export default function HotPotatoPage() {
                   )}
                 </div>
               )}
-              <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-                Sneak it onto someone else&#39;s person (or something they&#39;re carrying with
-                them) without them noticing, then confirm it below. The suitcase under the bed
-                doesn&#39;t count!
+              <p
+                className="muted"
+                style={{ fontSize: 13, marginTop: 6, maxWidth: 280, marginLeft: "auto", marginRight: "auto" }}
+              >
+                Sneak it onto someone else&#39;s person (or something they&#39;re carrying with them)
+                without them noticing, then confirm it below.
+                <br />
+                The suitcase under the bed doesn&#39;t count!
               </p>
 
               {!passOpen ? (

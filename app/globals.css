@@ -695,9 +695,10 @@ label {
 }
 .received-info-from {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 6px;
   font-family: "Striker", "Archivo", sans-serif;
   font-size: 22px;
   text-transform: uppercase;
@@ -708,9 +709,13 @@ label {
   color: var(--ink);
   margin-top: 2px;
 }
-.received-info-heading {
+.gay-card-title {
+  font-family: "Striker", "Archivo", sans-serif;
   font-size: 20px;
+  text-transform: uppercase;
   color: var(--acid);
+}
+.received-info-heading {
   margin-top: 18px;
 }
 .received-info-note {
