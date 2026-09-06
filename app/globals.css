@@ -971,6 +971,9 @@ label {
   border: none;
   cursor: pointer;
 }
+.mission-polaroid.mission-polaroid-alt {
+  transform: rotate(10deg);
+}
 .mission-polaroid img {
   display: block;
   width: 100%;
@@ -983,6 +986,28 @@ label {
   max-height: 85vh;
   border-radius: 8px;
   box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.8);
+}
+.mission-lightbox-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: none;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.6);
+}
+.mission-lightbox-close:hover {
+  background: var(--pink-deep);
 }
 .mission-list {
   width: 100%;

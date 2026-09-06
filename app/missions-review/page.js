@@ -162,7 +162,7 @@ export default function MissionsReviewPage() {
                   No missions this event.
                 </p>
               ) : (
-                playerMissions.map((m) => (
+                playerMissions.map((m, i) => (
                   <div className="mission-proof-row" style={{ marginTop: 14 }} key={m.id}>
                     <div className="mission-proof-body">
                       {m.title && <div className="mission-proof-title">{m.title}</div>}
@@ -178,7 +178,7 @@ export default function MissionsReviewPage() {
                     {m.photo_url && (
                       <button
                         type="button"
-                        className="mission-polaroid"
+                        className={`mission-polaroid${i % 2 === 1 ? " mission-polaroid-alt" : ""}`}
                         onClick={() => setLightboxUrl(m.photo_url)}
                         aria-label="View proof photo full size"
                       >
@@ -205,6 +205,14 @@ export default function MissionsReviewPage() {
 
       {lightboxUrl && (
         <div className="modal-backdrop" onClick={() => setLightboxUrl(null)}>
+          <button
+            type="button"
+            className="mission-lightbox-close"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close photo"
+          >
+            ✕
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="mission-lightbox-img" src={lightboxUrl} alt="" onClick={(e) => e.stopPropagation()} />
         </div>

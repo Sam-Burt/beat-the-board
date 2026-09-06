@@ -480,7 +480,7 @@ export default function MissionsPage() {
           <div className="empty">No missions yet — check back later.</div>
         </div>
       ) : (
-        missions.map((m) => {
+        missions.map((m, i) => {
           const pending = m.status === "pending";
           const uploading = uploadingId === m.id;
           const declining = decliningId === m.id;
@@ -539,7 +539,7 @@ export default function MissionsPage() {
                 {m.photo_url && (
                   <button
                     type="button"
-                    className="mission-polaroid"
+                    className={`mission-polaroid${i % 2 === 1 ? " mission-polaroid-alt" : ""}`}
                     onClick={() => setLightboxUrl(m.photo_url)}
                     aria-label="View proof photo full size"
                   >
@@ -555,6 +555,14 @@ export default function MissionsPage() {
 
       {lightboxUrl && (
         <div className="modal-backdrop" onClick={() => setLightboxUrl(null)}>
+          <button
+            type="button"
+            className="mission-lightbox-close"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close photo"
+          >
+            ✕
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="mission-lightbox-img" src={lightboxUrl} alt="" onClick={(e) => e.stopPropagation()} />
         </div>
