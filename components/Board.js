@@ -42,7 +42,7 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
             <div className="board-row-wrap" key={p.id}>
               <div className="board-row">
                 <div className={`rank-badge ${badgeClass}`}>{rank}</div>
-                <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={34} />
+                <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={40} />
                 <div className="board-name">
                   <div className="n">
                     <span className="name-text">{p.name}</span>

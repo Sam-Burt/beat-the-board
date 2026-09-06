@@ -96,7 +96,7 @@ export default function LogResultForm({ players, onSave }) {
                     className={`chip${sel ? " selected" : ""}`}
                     onClick={() => toggleSelected(p.id)}
                   >
-                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                     {p.name}
                   </button>
                 );
@@ -125,7 +125,7 @@ export default function LogResultForm({ players, onSave }) {
                       onClick={() => tapRank(id)}
                     >
                       {ranked && <span className="badge-num">{rankIdx + 1}</span>}
-                      <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                      <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                       {p.name}
                     </button>
                   );

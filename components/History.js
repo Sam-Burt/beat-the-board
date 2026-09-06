@@ -31,7 +31,7 @@ export default function History({ players, events, adjustments = [], isAdmin, on
     if (!p) return <>(removed)</>;
     return (
       <>
-        <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={18} /> {p.name}
+        <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={22} /> {p.name}
       </>
     );
   }

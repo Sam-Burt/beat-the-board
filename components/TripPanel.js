@@ -297,7 +297,7 @@ export default function TripPanel({
                     disabled={decidingWorking}
                     onClick={() => setDecidingWinner(p.id)}
                   >
-                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} /> {p.name}
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} /> {p.name}
                   </button>
                 ))}
               {decidingWinner && (
@@ -398,7 +398,7 @@ export default function TripPanel({
                           className={`chip${sel ? " selected" : ""}`}
                           onClick={() => toggleRoster(p.id)}
                         >
-                          <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                          <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                           {p.name}
                         </button>
                       );

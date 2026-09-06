@@ -127,7 +127,7 @@ function AdminMissionComposer({
                     className={`chip${playerId === p.id ? " selected" : ""}`}
                     onClick={() => setPlayerId(p.id)}
                   >
-                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                     {p.name}
                   </button>
                 ))}
@@ -242,7 +242,7 @@ function AdminMissionComposer({
                   className={`chip${schedPlayerId === p.id ? " selected" : ""}`}
                   onClick={() => setSchedPlayerId(p.id)}
                 >
-                  <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                  <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                   {p.name}
                 </button>
               ))}

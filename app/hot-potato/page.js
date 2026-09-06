@@ -368,7 +368,7 @@ export default function HotPotatoPage() {
                           className={`chip${passTo === p.id ? " selected" : ""}`}
                           onClick={() => setPassTo(p.id)}
                         >
-                          <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={16} />
+                          <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                           {p.name}
                         </button>
                       ))}

@@ -103,7 +103,7 @@ export default function PlayersPanel({
                       <div className="player-emoji">
                         {src ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={src} alt="" width={28} height={28} style={{ borderRadius: "50%" }} />
+                          <img src={src} alt="" width={32} height={32} style={{ borderRadius: "50%" }} />
                         ) : (
                           p.emoji || "👤"
                         )}
