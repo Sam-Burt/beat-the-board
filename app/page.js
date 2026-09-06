@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useBoardData } from "../lib/useBoardData";
 import { useEventCelebration } from "../lib/useEventCelebration";
 import { totals } from "../lib/points";
@@ -47,8 +48,18 @@ export default function HomePage() {
   } = useBoardData();
 
   // Hooks must run every render regardless of the early returns below, so
-  // this lives here rather than after the loading/configured checks.
+  // these live here rather than after the loading/configured checks.
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
+  const [showLastResults, setShowLastResults] = useState(false);
+  const [tripPanelOpen, setTripPanelOpen] = useState(false);
+
+  // Auto-expand the Event panel once there's no active event to show —
+  // covers both the first load and a trip finalizing live while this page
+  // is already open, not just the moment TripPanel first mounts.
+  useEffect(() => {
+    if (loading) return;
+    if (!currentTrip || currentTrip.status === "finalized") setTripPanelOpen(true);
+  }, [loading, currentTrip?.status, currentTrip?.id]);
 
   if (!configured) {
     return (
@@ -81,6 +92,17 @@ export default function HomePage() {
   // manual point adjustments on top of the automatic per-round scoring.
   const standings = totals(tripPlayers, events, adjustments);
 
+  // Once a trip finalizes (or none has ever been started) there's nothing
+  // "current" to show — the board, champion star and history all go behind
+  // a "View last results" toggle instead of just staying up forever.
+  const hasActiveEvent = !!currentTrip && currentTrip.status !== "finalized";
+  const showResults = hasActiveEvent || showLastResults;
+
+  function handleStartNewEvent() {
+    setTripPanelOpen(true);
+    document.getElementById("event-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div className="wrap">
       {celebrating && (
@@ -94,13 +116,35 @@ export default function HomePage() {
 
       {saveError && <div className="banner-note error">{saveError}</div>}
 
-      <Champion standings={standings} />
-      <Board
-        standings={standings}
-        trophyCounts={trophyCounts}
-        isAdmin={isAdmin}
-        onAddPoints={addPointAdjustment}
-      />
+      {!hasActiveEvent && (
+        <div className="card header-card" style={{ marginTop: 16 }}>
+          <h1 style={{ fontSize: 26 }}>No current event</h1>
+          <div className="btn-row" style={{ justifyContent: "center", marginTop: 14 }}>
+            {currentTrip && (
+              <button type="button" className="btn btn-ghost" onClick={() => setShowLastResults((v) => !v)}>
+                {showLastResults ? "Hide last results" : "View last results"}
+              </button>
+            )}
+            {isAdmin && (
+              <button type="button" className="btn btn-primary" onClick={handleStartNewEvent}>
+                Start New Event
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showResults && (
+        <>
+          <Champion standings={standings} />
+          <Board
+            standings={standings}
+            trophyCounts={trophyCounts}
+            isAdmin={hasActiveEvent && isAdmin}
+            onAddPoints={addPointAdjustment}
+          />
+        </>
+      )}
 
       {me && !me.icon_id && <IconPicker onPick={updateMyIcon} />}
 
@@ -109,15 +153,19 @@ export default function HomePage() {
       )}
 
       {isAdmin && (
-        <TripPanel
-          currentTrip={currentTrip}
-          players={players}
-          standings={standings}
-          onCreateTrip={createTrip}
-          onEndTripNow={endTripNow}
-          onDeclareWinner={declareTripWinner}
-          onUpdateTrip={updateTripDetails}
-        />
+        <div id="event-panel">
+          <TripPanel
+            currentTrip={currentTrip}
+            players={players}
+            standings={standings}
+            open={tripPanelOpen}
+            onOpenChange={setTripPanelOpen}
+            onCreateTrip={createTrip}
+            onEndTripNow={endTripNow}
+            onDeclareWinner={declareTripWinner}
+            onUpdateTrip={updateTripDetails}
+          />
+        </div>
       )}
 
       {isAdmin && (
@@ -131,13 +179,15 @@ export default function HomePage() {
         />
       )}
 
-      <History
-        players={players}
-        events={events}
-        adjustments={adjustments}
-        isAdmin={isAdmin}
-        onDelete={deleteEvent}
-      />
+      {showResults && (
+        <History
+          players={players}
+          events={events}
+          adjustments={adjustments}
+          isAdmin={hasActiveEvent && isAdmin}
+          onDelete={deleteEvent}
+        />
+      )}
 
       <Footer session={session} />
       <BottomNav session={session} me={me} hotPotatoEnabled={currentTrip?.hot_potato_enabled} />

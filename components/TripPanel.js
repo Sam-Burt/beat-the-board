@@ -39,12 +39,13 @@ export default function TripPanel({
   currentTrip,
   players,
   standings,
+  open,
+  onOpenChange,
   onCreateTrip,
   onEndTripNow,
   onDeclareWinner,
   onUpdateTrip,
 }) {
-  const [open, setOpen] = useState(!currentTrip || currentTrip.status === "finalized");
 
   // "Start a new event" form state
   const [name, setName] = useState("");
@@ -151,7 +152,7 @@ export default function TripPanel({
 
   return (
     <div className="card">
-      <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
+      <button className="btn toggle-panel-btn" onClick={() => onOpenChange(!open)}>
         <h2>Event</h2>
         <span className={`chevron${open ? " open" : ""}`}>▾</span>
       </button>
