@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { playerUsedInEvents } from "../lib/points";
 import { iconSrc } from "../lib/icons";
 import { normalizeUsername } from "../lib/username";
 
@@ -16,7 +15,6 @@ function randomPassword() {
 
 export default function PlayersPanel({
   players,
-  events,
   onCreate,
   onRemove,
   onSendMission,
@@ -96,7 +94,6 @@ export default function PlayersPanel({
               <div className="empty">No one added yet.</div>
             ) : (
               players.map((p) => {
-                const used = playerUsedInEvents(events, p.id);
                 const src = iconSrc(p.icon_id);
                 const missionOpen = missionOpenFor === p.id;
                 return (
@@ -129,22 +126,20 @@ export default function PlayersPanel({
                           {missionSentFor === p.id ? "Sent! 🎯" : "Mission"}
                         </button>
                       )}
-                      {used ? (
-                        <div className="used">in results</div>
-                      ) : (
-                        <button
-                          className="btn btn-ghost"
-                          aria-label="Remove"
-                          onClick={() => setConfirmRemoveId(p.id)}
-                        >
-                          Remove
-                        </button>
-                      )}
+                      <button
+                        className="btn btn-ghost"
+                        aria-label="Remove"
+                        onClick={() => setConfirmRemoveId(p.id)}
+                      >
+                        Remove
+                      </button>
                     </div>
                     {confirmRemoveId === p.id && (
                       <div className="mission-composer">
                         <p className="muted" style={{ fontSize: 13 }}>
-                          Remove {p.name}? This deletes their account and profile — their
+                          Remove {p.name}? This deletes their account and profile, and takes
+                          them out of any past round results they&#39;re part of (which changes
+                          the points everyone else in those rounds ended up with) — their
                           icon, missions and login stop working, and this can&#39;t be undone.
                         </p>
                         <div className="btn-row">

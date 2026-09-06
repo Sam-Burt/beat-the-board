@@ -171,7 +171,6 @@ export default function HomePage() {
       {isAdmin && (
         <PlayersPanel
           players={players}
-          events={events}
           onCreate={createPlayerAccount}
           onRemove={removePlayer}
           onClearSaveError={clearSaveError}

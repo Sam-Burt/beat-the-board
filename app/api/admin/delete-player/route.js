@@ -29,15 +29,25 @@ export async function POST(request) {
     return NextResponse.json({ error: "Player not found." }, { status: 404 });
   }
 
+  // events.ranking is a plain uuid[] column, not a foreign key, so it's the
+  // one place a deleted player would leave a dangling reference (everything
+  // else — point_adjustments, trophies, missions, notifications — already
+  // cascades via the schema). Strip them out of every round they're in
+  // before deleting, rather than just refusing. This does shift the points
+  // of whoever else was in that round, since scoring is "1 point per
+  // player you beat" within whatever's left.
   const { data: events } = await supabaseAdmin
     .from("events")
     .select("id, ranking")
     .contains("ranking", [playerId]);
-  if (events && events.length > 0) {
-    return NextResponse.json(
-      { error: "This player is already in the results history — remove them from those results first." },
-      { status: 400 }
-    );
+  for (const ev of events || []) {
+    const { error: rankingError } = await supabaseAdmin
+      .from("events")
+      .update({ ranking: ev.ranking.filter((id) => id !== playerId) })
+      .eq("id", ev.id);
+    if (rankingError) {
+      return NextResponse.json({ error: rankingError.message }, { status: 400 });
+    }
   }
 
   const { error: deleteError } = await supabaseAdmin.from("players").delete().eq("id", playerId);

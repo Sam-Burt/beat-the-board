@@ -644,10 +644,6 @@ label {
   letter-spacing: 0.02em;
   font-size: 17px;
 }
-.player-row .used {
-  font-size: 11px;
-  color: var(--ink-dim);
-}
 
 .add-player-row {
   display: flex;
