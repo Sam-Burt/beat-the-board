@@ -745,6 +745,20 @@ label {
   width: 28px;
   height: 28px;
 }
+.bottom-nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+.bottom-nav-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: 1.5px solid #0b0b0b;
+}
 .bottom-nav-tab.active {
   color: var(--acid);
 }

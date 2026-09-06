@@ -50,7 +50,7 @@ export default function HomePage() {
 
   // Hooks must run every render regardless of the early returns below, so
   // these live here rather than after the loading/configured checks.
-  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
   const [showLastResults, setShowLastResults] = useState(false);
   const [tripPanelOpen, setTripPanelOpen] = useState(false);
 

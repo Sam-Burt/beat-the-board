@@ -347,7 +347,7 @@ export default function MissionsPage() {
   const [missions, setMissions] = useState([]);
   const [revealed, setRevealed] = useState(false);
 
-  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -386,6 +386,19 @@ export default function MissionsPage() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
+  }, [me]);
+
+  // Clears the pink dot BottomNav shows for a new mission — landing on this
+  // tab at all counts as "seen", same as opening the notification bell does.
+  useEffect(() => {
+    if (!supabase || !me) return;
+    supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("player_id", me.id)
+      .eq("kind", "mission")
+      .is("read_at", null)
+      .then(() => {});
   }, [me]);
 
   if (!configured || loading || !session) {

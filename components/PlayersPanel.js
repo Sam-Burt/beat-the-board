@@ -66,7 +66,8 @@ export default function PlayersPanel({
     }
   }
 
-  async function handleSendMission(playerId) {
+  async function handleSendMission(playerId, e) {
+    e?.preventDefault();
     if (!missionText.trim()) return;
     setMissionSending(true);
     const result = await onSendMission({ playerId, text: missionText.trim() });
@@ -162,7 +163,7 @@ export default function PlayersPanel({
                       </div>
                     )}
                     {missionOpen && (
-                      <div className="mission-composer">
+                      <form className="mission-composer" onSubmit={(e) => handleSendMission(p.id, e)}>
                         <textarea
                           placeholder={`Secret mission for ${p.name}…`}
                           maxLength={280}
@@ -172,10 +173,9 @@ export default function PlayersPanel({
                         />
                         <div className="btn-row">
                           <button
-                            type="button"
+                            type="submit"
                             className="btn btn-primary"
                             disabled={missionSending || !missionText.trim()}
-                            onClick={() => handleSendMission(p.id)}
                           >
                             {missionSending ? "Sending…" : "Send mission"}
                           </button>
@@ -195,7 +195,7 @@ export default function PlayersPanel({
                           Only&quot; — and get a phone alert if they&#39;ve turned mission
                           alerts on (it won&#39;t reveal the text on their lock screen).
                         </p>
-                      </div>
+                      </form>
                     )}
                   </div>
                 );

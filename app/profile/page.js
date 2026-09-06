@@ -36,7 +36,7 @@ export default function ProfilePage() {
     updateMyName,
   } = useBoardData();
 
-  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
 
   // A single "Edit profile" toggle (top-right of the hero card) now covers
   // both the display name and the icon, instead of separate pencils on
@@ -81,7 +81,8 @@ export default function ProfilePage() {
     });
   }
 
-  async function saveName() {
+  async function saveName(e) {
+    e?.preventDefault();
     const trimmed = nameDraft.trim();
     if (!trimmed) {
       setNameError("Name can't be empty.");
@@ -187,7 +188,7 @@ export default function ProfilePage() {
 
         {editingProfile && (
           <div className="profile-edit-panel">
-            <div className="field">
+            <form className="field" onSubmit={saveName}>
               <label htmlFor="profile-name-input">Display name</label>
               <input
                 id="profile-name-input"
@@ -195,17 +196,15 @@ export default function ProfilePage() {
                 value={nameDraft}
                 maxLength={30}
                 onChange={(e) => setNameDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") saveName();
-                }}
+                enterKeyHint="done"
               />
               <div className="btn-row" style={{ justifyContent: "center", marginTop: 8 }}>
-                <button className="btn btn-primary" disabled={nameSaving} onClick={saveName}>
+                <button type="submit" className="btn btn-primary" disabled={nameSaving}>
                   {nameSaving ? "Saving…" : "Save name"}
                 </button>
               </div>
               {nameError && <div className="banner-note error">{nameError}</div>}
-            </div>
+            </form>
 
             <IconPicker onPick={handlePickIcon} />
           </div>

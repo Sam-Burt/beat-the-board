@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { supabase } from "../lib/supabaseClient";
 
 const TABS = [
   {
@@ -62,10 +64,50 @@ const HOT_POTATO_TAB = {
 // switched on (see TripPanel's "Edit event"/"Start event" toggle).
 export default function BottomNav({ session, me, hotPotatoEnabled }) {
   const pathname = usePathname();
+  const [unreadKinds, setUnreadKinds] = useState(new Set());
+
+  // Drives the pink dot on Missions/Gay Card — same notifications table
+  // NotificationBell reads on the Profile tab, just grouped by kind here
+  // instead of shown as a list, so every tab reflects unread state at a
+  // glance without having to open the bell.
+  useEffect(() => {
+    if (!supabase || !me) {
+      setUnreadKinds(new Set());
+      return;
+    }
+    let cancelled = false;
+
+    function load() {
+      supabase
+        .from("notifications")
+        .select("kind")
+        .eq("player_id", me.id)
+        .is("read_at", null)
+        .then(({ data }) => {
+          if (!cancelled) setUnreadKinds(new Set((data || []).map((n) => n.kind)));
+        });
+    }
+    load();
+
+    const channel = supabase
+      .channel(`bottom-nav-unread-${me.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `player_id=eq.${me.id}` },
+        load
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [me]);
 
   if (!session || !me) return null;
 
   const tabs = hotPotatoEnabled ? [TABS[0], TABS[1], HOT_POTATO_TAB, TABS[2]] : TABS;
+  const dotFor = { "/missions": unreadKinds.has("mission"), "/hot-potato": unreadKinds.has("hot_potato") };
 
   return (
     <nav className="bottom-nav" aria-label="Main">
@@ -79,7 +121,10 @@ export default function BottomNav({ session, me, hotPotatoEnabled }) {
               className={`bottom-nav-tab${active ? " active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {tab.icon}
+              <span className="bottom-nav-icon-wrap">
+                {tab.icon}
+                {dotFor[tab.href] && <span className="bottom-nav-dot" aria-hidden="true" />}
+              </span>
               <span>{tab.label}</span>
             </Link>
           );

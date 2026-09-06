@@ -10,7 +10,8 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
   const [sending, setSending] = useState(false);
   const [sentFor, setSentFor] = useState(null);
 
-  async function handleAddPoints(playerId) {
+  async function handleAddPoints(playerId, e) {
+    e?.preventDefault();
     if (!amount) return;
     setSending(true);
     const result = await onAddPoints({ playerId, amount, note: note.trim() });
@@ -67,7 +68,7 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
                 )}
               </div>
               {open && (
-                <div className="points-composer">
+                <form className="points-composer" onSubmit={(e) => handleAddPoints(p.id, e)}>
                   <div className="points-amount-row">
                     <button
                       type="button"
@@ -95,15 +96,11 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
                     maxLength={140}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
+                    enterKeyHint="done"
                     style={{ marginTop: 8 }}
                   />
                   <div className="btn-row">
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      disabled={sending || !amount}
-                      onClick={() => handleAddPoints(p.id)}
-                    >
+                    <button type="submit" className="btn btn-primary" disabled={sending || !amount}>
                       {sending
                         ? "Saving…"
                         : `${amount > 0 ? "Award" : "Deduct"} ${Math.abs(amount)} pt${
@@ -122,7 +119,7 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
                       Cancel
                     </button>
                   </div>
-                </div>
+                </form>
               )}
             </div>
           );

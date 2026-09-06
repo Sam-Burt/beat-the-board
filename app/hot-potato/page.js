@@ -25,10 +25,11 @@ export default function HotPotatoPage() {
     passHotPotato,
   } = useBoardData();
 
-  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players);
+  const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
+  const [receivedInfo, setReceivedInfo] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
@@ -112,6 +113,63 @@ export default function HotPotatoPage() {
     };
   }, [currentTrip, isAdmin]);
 
+  // Clears the pink dot BottomNav shows for a pass landing on you — landing
+  // on this tab at all counts as "seen", same as opening the notification
+  // bell does.
+  useEffect(() => {
+    if (!supabase || !me) return;
+    supabase
+      .from("notifications")
+      .update({ read_at: new Date().toISOString() })
+      .eq("player_id", me.id)
+      .eq("kind", "hot_potato")
+      .is("read_at", null)
+      .then(() => {});
+  }, [me]);
+
+  // The one piece of history every player IS allowed to see about
+  // themselves (not anyone else's): the single most recent time the card
+  // landed on them — who passed it (null means dealt at random, game
+  // start) and where they said they hid it. RLS already allows reading
+  // hot_potato_history at all (see schema.sql); the app just never showed
+  // this to non-admins before.
+  useEffect(() => {
+    if (!supabase || !currentTrip || !me) {
+      setReceivedInfo(null);
+      return;
+    }
+    let cancelled = false;
+
+    function load() {
+      supabase
+        .from("hot_potato_history")
+        .select("from_player_id, note, created_at")
+        .eq("trip_id", currentTrip.id)
+        .eq("to_player_id", me.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (!cancelled) setReceivedInfo(data || null);
+        });
+    }
+    load();
+
+    const channel = supabase
+      .channel(`hot-potato-received-${currentTrip.id}-${me.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "hot_potato_history", filter: `trip_id=eq.${currentTrip.id}` },
+        load
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [currentTrip, me]);
+
   if (!configured || loading || !session) {
     return (
       <div className="wrap">
@@ -147,7 +205,8 @@ export default function HotPotatoPage() {
     if (!result?.ok) setStartError("Couldn't start it — try again.");
   }
 
-  async function handlePass() {
+  async function handlePass(e) {
+    e?.preventDefault();
     if (!passTo) return;
     setPassError("");
     setPassing(true);
@@ -260,6 +319,28 @@ export default function HotPotatoPage() {
               >
                 You&#39;ve got the Gay Card!
               </p>
+              {receivedInfo && (
+                <div className="banner-note" style={{ marginTop: 10, textAlign: "left" }}>
+                  {receivedInfo.from_player_id ? (
+                    <>
+                      <strong>
+                        {players.find((p) => p.id === receivedInfo.from_player_id)?.name ||
+                          "Someone"}
+                      </strong>{" "}
+                      passed it to you
+                      {receivedInfo.note && (
+                        <>
+                          {" "}
+                          — hidden in: <strong>{receivedInfo.note}</strong>
+                        </>
+                      )}
+                      .
+                    </>
+                  ) : (
+                    "You were dealt it at random to start the game."
+                  )}
+                </div>
+              )}
               <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
                 Sneak it onto someone else&#39;s person (or something they&#39;re carrying with
                 them) without them noticing, then confirm it below. The suitcase under the bed
@@ -271,7 +352,7 @@ export default function HotPotatoPage() {
                   I&#39;ve passed it on
                 </button>
               ) : (
-                <div className="points-composer" style={{ textAlign: "left", marginTop: 12 }}>
+                <form className="points-composer" style={{ textAlign: "left", marginTop: 12 }} onSubmit={handlePass}>
                   <label>Who did you pass it to?</label>
                   <div className="chips" style={{ marginTop: 6 }}>
                     {tripPlayers
@@ -294,13 +375,15 @@ export default function HotPotatoPage() {
                     maxLength={140}
                     value={passNote}
                     onChange={(e) => setPassNote(e.target.value)}
+                    enterKeyHint="send"
                     style={{ marginTop: 10 }}
                   />
                   <div className="btn-row">
-                    <button className="btn btn-primary" disabled={passing || !passTo} onClick={handlePass}>
+                    <button type="submit" className="btn btn-primary" disabled={passing || !passTo}>
                       {passing ? "Saving…" : "Confirm pass"}
                     </button>
                     <button
+                      type="button"
                       className="btn btn-ghost"
                       onClick={() => {
                         setPassOpen(false);
@@ -312,7 +395,7 @@ export default function HotPotatoPage() {
                     </button>
                   </div>
                   {passError && <div className="banner-note error">{passError}</div>}
-                </div>
+                </form>
               )}
             </>
           ) : (
