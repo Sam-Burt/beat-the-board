@@ -45,9 +45,17 @@ export async function POST(request) {
     return NextResponse.json({ error: "playerId and text are required." }, { status: 400 });
   }
 
+  const { data: trip } = await supabaseAdmin
+    .from("trips")
+    .select("id")
+    .in("status", ["active", "tied"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const { data: mission, error: insertError } = await supabaseAdmin
     .from("missions")
-    .insert({ player_id: playerId, title, text })
+    .insert({ player_id: playerId, title, text, trip_id: trip?.id ?? null })
     .select()
     .single();
   if (insertError) {

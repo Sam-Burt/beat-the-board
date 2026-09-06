@@ -152,6 +152,14 @@ create table if not exists missions (
 );
 alter table missions enable row level security;
 
+-- Missions never had a trip_id, unlike everything else (events,
+-- point_adjustments, hot_potato_*) — so the Missions tab kept showing every
+-- mission ever sent, forever, instead of resetting when one event ends and
+-- the next starts. Nullable/backfilled as null on purpose: old missions
+-- from before this column existed just stop showing up for any current
+-- trip, which is the right outcome for them anyway.
+alter table missions add column if not exists trip_id uuid references trips (id) on delete cascade;
+
 drop policy if exists "missions read own" on missions;
 create policy "missions read own" on missions
   for select using (

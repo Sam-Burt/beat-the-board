@@ -355,10 +355,17 @@ export default function MissionsPage() {
     }
   }, [loading, configured, session, router]);
 
-  // This player's secret missions, newest first, live-updated so a mission
-  // sent while this page is open shows up without a reload.
+  // This player's secret missions FOR THE CURRENT EVENT ONLY, newest first,
+  // live-updated so a mission sent while this page is open shows up without
+  // a reload. Missions belong to whichever trip was current when they were
+  // sent (see send-mission/process-due routes) — scoping by trip_id here is
+  // what makes the list actually reset once one event ends and the next
+  // starts, instead of showing every mission ever sent.
   useEffect(() => {
-    if (!supabase || !me) return;
+    if (!supabase || !me || !currentTrip) {
+      setMissions([]);
+      return;
+    }
     let cancelled = false;
 
     function load() {
@@ -366,6 +373,7 @@ export default function MissionsPage() {
         .from("missions")
         .select("id, title, text, created_at")
         .eq("player_id", me.id)
+        .eq("trip_id", currentTrip.id)
         .order("created_at", { ascending: false })
         .then(({ data }) => {
           if (!cancelled && data) setMissions(data);
@@ -386,7 +394,7 @@ export default function MissionsPage() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [me]);
+  }, [me, currentTrip]);
 
   // Clears the pink dot BottomNav shows for a new mission — landing on this
   // tab at all counts as "seen", same as opening the notification bell does.

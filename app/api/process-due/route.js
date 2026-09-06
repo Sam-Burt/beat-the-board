@@ -35,6 +35,18 @@ export async function POST(request) {
     return NextResponse.json({ processed: 0 });
   }
 
+  // Whichever trip is current when a scheduled mission actually fires, not
+  // whichever was current when it was scheduled — same "no server cron,
+  // resolved at the moment someone's device checks in" spirit as the trip
+  // deadline auto-finalize check.
+  const { data: currentTrip } = await supabaseAdmin
+    .from("trips")
+    .select("id")
+    .in("status", ["active", "tied"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   let pool = null;
   async function pickRandom() {
     if (pool === null) {
@@ -60,7 +72,7 @@ export async function POST(request) {
 
     const { error: insertError } = await supabaseAdmin
       .from("missions")
-      .insert({ player_id: row.player_id, title, text });
+      .insert({ player_id: row.player_id, title, text, trip_id: currentTrip?.id ?? null });
     if (insertError) continue;
 
     await recordNotification(row.player_id, {
