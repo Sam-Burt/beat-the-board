@@ -1007,10 +1007,10 @@ label {
 .notif-panel {
   position: fixed;
   top: calc(env(safe-area-inset-top) + 62px);
-  right: 14px;
-  left: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 28px);
   max-width: 380px;
-  margin-left: auto;
   z-index: 60;
   background: var(--card);
   border: 1px solid var(--border);
