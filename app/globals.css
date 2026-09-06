@@ -691,29 +691,25 @@ label {
   color: var(--danger);
 }
 .received-info {
-  margin-top: 12px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1.5px solid var(--pink);
-  background: rgba(232, 34, 140, 0.12);
-  font-size: 16px;
-  line-height: 1.4;
-  text-align: left;
+  margin-top: 16px;
 }
 .received-info-from {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  font-size: 16px;
-  font-weight: 700;
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--acid);
 }
 .received-info-heading {
-  font-size: 15px;
-  color: var(--acid);
-  margin-top: 12px;
+  font-size: 20px;
+  color: var(--pink);
+  margin-top: 18px;
 }
 .received-info-note {
-  font-size: 16px;
+  font-size: 18px;
   margin-top: 4px;
 }
 .footer {
