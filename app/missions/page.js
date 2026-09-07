@@ -401,6 +401,7 @@ export default function MissionsPage() {
   const [decliningId, setDecliningId] = useState(null);
   const [errorFor, setErrorFor] = useState({}); // mission id -> error message
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   async function handleProveIt(missionId, file) {
     if (!file) return;
@@ -519,11 +520,46 @@ export default function MissionsPage() {
         />
       )}
       <div className="card header-card">
-        <h2>Secret missions</h2>
-        <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-          Just for you — nobody else can see these.
-        </p>
+        <div className="header-card-title-row">
+          <span className="card-help-btn-spacer" aria-hidden="true" />
+          <h2>Secret missions</h2>
+          <button
+            type="button"
+            className="card-help-btn"
+            onClick={() => setHelpOpen(true)}
+            aria-label="What is this?"
+          >
+            ?
+          </button>
+        </div>
       </div>
+
+      {helpOpen && (
+        <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
+          <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>What is this?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Secret missions get sent to you by the admin at random moments during an
+              event — nobody else can see them, and you won&#39;t know if or when anyone
+              else gets one either. Snap a photo to &quot;Prove it&quot; and bank the
+              points it&#39;s worth, or decline it to clear it off your list without
+              doing it.
+            </p>
+            <h3 style={{ marginTop: 18 }}>How it counts</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Points from a proved mission go straight onto your leaderboard score, and a
+              note shows up in History once you&#39;ve earned them. Once the event ends,
+              everyone&#39;s missions and photos become viewable together on Secret
+              Missions Review.
+            </p>
+            <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
+              <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {missions.length === 0 ? (
         <div className="card" style={{ marginTop: 16 }}>
