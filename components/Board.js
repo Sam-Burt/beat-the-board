@@ -51,7 +51,9 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
                     </span>
                     {wins > 0 && (
                       <span className="crown" title={`${wins} event${wins === 1 ? "" : "s"} won`}>
-                        👑{wins > 1 && <span className="crown-count">{wins}</span>}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/icons/crown-win.png" alt="" />
+                        {wins > 1 && <span className="crown-count">{wins}</span>}
                       </span>
                     )}
                   </div>
