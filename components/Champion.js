@@ -10,14 +10,17 @@ export default function Champion({ standings }) {
   const leader = standings[0];
   const second = standings[1];
 
+  // Keep these short. The overlay only has room for two lines, and a
+  // 30-character name (the profile input's max) plus a longer gag tips it
+  // over and spills out of the star.
   let leadText;
   if (!second || leader.points === 0) {
-    leadText = "Waiting on the rest of the players to get on the board.";
+    leadText = "Nobody's scored. Riveting stuff.";
   } else if (leader.points === second.points) {
-    leadText = `Tied at the top with ${second.name}.`;
+    leadText = `Level with ${second.name}. Awkward.`;
   } else {
     const diff = leader.points - second.points;
-    leadText = `${diff} point${diff === 1 ? "" : "s"} clear of ${second.name}.`;
+    leadText = `${diff} clear of ${second.name}. Poor them.`;
   }
 
   return (

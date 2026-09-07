@@ -37,8 +37,8 @@ export default function TrophyCabinet({ trophies }) {
       <h2>Trophies</h2>
       <p className="muted" style={{ fontSize: 13, margin: "4px 0 14px" }}>
         {trophies.length === 0
-          ? "Win an event to start filling the cabinet."
-          : `${trophies.length} event${trophies.length === 1 ? "" : "s"} won.`}
+          ? "Completely empty. Nothing to be ashamed of. Well. A bit."
+          : `${trophies.length} won. Alright, settle down.`}
       </p>
       <div className="trophy-grid">
         {slots.map((t, i) => (
@@ -73,7 +73,7 @@ export default function TrophyCabinet({ trophies }) {
             <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
               {open.starts_on && open.ends_on
                 ? `${fmtDate(open.starts_on)} – ${fmtDate(open.ends_on)}`
-                : "No date window set"}
+                : "Nobody could be bothered to set the dates"}
             </p>
             <p style={{ fontSize: 15, marginTop: 10 }}>
               Won with <strong>{open.points}</strong> point{open.points === 1 ? "" : "s"}

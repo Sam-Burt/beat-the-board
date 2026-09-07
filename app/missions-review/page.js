@@ -81,8 +81,11 @@ export default function MissionsReviewPage() {
     return (
       <div className="wrap">
         <div className="card">
-          <h2>No event to review</h2>
-          <p className="muted">There&#39;s no finished event to look back on right now.</p>
+          <h2>Nothing to review</h2>
+          <p className="muted">
+            No finished event, no photos, no shame. Come back when someone&#39;s actually done
+            something.
+          </p>
           <div className="btn-row" style={{ marginTop: 12 }}>
             <button type="button" className="btn btn-primary" onClick={() => router.push("/")}>
               Back to board
@@ -135,7 +138,7 @@ export default function MissionsReviewPage() {
       <div className="card header-card">
         <h1 style={{ fontSize: 22 }}>Secret Missions Review</h1>
         <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-          {currentTrip.name} — last place first
+          {currentTrip.name} — worst first, as is traditional
         </p>
       </div>
 
@@ -159,7 +162,7 @@ export default function MissionsReviewPage() {
 
               {playerMissions.length === 0 ? (
                 <p className="muted" style={{ marginTop: 10, fontSize: 13 }}>
-                  No missions this event.
+                  Not one mission. Completely unbothered by all this.
                 </p>
               ) : (
                 playerMissions.map((m, i) => (
@@ -172,10 +175,10 @@ export default function MissionsReviewPage() {
                       </div>
                       <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
                         {m.status === "completed"
-                          ? `Proved it — earned ${m.points} pt${m.points === 1 ? "" : "s"} ✅`
+                          ? `Actually did it. ${m.points} pt${m.points === 1 ? "" : "s"} ✅`
                           : m.status === "declined"
-                            ? "Declined 🙅"
-                            : "Never resolved"}
+                            ? "Declined. Coward 🙅"
+                            : "Ignored it and hoped nobody would notice"}
                       </p>
                     </div>
                     {m.photo_url && (

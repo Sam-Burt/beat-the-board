@@ -143,8 +143,8 @@ export default function ProfilePage() {
         <div className="card">
           <h2>No profile yet</h2>
           <p className="muted">
-            Your account isn&#39;t linked to a player on the board yet — ask whoever runs it to
-            add you from the Players panel.
+            You exist, technically, but not on the board. Go and ask whoever runs this to
+            add you from the Players panel, and try to sound like you deserve it.
           </p>
           <div className="btn-row">
             <Link href="/" className="btn btn-primary">
@@ -231,8 +231,8 @@ export default function ProfilePage() {
         {alertsState === "off" && (
           <>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Get a ping on your phone the moment a new mission lands (it won&#39;t show what it
-              says — that stays behind My Eyes Only on the Missions tab).
+              Get a ping the second a mission lands. It won&#39;t say what it is, obviously —
+              you&#39;ll have to open the app and face it like an adult.
             </p>
             <div className="btn-row" style={{ justifyContent: "center" }}>
               <button className="btn btn-primary" disabled={alertsWorking} onClick={handleTurnOnAlerts}>
@@ -243,7 +243,7 @@ export default function ProfilePage() {
         )}
         {alertsState === "on" && (
           <>
-            <p className="alerts-status">🔔 Mission alerts are on for this device.</p>
+            <p className="alerts-status">🔔 Alerts are on. No more pretending you didn&#39;t see it.</p>
             <div className="btn-row" style={{ justifyContent: "center" }}>
               <button className="btn btn-ghost" disabled={alertsWorking} onClick={handleTurnOffAlerts}>
                 {alertsWorking ? "Turning off…" : "Turn off"}

@@ -191,8 +191,8 @@ export default function HotPotatoPage() {
         <div className="card">
           <h2>No profile yet</h2>
           <p className="muted">
-            Your account isn&#39;t linked to a player on the board yet — ask whoever runs it to
-            add you from the Players panel.
+            You exist, technically, but not on the board. Go and ask whoever runs this to
+            add you from the Players panel, and try to sound like you deserve it.
           </p>
         </div>
       </div>
@@ -256,18 +256,18 @@ export default function HotPotatoPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              A single secret card gets dealt to one player at random when the game starts. If
-              it lands on you, sneak it onto someone else&#39;s person (or something they&#39;re
-              carrying with them) without them noticing, then confirm the pass here — the
-              suitcase under the bed doesn&#39;t count. You&#39;ll get a notification the
-              moment it lands on you; otherwise you&#39;ll never know who has it or when.
+              One card. One victim, picked at random. If it lands on you, your job is to plant
+              it on somebody else — on them, or in something they&#39;re actually carrying about
+              — without them noticing, then own up to it here. Shoving it in a suitcase under
+              a bed does not count, and everyone knows that&#39;s exactly what you were
+              planning.
             </p>
             <h3 style={{ marginTop: 18 }}>What to look out for?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Anyone getting oddly close to your pockets, bag or jacket. Whoever&#39;s holding
-              it when the event ends loses 10 points — unless they&#39;re in 1st by more than
-              10, in which case they lose the lead entirely and end up 1 point behind whoever
-              was in 2nd.
+              Anyone taking a suspicious interest in your pockets. Whoever&#39;s holding it when
+              the event ends drops 10 points. And if you were leading by more than that, you
+              don&#39;t just lose the points, you lose the lead — you finish 1 behind whoever
+              was second. Do try to enjoy the rest of your day.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
@@ -287,7 +287,7 @@ export default function HotPotatoPage() {
       {!enabled && (
         <div className="card" style={{ marginTop: 16 }}>
           <p className="muted" style={{ textAlign: "center" }}>
-            Gay Card isn&#39;t switched on for this event.
+            Not switched on this event. Someone&#39;s gone soft.
           </p>
         </div>
       )}
@@ -297,7 +297,7 @@ export default function HotPotatoPage() {
           {isAdmin ? (
             <>
               <p className="muted" style={{ marginBottom: 10 }}>
-                The game hasn&#39;t started yet — trigger it whenever you&#39;re ready.
+                Not started yet. Ruin someone&#39;s day whenever you&#39;re ready.
               </p>
               <button className="btn btn-primary" disabled={starting} onClick={handleStart}>
                 {starting ? "Starting…" : "Start Gay Card"}
@@ -305,7 +305,7 @@ export default function HotPotatoPage() {
               {startError && <div className="banner-note error">{startError}</div>}
             </>
           ) : (
-            <p className="muted">Waiting for the game to start…</p>
+            <p className="muted">Nothing&#39;s happening. Sit there and be patient.</p>
           )}
         </div>
       )}
@@ -337,7 +337,7 @@ export default function HotPotatoPage() {
                       );
                     })()
                   ) : (
-                    <p className="received-info-passed">You were dealt it at random to start the game.</p>
+                    <p className="received-info-passed">Dealt to you at random. The universe has spoken.</p>
                   )}
                 </div>
               )}
@@ -345,10 +345,10 @@ export default function HotPotatoPage() {
                 className="muted"
                 style={{ fontSize: 13, marginTop: 6, maxWidth: 280, marginLeft: "auto", marginRight: "auto" }}
               >
-                Sneak it onto someone else&#39;s person (or something they&#39;re carrying with them)
-                without them noticing, then confirm it below.
+                Plant it on someone else, or in something they&#39;re actually carrying about,
+                then confess below.
                 <br />
-                The suitcase under the bed doesn&#39;t count!
+                The suitcase under the bed doesn&#39;t count. Nice try.
               </p>
 
               {!passOpen ? (
@@ -403,7 +403,7 @@ export default function HotPotatoPage() {
               )}
             </>
           ) : (
-            <p className="muted">🤐 The card&#39;s in play — you&#39;ll know if it lands on you.</p>
+            <p className="muted">🤐 It&#39;s out there. You&#39;ll find out the hard way.</p>
           )}
         </div>
       )}

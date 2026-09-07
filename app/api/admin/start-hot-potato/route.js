@@ -68,7 +68,7 @@ export async function POST(request) {
     .from("hot_potato_history")
     .insert({ trip_id: trip.id, from_player_id: null, to_player_id: holderId, note: "Game started" });
 
-  const body = "You've been dealt the card…";
+  const body = "You've been dealt the card. Out of everyone. Read into that what you will.";
   await recordNotification(holderId, {
     kind: "hot_potato",
     title: "Whoops 🌈",

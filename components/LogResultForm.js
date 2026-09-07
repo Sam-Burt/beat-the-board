@@ -63,7 +63,10 @@ export default function LogResultForm({ players, onSave }) {
       </button>
 
       {open && players.length < 2 && (
-        <div className="empty">Add at least two players first, then come back to log a result.</div>
+        <div className="empty">
+          You need at least two players. Beating yourself isn&#39;t a competition, it&#39;s a
+          cry for help.
+        </div>
       )}
 
       {open && players.length >= 2 && (

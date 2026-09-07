@@ -121,6 +121,9 @@ export default function HomePage() {
       {!hasActiveEvent && (
         <div className="card header-card" style={{ marginTop: 16 }}>
           <h1 style={{ fontSize: 26 }}>No current event</h1>
+          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+            Nothing to play for. Go and talk to each other or something.
+          </p>
           <div className="btn-row" style={{ justifyContent: "center", marginTop: 14 }}>
             {currentTrip && (
               <button

@@ -94,7 +94,7 @@ export default function NotificationBell({ me }) {
             </div>
           </div>
           {items.length === 0 ? (
-            <div className="empty">Nothing yet.</div>
+            <div className="empty">Nothing. Nobody&#39;s thinking about you.</div>
           ) : (
             <div className="mission-list notif-list">
               {items.map((n) => (

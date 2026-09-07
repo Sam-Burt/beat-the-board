@@ -124,7 +124,7 @@ function AdminMissionComposer({
           <div className="field">
             <label>Who&#39;s it for?</label>
             {eligiblePlayers.length === 0 ? (
-              <div className="empty">No player accounts to send to yet.</div>
+              <div className="empty">Nobody to torment yet.</div>
             ) : (
               <div className="chips">
                 {eligiblePlayers.map((p) => (
@@ -199,8 +199,9 @@ function AdminMissionComposer({
           <div className="field" style={{ marginTop: 22 }}>
             <label>Task pool ({missionTemplates.length})</label>
             <p className="muted" style={{ fontSize: 12, marginTop: -4, marginBottom: 8 }}>
-              Add a bunch of tasks here once — &quot;send random&quot; and the scheduler below pick
-              from these without telling you which one.
+              Write a load of humiliating nonsense in here once. &quot;Send random&quot; and the
+              scheduler pull from it without telling you which one landed, so you get to look
+              innocent while someone eats a raw onion.
             </p>
             {missionTemplates.length > 0 && (
               <div className="mission-list" style={{ marginBottom: 10 }}>
@@ -264,8 +265,8 @@ function AdminMissionComposer({
           <div className="field" style={{ marginTop: 22 }}>
             <label>Scheduler</label>
             <p className="muted" style={{ fontSize: 12, marginTop: -4, marginBottom: 8 }}>
-              Queue one for later — once it&#39;s queued, the time isn&#39;t shown back to you
-              either.
+              Set one going off later. Once it&#39;s queued the time is hidden from you as
+              well, so your shock will be almost convincing.
             </p>
             <div className="chips" style={{ marginBottom: 8 }}>
               {eligiblePlayers.map((p) => (
@@ -502,8 +503,8 @@ export default function MissionsPage() {
         <div className="card">
           <h2>No profile yet</h2>
           <p className="muted">
-            Your account isn&#39;t linked to a player on the board yet — ask whoever runs it to
-            add you from the Players panel.
+            You exist, technically, but not on the board. Go and ask whoever runs this to
+            add you from the Players panel, and try to sound like you deserve it.
           </p>
         </div>
       </div>
@@ -539,18 +540,16 @@ export default function MissionsPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Secret missions get sent to you by the admin at random moments during an
-              event — nobody else can see them, and you won&#39;t know if or when anyone
-              else gets one either. Snap a photo to &quot;Prove it&quot; and bank the
-              points it&#39;s worth, or decline it to clear it off your list without
-              doing it.
+              Stupid little jobs, sent to you at random, that nobody else can see. Do the
+              thing, photograph yourself doing the thing, get the points. Or press Decline,
+              which is the button for people who talk a big game in the group chat and then
+              do absolutely nothing.
             </p>
-            <h3 style={{ marginTop: 18 }}>How it counts</h3>
+            <h3 style={{ marginTop: 18 }}>The catch</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Points from a proved mission go straight onto your leaderboard score, and a
-              note shows up in History once you&#39;ve earned them. Once the event ends,
-              everyone&#39;s missions and photos become viewable together on Secret
-              Missions Review.
+              Every photo you upload gets kept. When the event ends, the whole lot goes up
+              on one page and we all sit and go through them together, worst player first.
+              No, you can&#39;t delete it. That&#39;s rather the point.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
@@ -563,7 +562,7 @@ export default function MissionsPage() {
 
       {missions.length === 0 ? (
         <div className="card" style={{ marginTop: 16 }}>
-          <div className="empty">No missions yet — check back later.</div>
+          <div className="empty">Nothing yet. Enjoy the quiet, it won&#39;t last.</div>
         </div>
       ) : (
         missions.map((m, i) => {
@@ -615,12 +614,13 @@ export default function MissionsPage() {
                   )}
                   {m.status === "declined" && (
                     <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                      Declined.
+                      Declined. Everyone will hear about it.
                     </p>
                   )}
                   {m.status === "completed" && (
                     <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                      Proved it — earned {m.points} pt{m.points === 1 ? "" : "s"} ✅
+                      Done. {m.points} pt{m.points === 1 ? "" : "s"}, and a photo that will
+                      follow you around forever ✅
                     </p>
                   )}
                   {errorFor[m.id] && (

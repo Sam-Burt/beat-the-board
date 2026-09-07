@@ -92,7 +92,7 @@ export default function PlayersPanel({
           {removeError && <div className="banner-note error" style={{ marginTop: 10 }}>{removeError}</div>}
           <div style={{ marginTop: 10 }}>
             {players.length === 0 ? (
-              <div className="empty">No one added yet.</div>
+              <div className="empty">Nobody yet. Bit lonely, this.</div>
             ) : (
               players.map((p) => {
                 const src = iconSrc(p.icon_id);
@@ -191,9 +191,9 @@ export default function PlayersPanel({
                           </button>
                         </div>
                         <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
-                          They&#39;ll see it on their Missions tab under &quot;My Eyes
-                          Only&quot; — and get a phone alert if they&#39;ve turned mission
-                          alerts on (it won&#39;t reveal the text on their lock screen).
+                          It lands on their Missions tab, and pings their phone if they&#39;ve
+                          got alerts on. The lock screen won&#39;t give away what it says, so
+                          they get the full moment of dread on opening it.
                         </p>
                       </form>
                     )}

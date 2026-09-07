@@ -82,7 +82,7 @@ export async function POST(request) {
     .from("hot_potato_history")
     .insert({ trip_id: trip.id, from_player_id: me.id, to_player_id: toPlayerId, note });
 
-  const pingBody = `${me.name} has passed the card to you…`;
+  const pingBody = `${me.name} has fobbed the card off on you. Lovely family you've got.`;
   await recordNotification(toPlayerId, {
     kind: "hot_potato",
     title: "Whoops 🌈",
