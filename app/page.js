@@ -123,7 +123,12 @@ export default function HomePage() {
           <h1 style={{ fontSize: 26 }}>No current event</h1>
           <div className="btn-row" style={{ justifyContent: "center", marginTop: 14 }}>
             {currentTrip && (
-              <button type="button" className="btn btn-ghost" onClick={() => setShowLastResults((v) => !v)}>
+              <button
+                type="button"
+                className="btn btn-signout"
+                style={{ textTransform: "uppercase" }}
+                onClick={() => setShowLastResults((v) => !v)}
+              >
                 {showLastResults ? "Hide last results" : "View last results"}
               </button>
             )}

@@ -962,6 +962,14 @@ label {
 .mission-proof-text {
   font-size: 15px;
 }
+.mission-proof-points {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--acid);
+  margin-top: 6px;
+}
 .mission-polaroid {
   flex: none;
   width: 88px;

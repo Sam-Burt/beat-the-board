@@ -50,7 +50,7 @@ export default function MissionsReviewPage() {
     setMissionsLoading(true);
     supabase
       .from("missions")
-      .select("id, player_id, title, text, status, photo_url, created_at")
+      .select("id, player_id, title, text, status, photo_url, points, created_at")
       .eq("trip_id", currentTrip.id)
       .order("created_at", { ascending: true })
       .then(({ data }) => {
@@ -167,9 +167,12 @@ export default function MissionsReviewPage() {
                     <div className="mission-proof-body">
                       {m.title && <div className="mission-proof-title">{m.title}</div>}
                       <div className="mission-proof-text">{m.text}</div>
+                      <div className="mission-proof-points">
+                        Worth {m.points} pt{m.points === 1 ? "" : "s"}
+                      </div>
                       <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
                         {m.status === "completed"
-                          ? "Proved it ✅"
+                          ? `Proved it — earned ${m.points} pt${m.points === 1 ? "" : "s"} ✅`
                           : m.status === "declined"
                             ? "Declined 🙅"
                             : "Never resolved"}

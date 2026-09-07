@@ -32,7 +32,7 @@ export async function POST(request) {
 
   const { data: mission } = await supabaseAdmin
     .from("missions")
-    .select("id, status, player_id, players (user_id)")
+    .select("id, status, player_id, trip_id, title, points, players (user_id)")
     .eq("id", missionId)
     .maybeSingle();
   if (!mission || mission.players?.user_id !== callerId) {
@@ -55,17 +55,38 @@ export async function POST(request) {
 
   const { data: publicUrlData } = supabaseAdmin.storage.from("mission-photos").getPublicUrl(path);
 
-  const { error: updateError } = await supabaseAdmin
+  // Atomic claim (same pattern as finalizeTrip's .is("finalized_at", null))
+  // so a double-submit can't award points twice: only the request that
+  // actually flips pending -> completed gets a row back here.
+  const { data: updated, error: updateError } = await supabaseAdmin
     .from("missions")
     .update({
       status: "completed",
       photo_url: publicUrlData.publicUrl,
       responded_at: new Date().toISOString(),
     })
-    .eq("id", missionId);
+    .eq("id", missionId)
+    .eq("status", "pending")
+    .select()
+    .maybeSingle();
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true, photoUrl: publicUrlData.publicUrl });
+  if (updated && mission.points > 0) {
+    if (mission.trip_id) {
+      await supabaseAdmin.from("point_adjustments").insert({
+        trip_id: mission.trip_id,
+        player_id: mission.player_id,
+        amount: mission.points,
+        note: mission.title
+          ? `Completed a secret mission: "${mission.title}"`
+          : "Completed a secret mission",
+      });
+    } else {
+      console.error(`mission ${missionId} completed with no trip_id — points not awarded`);
+    }
+  }
+
+  return NextResponse.json({ ok: true, photoUrl: publicUrlData.publicUrl, points: mission.points });
 }

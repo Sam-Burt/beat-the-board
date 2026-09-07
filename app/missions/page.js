@@ -37,12 +37,14 @@ function AdminMissionComposer({
   const [playerId, setPlayerId] = useState(null);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
+  const [points, setPoints] = useState(5);
   const [sending, setSending] = useState(false);
   const [sentFor, setSentFor] = useState(null);
 
   // task pool
   const [poolTitle, setPoolTitle] = useState("");
   const [poolText, setPoolText] = useState("");
+  const [poolPoints, setPoolPoints] = useState(5);
   const [poolSaving, setPoolSaving] = useState(false);
 
   // scheduler
@@ -50,17 +52,19 @@ function AdminMissionComposer({
   const [schedRandom, setSchedRandom] = useState(true);
   const [schedTitle, setSchedTitle] = useState("");
   const [schedText, setSchedText] = useState("");
+  const [schedPoints, setSchedPoints] = useState(5);
   const [schedWhen, setSchedWhen] = useState("");
   const [schedSaving, setSchedSaving] = useState(false);
 
   async function handleSend() {
     if (!playerId || !text.trim()) return;
     setSending(true);
-    const result = await onSendMission({ playerId, title: title.trim(), text: text.trim() });
+    const result = await onSendMission({ playerId, title: title.trim(), text: text.trim(), points });
     setSending(false);
     if (result?.ok) {
       setTitle("");
       setText("");
+      setPoints(5);
       setSentFor(playerId);
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
     }
@@ -80,10 +84,11 @@ function AdminMissionComposer({
   async function handleAddTemplate() {
     if (!poolText.trim()) return;
     setPoolSaving(true);
-    await onAddTemplate({ title: poolTitle.trim(), text: poolText.trim() });
+    await onAddTemplate({ title: poolTitle.trim(), text: poolText.trim(), points: poolPoints });
     setPoolSaving(false);
     setPoolTitle("");
     setPoolText("");
+    setPoolPoints(5);
   }
 
   const canSchedule = schedPlayerId && schedWhen && (schedRandom || schedText.trim());
@@ -96,11 +101,13 @@ function AdminMissionComposer({
       title: schedRandom ? null : schedTitle.trim(),
       text: schedRandom ? null : schedText.trim(),
       random: schedRandom,
+      points: schedPoints,
       scheduledFor: new Date(schedWhen).toISOString(),
     });
     setSchedSaving(false);
     setSchedTitle("");
     setSchedText("");
+    setSchedPoints(5);
     setSchedWhen("");
     setSchedPlayerId(null);
   }
@@ -136,16 +143,30 @@ function AdminMissionComposer({
           </div>
 
           <div className="field">
-            <label htmlFor="mission-title">Mission title (optional)</label>
-            <input
-              id="mission-title"
-              type="text"
-              placeholder="e.g. Operation Sneaky Snack"
-              maxLength={60}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              style={{ marginBottom: 8 }}
-            />
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              <div style={{ flex: 1 }}>
+                <label htmlFor="mission-title">Mission title (optional)</label>
+                <input
+                  id="mission-title"
+                  type="text"
+                  placeholder="e.g. Operation Sneaky Snack"
+                  maxLength={60}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div style={{ width: 76 }}>
+                <label htmlFor="mission-points">Points</label>
+                <input
+                  id="mission-points"
+                  type="number"
+                  min={0}
+                  max={999}
+                  value={points}
+                  onChange={(e) => setPoints(Math.max(0, Number(e.target.value) || 0))}
+                />
+              </div>
+            </div>
             <textarea
               placeholder="What do they have to do?"
               maxLength={280}
@@ -188,6 +209,7 @@ function AdminMissionComposer({
                     <div className="mission-text">
                       {m.title && <strong>{m.title} — </strong>}
                       {m.text}
+                      <span className="muted"> ({m.points} pt{m.points === 1 ? "" : "s"})</span>
                     </div>
                     <button
                       type="button"
@@ -201,14 +223,25 @@ function AdminMissionComposer({
                 ))}
               </div>
             )}
-            <input
-              type="text"
-              placeholder="Title (optional)"
-              maxLength={60}
-              value={poolTitle}
-              onChange={(e) => setPoolTitle(e.target.value)}
-              style={{ marginBottom: 8 }}
-            />
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              <input
+                type="text"
+                placeholder="Title (optional)"
+                maxLength={60}
+                value={poolTitle}
+                onChange={(e) => setPoolTitle(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <input
+                type="number"
+                min={0}
+                max={999}
+                aria-label="Points"
+                value={poolPoints}
+                onChange={(e) => setPoolPoints(Math.max(0, Number(e.target.value) || 0))}
+                style={{ width: 76 }}
+              />
+            </div>
             <textarea
               placeholder="Add a task to the pool…"
               maxLength={280}
@@ -258,14 +291,25 @@ function AdminMissionComposer({
             </label>
             {!schedRandom && (
               <>
-                <input
-                  type="text"
-                  placeholder="Title (optional)"
-                  maxLength={60}
-                  value={schedTitle}
-                  onChange={(e) => setSchedTitle(e.target.value)}
-                  style={{ marginBottom: 8 }}
-                />
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="Title (optional)"
+                    maxLength={60}
+                    value={schedTitle}
+                    onChange={(e) => setSchedTitle(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <input
+                    type="number"
+                    min={0}
+                    max={999}
+                    aria-label="Points"
+                    value={schedPoints}
+                    onChange={(e) => setSchedPoints(Math.max(0, Number(e.target.value) || 0))}
+                    style={{ width: 76 }}
+                  />
+                </div>
                 <textarea
                   placeholder="What do they have to do?"
                   maxLength={280}
@@ -302,6 +346,12 @@ function AdminMissionComposer({
                       <div className="mission-text">
                         Queued for <strong>{p?.name || "someone"}</strong> —{" "}
                         {s.random ? "random from pool" : s.title || "custom task"}
+                        {!s.random && (
+                          <span className="muted">
+                            {" "}
+                            ({s.points} pt{s.points === 1 ? "" : "s"})
+                          </span>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -397,7 +447,7 @@ export default function MissionsPage() {
     function load() {
       supabase
         .from("missions")
-        .select("id, title, text, status, photo_url, created_at")
+        .select("id, title, text, status, photo_url, points, created_at")
         .eq("player_id", me.id)
         .eq("trip_id", currentTrip.id)
         .order("created_at", { ascending: false })
@@ -496,6 +546,9 @@ export default function MissionsPage() {
                     })}
                   </div>
                   <div className="mission-proof-text">{m.text}</div>
+                  <div className="mission-proof-points">
+                    Worth {m.points} pt{m.points === 1 ? "" : "s"}
+                  </div>
 
                   {pending && (
                     <div className="btn-row" style={{ marginTop: 12 }}>
@@ -527,6 +580,11 @@ export default function MissionsPage() {
                   {m.status === "declined" && (
                     <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
                       Declined.
+                    </p>
+                  )}
+                  {m.status === "completed" && (
+                    <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+                      Proved it — earned {m.points} pt{m.points === 1 ? "" : "s"} ✅
                     </p>
                   )}
                   {errorFor[m.id] && (

@@ -26,7 +26,7 @@ export async function POST(request) {
 
   const { data: due } = await supabaseAdmin
     .from("scheduled_missions")
-    .select("id, player_id, title, text, random")
+    .select("id, player_id, title, text, random, points")
     .is("sent_at", null)
     .lte("scheduled_for", new Date().toISOString())
     .limit(20);
@@ -50,11 +50,11 @@ export async function POST(request) {
   let pool = null;
   async function pickRandom() {
     if (pool === null) {
-      const { data } = await supabaseAdmin.from("mission_templates").select("title, text");
+      const { data } = await supabaseAdmin.from("mission_templates").select("title, text, points");
       pool = data || [];
     }
     if (!pool.length) {
-      return { title: null, text: "Do something sneaky before the day's out 👀" };
+      return { title: null, text: "Do something sneaky before the day's out 👀", points: 5 };
     }
     return pool[Math.floor(Math.random() * pool.length)];
   }
@@ -63,16 +63,18 @@ export async function POST(request) {
   for (const row of due) {
     let title = row.title;
     let text = row.text;
+    let points = row.points ?? 5;
     if (row.random) {
       const picked = await pickRandom();
       title = picked.title || null;
       text = picked.text;
+      points = picked.points;
     }
     if (!text) continue;
 
     const { error: insertError } = await supabaseAdmin
       .from("missions")
-      .insert({ player_id: row.player_id, title, text, trip_id: currentTrip?.id ?? null });
+      .insert({ player_id: row.player_id, title, text, points, trip_id: currentTrip?.id ?? null });
     if (insertError) continue;
 
     await recordNotification(row.player_id, {

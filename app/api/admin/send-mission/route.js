@@ -24,12 +24,14 @@ export async function POST(request) {
 
   let title = (body.title || "").trim() || null;
   let text = (body.text || "").trim();
+  let points = Number.isFinite(body.points) ? Math.max(0, Math.round(body.points)) : 5;
 
   // "Send a random one" — picked here, server-side, so the admin genuinely
   // doesn't see which task from the pool went out (same spirit as the
-  // scheduler below picking a random one at fire time).
+  // scheduler below picking a random one at fire time). Points come along
+  // with whichever task gets picked, same as title/text.
   if (body.random) {
-    const { data: pool } = await supabaseAdmin.from("mission_templates").select("title, text");
+    const { data: pool } = await supabaseAdmin.from("mission_templates").select("title, text, points");
     if (!pool?.length) {
       return NextResponse.json(
         { error: "The mission pool is empty — add some tasks first." },
@@ -39,6 +41,7 @@ export async function POST(request) {
     const picked = pool[Math.floor(Math.random() * pool.length)];
     title = picked.title || null;
     text = picked.text;
+    points = picked.points;
   }
 
   if (!text) {
@@ -55,7 +58,7 @@ export async function POST(request) {
 
   const { data: mission, error: insertError } = await supabaseAdmin
     .from("missions")
-    .insert({ player_id: playerId, title, text, trip_id: trip?.id ?? null })
+    .insert({ player_id: playerId, title, text, points, trip_id: trip?.id ?? null })
     .select()
     .single();
   if (insertError) {

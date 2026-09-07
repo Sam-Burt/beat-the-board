@@ -202,6 +202,15 @@ insert into storage.buckets (id, name, public)
 values ('mission-photos', 'mission-photos', true)
 on conflict (id) do nothing;
 
+-- Missions are now worth points, paid out as a point_adjustments row (same
+-- table/mechanism as the admin's free-form point awards, so it shows up in
+-- History for free) the moment app/api/missions/upload-proof marks one
+-- completed. Set wherever a mission is actually created — by hand, from the
+-- pool, or via the scheduler — never guessed after the fact.
+alter table missions add column if not exists points integer not null default 5;
+alter table mission_templates add column if not exists points integer not null default 5;
+alter table scheduled_missions add column if not exists points integer;
+
 -- ---------------------------------------------------------------------------
 -- Push notification subscriptions — one row per device/browser a player has
 -- turned mission alerts on for. A player manages their own rows (added when
