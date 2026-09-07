@@ -22,7 +22,9 @@ export default function EventCelebration({ trophy, winner, onDismiss }) {
         ))}
       </div>
       <div className="card celebration-card" onClick={(e) => e.stopPropagation()}>
-        <div className="celebration-kicker">🏆 Event won!</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="celebration-crown" src="/icons/crown-celebration.png" alt="" />
+        <div className="celebration-kicker">Event won!</div>
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="celebration-badge" src={src} alt="" />

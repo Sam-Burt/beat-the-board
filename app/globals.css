@@ -1369,6 +1369,13 @@ label {
     opacity: 1;
   }
 }
+.celebration-crown {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 8px;
+}
 .celebration-kicker {
   color: var(--acid);
   font-size: 13px;
