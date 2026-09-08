@@ -48,6 +48,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "playerId and text are required." }, { status: 400 });
   }
 
+  // A mission belongs to an event — the Missions tab only shows missions
+  // for the current one, so one sent with no event running would ping
+  // somebody's phone and then be nowhere to be found when they opened the
+  // app. Refuse instead of sending it into the void.
   const { data: trip } = await supabaseAdmin
     .from("trips")
     .select("id")
@@ -55,10 +59,16 @@ export async function POST(request) {
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (!trip) {
+    return NextResponse.json(
+      { error: "There's no event running — start one before sending missions." },
+      { status: 400 }
+    );
+  }
 
   const { data: mission, error: insertError } = await supabaseAdmin
     .from("missions")
-    .insert({ player_id: playerId, title, text, points, trip_id: trip?.id ?? null })
+    .insert({ player_id: playerId, title, text, points, trip_id: trip.id })
     .select()
     .single();
   if (insertError) {
@@ -67,8 +77,8 @@ export async function POST(request) {
 
   await recordNotification(playerId, {
     kind: "mission",
-    title: "🤫 Shhh…",
-    body: "You've got a secret mission 👀",
+    title: "🤫 Don't tell anyone",
+    body: "You've got a secret mission. Try not to bottle it like last time.",
     url: "/missions",
   });
 

@@ -9,18 +9,24 @@ import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
-// Local "now, in the browser's timezone" value for the scheduler's
-// datetime-local input's min attribute — can't schedule into the past.
-function nowLocalValue() {
-  const d = new Date();
+// datetime-local inputs want "YYYY-MM-DDTHH:MM" in the browser's own
+// timezone, which is what the scheduler's min (no scheduling into the past)
+// and max (no scheduling past the event's deadline — a mission that fires
+// after the final whistle is worth nothing) are built from.
+function toLocalValue(date) {
   const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(
-    d.getMinutes()
-  )}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}`;
+}
+
+function nowLocalValue() {
+  return toLocalValue(new Date());
 }
 
 function AdminMissionComposer({
   players,
+  currentTrip,
   missionTemplates,
   scheduledMissions,
   onSendMission,
@@ -32,6 +38,10 @@ function AdminMissionComposer({
 }) {
   const [open, setOpen] = useState(false);
   const eligiblePlayers = players.filter((p) => p.user_id);
+  const eventRunning = !!currentTrip && currentTrip.status !== "finalized";
+  // Nothing can be queued past the deadline — it would fire into an event
+  // that's already been finalized and cleared out.
+  const schedMax = currentTrip?.deadline ? toLocalValue(new Date(currentTrip.deadline)) : undefined;
 
   // send-now composer
   const [playerId, setPlayerId] = useState(null);
@@ -91,7 +101,12 @@ function AdminMissionComposer({
     setPoolPoints(5);
   }
 
-  const canSchedule = schedPlayerId && schedWhen && (schedRandom || schedText.trim());
+  // The date input's max stops the obvious mistake, but a typed-in date can
+  // still slip past it on some browsers, so the deadline is checked here too.
+  const withinDeadline =
+    !currentTrip?.deadline || !schedWhen || new Date(schedWhen) <= new Date(currentTrip.deadline);
+  const canSchedule =
+    eventRunning && schedPlayerId && schedWhen && withinDeadline && (schedRandom || schedText.trim());
 
   async function handleSchedule() {
     if (!canSchedule) return;
@@ -267,7 +282,14 @@ function AdminMissionComposer({
             <p className="muted" style={{ fontSize: 12, marginTop: -4, marginBottom: 8 }}>
               Set one going off later. Once it&#39;s queued the time is hidden from you as
               well, so your shock will be almost convincing.
+              {currentTrip?.deadline && " Can't be set past the event's deadline."}
             </p>
+            {!eventRunning && (
+              <div className="empty" style={{ marginBottom: 8 }}>
+                No event running — missions belong to an event, so there&#39;s nothing to
+                queue one against.
+              </div>
+            )}
             <div className="chips" style={{ marginBottom: 8 }}>
               {eligiblePlayers.map((p) => (
                 <button
@@ -324,6 +346,8 @@ function AdminMissionComposer({
             <input
               type="datetime-local"
               min={nowLocalValue()}
+              max={schedMax}
+              disabled={!eventRunning}
               value={schedWhen}
               onChange={(e) => setSchedWhen(e.target.value)}
             />
@@ -665,6 +689,7 @@ export default function MissionsPage() {
       {isAdmin && (
         <AdminMissionComposer
           players={players}
+          currentTrip={currentTrip}
           missionTemplates={missionTemplates}
           scheduledMissions={scheduledMissions}
           onSendMission={sendMission}

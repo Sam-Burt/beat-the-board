@@ -211,6 +211,16 @@ alter table missions add column if not exists points integer not null default 5;
 alter table mission_templates add column if not exists points integer not null default 5;
 alter table scheduled_missions add column if not exists points integer;
 
+-- A queued mission belongs to the event it was queued for, and dies with it
+-- (see lib/tripFinalize.js, which clears the pending queue when an event
+-- finishes). Previously the trip was resolved at fire time instead, so a
+-- mission could outlive its event and land attached to nothing — the player
+-- got the alert, opened the app, and found an empty Missions tab, because
+-- that list is scoped to the current event. Nullable only because rows
+-- predating this column exist; lib/processDue.js bins those rather than
+-- firing them.
+alter table scheduled_missions add column if not exists trip_id uuid references trips (id) on delete cascade;
+
 -- ---------------------------------------------------------------------------
 -- Push notification subscriptions — one row per device/browser a player has
 -- turned mission alerts on for. A player manages their own rows (added when
