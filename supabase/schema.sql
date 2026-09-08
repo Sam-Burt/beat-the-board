@@ -610,3 +610,39 @@ begin
     alter publication supabase_realtime add table notifications;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Cron heartbeat — Postgres itself pings app/api/cron every 5 minutes via
+-- pg_cron + pg_net, so event deadlines finalize and scheduled missions send
+-- on time instead of waiting for someone to open the app. See that route
+-- for what actually runs; this just triggers it.
+--
+-- NOT run automatically by this file — it contains the CRON_SECRET, which
+-- doesn't belong in a file that gets committed to git. Run this by hand in
+-- the SQL Editor once, replacing YOUR_CRON_SECRET with the real value (the
+-- same one set as CRON_SECRET in Vercel's environment variables):
+--
+--   create extension if not exists pg_cron with schema extensions;
+--   create extension if not exists pg_net with schema extensions;
+--
+--   select cron.schedule(
+--     'beat-the-board-heartbeat',
+--     '*/5 * * * *',
+--     $$select net.http_post(
+--       url := 'https://beat-the-board.vercel.app/api/cron',
+--       headers := jsonb_build_object('x-cron-secret', 'YOUR_CRON_SECRET'),
+--       timeout_milliseconds := 15000
+--     );$$
+--   );
+--
+-- The 15s timeout matters more than it looks like it should: pg_net's
+-- default is 5000ms, and a cold Vercel function plus a couple of Supabase
+-- round-trips can take longer than that to answer, which silently drops
+-- every run until you notice net._http_response full of timeout errors.
+--
+-- cron.schedule() upserts by job name, so re-running this to change
+-- anything (a new secret, a different interval) is safe — it replaces the
+-- existing job rather than creating a duplicate. To check on it later:
+--   select * from cron.job;                                    -- is it registered and active
+--   select * from cron.job_run_details order by start_time desc limit 5;  -- did it fire
+--   select * from net._http_response order by id desc limit 5;           -- did the request succeed
