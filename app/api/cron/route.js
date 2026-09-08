@@ -53,6 +53,16 @@ async function handle(request) {
   if (trip) {
     const result = await finalizeTrip(trip);
     finalized = result.error ? { error: result.error } : { trip: trip.name, ...result };
+    // A failure here previously only showed up if you went digging through
+    // Supabase's net._http_response table for this run's raw response body
+    // — nothing landed in Vercel's own function logs. Log it directly so
+    // it's visible where you'd actually think to look. The trip itself is
+    // untouched by a failed attempt, so the next tick (5 minutes later)
+    // retries it on its own — this is a "make it visible" fix, not a
+    // "make it retry" fix, since it already retries.
+    if (result.error) {
+      console.error(`cron: failed to finalize trip "${trip.name}" (${trip.id}): ${result.error}`);
+    }
   }
 
   // Deliberately after the finalize above. If the cron has been down and is
