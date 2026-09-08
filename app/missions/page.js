@@ -50,6 +50,7 @@ function AdminMissionComposer({
   const [points, setPoints] = useState(5);
   const [sending, setSending] = useState(false);
   const [sentFor, setSentFor] = useState(null);
+  const [sentPushInfo, setSentPushInfo] = useState("");
 
   // task pool
   const [poolTitle, setPoolTitle] = useState("");
@@ -66,6 +67,15 @@ function AdminMissionComposer({
   const [schedWhen, setSchedWhen] = useState("");
   const [schedSaving, setSchedSaving] = useState(false);
 
+  // The route already knows exactly how many devices got pushed — worth
+  // showing, since "Sent!" on its own looks identical whether the mission
+  // actually buzzed someone's phone or quietly went nowhere.
+  function describePush(data) {
+    if (!data?.pushConfigured) return "";
+    if (data.pushed > 0) return ` (pinged ${data.pushed} device${data.pushed === 1 ? "" : "s"})`;
+    return " (no push — they haven't turned on mission alerts, or it's gone stale)";
+  }
+
   async function handleSend() {
     if (!playerId || !text.trim()) return;
     setSending(true);
@@ -76,6 +86,7 @@ function AdminMissionComposer({
       setText("");
       setPoints(5);
       setSentFor(playerId);
+      setSentPushInfo(describePush(result.data));
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
     }
   }
@@ -87,6 +98,7 @@ function AdminMissionComposer({
     setSending(false);
     if (result?.ok) {
       setSentFor(playerId);
+      setSentPushInfo(describePush(result.data));
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
     }
   }
@@ -210,6 +222,11 @@ function AdminMissionComposer({
               🎲 Send random from pool
             </button>
           </div>
+          {sentFor === playerId && sentPushInfo && (
+            <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+              {sentPushInfo}
+            </p>
+          )}
 
           <div className="field" style={{ marginTop: 22 }}>
             <label>Task pool ({missionTemplates.length})</label>

@@ -38,11 +38,13 @@ export default function HotPotatoPage() {
   const [adminViewOpen, setAdminViewOpen] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState("");
+  const [startPushInfo, setStartPushInfo] = useState("");
   const [passOpen, setPassOpen] = useState(false);
   const [passTo, setPassTo] = useState(null);
   const [passNote, setPassNote] = useState("");
   const [passing, setPassing] = useState(false);
   const [passError, setPassError] = useState("");
+  const [passPushInfo, setPassPushInfo] = useState("");
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -202,18 +204,33 @@ export default function HotPotatoPage() {
   const enabled = !!currentTrip?.hot_potato_enabled;
   const isHolder = !!state?.holder_id && state.holder_id === me.id;
 
+  // The route already knows exactly how many devices got pushed — worth
+  // showing, since "started"/"passed" looks identical whether it actually
+  // buzzed someone's phone or quietly went nowhere.
+  function describePush(data) {
+    if (!data?.pushConfigured) return "";
+    if (data.pushed > 0) return `Pinged ${data.pushed} device${data.pushed === 1 ? "" : "s"}.`;
+    return "No push went out — they haven't turned on mission alerts, or it's gone stale.";
+  }
+
   async function handleStart() {
     setStartError("");
+    setStartPushInfo("");
     setStarting(true);
     const result = await startHotPotato();
     setStarting(false);
-    if (!result?.ok) setStartError("Couldn't start it — try again.");
+    if (!result?.ok) {
+      setStartError("Couldn't start it — try again.");
+    } else {
+      setStartPushInfo(describePush(result.data));
+    }
   }
 
   async function handlePass(e) {
     e?.preventDefault();
     if (!passTo) return;
     setPassError("");
+    setPassPushInfo("");
     setPassing(true);
     const result = await passHotPotato({ toPlayerId: passTo, note: passNote.trim() });
     setPassing(false);
@@ -221,6 +238,7 @@ export default function HotPotatoPage() {
       setPassOpen(false);
       setPassTo(null);
       setPassNote("");
+      setPassPushInfo(describePush(result.data));
     } else {
       setPassError("Couldn't save that — try again.");
     }
@@ -303,6 +321,11 @@ export default function HotPotatoPage() {
                 {starting ? "Starting…" : "Start Gay Card"}
               </button>
               {startError && <div className="banner-note error">{startError}</div>}
+              {startPushInfo && (
+                <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                  {startPushInfo}
+                </p>
+              )}
             </>
           ) : (
             <p className="muted">Nothing&#39;s happening. Sit there and be patient.</p>
@@ -403,7 +426,14 @@ export default function HotPotatoPage() {
               )}
             </>
           ) : (
-            <p className="muted">🤐 It&#39;s out there. You&#39;ll find out the hard way.</p>
+            <>
+              <p className="muted">🤐 It&#39;s out there. You&#39;ll find out the hard way.</p>
+              {passPushInfo && (
+                <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                  {passPushInfo}
+                </p>
+              )}
+            </>
           )}
         </div>
       )}

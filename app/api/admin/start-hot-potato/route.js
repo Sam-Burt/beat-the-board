@@ -76,18 +76,23 @@ export async function POST(request) {
     url: "/hot-potato",
   });
 
-  if (pushConfigured) {
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth_key")
-      .eq("player_id", holderId);
-    if (subs?.length) {
-      const deadIds = await sendHotPotatoPing(subs, body);
-      if (deadIds.length) {
-        await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
-      }
+  if (!pushConfigured) {
+    return NextResponse.json({ started: true, pushed: 0, pushConfigured: false });
+  }
+
+  const { data: subs } = await supabaseAdmin
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth_key")
+    .eq("player_id", holderId);
+
+  let pushed = 0;
+  if (subs?.length) {
+    const deadIds = await sendHotPotatoPing(subs, body);
+    pushed = subs.length - deadIds.length;
+    if (deadIds.length) {
+      await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
     }
   }
 
-  return NextResponse.json({ started: true });
+  return NextResponse.json({ started: true, pushed, pushConfigured: true });
 }
