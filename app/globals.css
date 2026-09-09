@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Encode+Sans+Expanded:wght@400;500;600&display=swap");
 
 @font-face {
   font-family: "Striker";
@@ -28,7 +28,7 @@ label,
 .alerts-status,
 .celebration-subtext,
 .celebration-trip {
-  font-family: "Montserrat", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Encode Sans Expanded", "Archivo", ui-sans-serif, system-ui, sans-serif;
   font-weight: 600;
 }
 
