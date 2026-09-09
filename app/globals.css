@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Unbounded:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap");
 
 @font-face {
   font-family: "Striker";
@@ -8,29 +8,8 @@
   font-display: swap;
 }
 
-/* Small grey caption/meta text (timestamps, hints, footer, notes, form
-   labels, empty-state copy) reads better in a plain grotesque than the
-   display font used everywhere else — Striker stays for headings, buttons
-   and numbers, this is just for the quiet stuff underneath. */
-.muted,
-.empty,
-label,
-.step-hint,
-.history-date,
-.history-results .place,
-.history-note,
-.banner-note,
-.footer,
-.footer a,
-.bottom-nav-tab,
-.mission-proof-date,
-.mission-item .mission-date,
-.alerts-status,
-.celebration-subtext,
-.celebration-trip {
-  font-family: "Unbounded", "Archivo", ui-sans-serif, system-ui, sans-serif;
-  font-weight: 600;
-}
+/* Small grey caption/meta text — trying it back in Striker itself, same
+   as everything else, for comparison against the Unbounded pass. */
 
 :root {
   --pink: #e8228c;
