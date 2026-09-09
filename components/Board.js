@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PlayerAvatar from "./PlayerAvatar";
 
-export default function Board({ standings, trophyCounts, isAdmin, onAddPoints }) {
+export default function Board({ standings, trophyCounts, isAdmin, finalized, onAddPoints }) {
   const [openFor, setOpenFor] = useState(null); // player id
   const [amount, setAmount] = useState(1);
   const [note, setNote] = useState("");
@@ -56,6 +56,18 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
                         {wins > 1 && <span className="crown-count">{wins}</span>}
                       </span>
                     )}
+                    {p.cheatCount > 0 && (
+                      <span
+                        className="cheat-icon"
+                        title={`Caught cheating ${p.cheatCount} time${p.cheatCount === 1 ? "" : "s"}`}
+                      >
+                        {/* Placeholder emoji — swap for the growing-nose
+                            artwork once it's supplied, same "art lands
+                            later" pattern as the crown. */}
+                        🤥
+                        {p.cheatCount > 1 && <span className="crown-count">{p.cheatCount}</span>}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="board-pts num">{p.points}</div>
@@ -71,6 +83,13 @@ export default function Board({ standings, trophyCounts, isAdmin, onAddPoints })
               </div>
               {open && (
                 <form className="points-composer" onSubmit={(e) => handleAddPoints(p.id, e)}>
+                  {finalized && (
+                    <p className="muted" style={{ fontSize: 12, marginTop: -2, marginBottom: 8 }}>
+                      This event&#39;s already over — this revises the final result. A negative
+                      amount marks them as caught cheating; if it changes who won, the trophy
+                      moves and everyone gets told.
+                    </p>
+                  )}
                   <div className="points-amount-row">
                     <button
                       type="button"

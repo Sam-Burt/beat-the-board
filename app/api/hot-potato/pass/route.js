@@ -85,7 +85,7 @@ export async function POST(request) {
   const pingBody = `${me.name} has fobbed the card off on you. Lovely family you've got.`;
   await recordNotification(toPlayerId, {
     kind: "hot_potato",
-    title: "Whoops 🌈",
+    title: "GAAAAAYYYYY🌈",
     body: pingBody,
     url: "/hot-potato",
   });

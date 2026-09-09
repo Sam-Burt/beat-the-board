@@ -250,6 +250,7 @@ export default function HotPotatoPage() {
         <EventCelebration
           trophy={celebrating.trophy}
           winner={celebrating.winner}
+          variant={celebrating.variant}
           onDismiss={dismiss}
         />
       )}

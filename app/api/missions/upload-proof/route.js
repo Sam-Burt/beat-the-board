@@ -32,7 +32,7 @@ export async function POST(request) {
 
   const { data: mission } = await supabaseAdmin
     .from("missions")
-    .select("id, status, player_id, trip_id, title, points, players (user_id)")
+    .select("id, status, player_id, trip_id, title, points, players (user_id), trips (status)")
     .eq("id", missionId)
     .maybeSingle();
   if (!mission || mission.players?.user_id !== callerId) {
@@ -40,6 +40,14 @@ export async function POST(request) {
   }
   if (mission.status !== "pending") {
     return NextResponse.json({ error: "This mission's already been dealt with." }, { status: 400 });
+  }
+  // The event this mission belongs to is over — the only place it's still
+  // visible from here is Secret Missions Review, and scores are frozen
+  // (bar the admin correcting them). Matches the UI, which stops offering
+  // "Prove it" the moment the trip finalizes — this is the same rule
+  // enforced server-side, in case a stale page tries anyway.
+  if (mission.trips?.status === "finalized") {
+    return NextResponse.json({ error: "That event's already over." }, { status: 400 });
   }
 
   const ext = (photo.type.split("/")[1] || "jpg").replace(/[^a-z0-9]/gi, "") || "jpg";

@@ -10,9 +10,16 @@ const CONFETTI = Array.from({ length: CONFETTI_COUNT }, (_, i) => i);
 // winner (see lib/useEventCelebration.js) — whoever has the app open at
 // that point sees the badge, the winner's name/icon and their final score
 // before dismissing it. Purely CSS confetti/pop-in, no libraries.
-export default function EventCelebration({ trophy, winner, onDismiss }) {
+//
+// variant="var" is the same takeover reused for a VAR overturn (see
+// app/api/admin/revise-score) — the admin corrected a score after the
+// event was already decided and it changed who won. Same layout, red
+// instead of green, and it announces the trophy's new holder rather than
+// its first one.
+export default function EventCelebration({ trophy, winner, variant = "win", onDismiss }) {
   if (!trophy) return null;
   const src = badgeSrc(trophy.badge_id);
+  const isVar = variant === "var";
 
   return (
     <div className="celebration-backdrop" onClick={onDismiss}>
@@ -21,10 +28,18 @@ export default function EventCelebration({ trophy, winner, onDismiss }) {
           <span key={i} className={`confetti-piece c${i % 6}`} style={{ "--i": i }} />
         ))}
       </div>
-      <div className="card celebration-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`card celebration-card${isVar ? " celebration-card--var" : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="celebration-crown" src="/icons/crown-celebration.png" alt="" />
-        <div className="celebration-kicker">Well, go on then</div>
+        <div className="celebration-kicker">{isVar ? "📺 VAR" : "Well, go on then"}</div>
+        {isVar && (
+          <p className="muted" style={{ fontSize: 13, marginTop: -4, marginBottom: 10 }}>
+            The result&#39;s been overturned. New winner:
+          </p>
+        )}
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="celebration-badge" src={src} alt="" />

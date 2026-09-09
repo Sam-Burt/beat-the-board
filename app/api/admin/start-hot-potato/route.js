@@ -71,7 +71,7 @@ export async function POST(request) {
   const body = "You've been dealt the card. Out of everyone. Read into that what you will.";
   await recordNotification(holderId, {
     kind: "hot_potato",
-    title: "Whoops 🌈",
+    title: "GAAAAAYYYYY🌈",
     body,
     url: "/hot-potato",
   });

@@ -487,6 +487,15 @@ label {
   object-fit: contain;
   display: block;
 }
+.cheat-icon {
+  position: relative;
+  flex: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  font-size: 26px;
+}
 .crown-count {
   position: absolute;
   top: 50%;
@@ -1381,6 +1390,12 @@ label {
   letter-spacing: 0.14em;
   font-weight: 700;
   margin-bottom: 12px;
+}
+.celebration-card--var .celebration-kicker {
+  color: var(--pink);
+}
+.celebration-card--var .celebration-points {
+  color: var(--pink);
 }
 .celebration-badge {
   width: 120px;

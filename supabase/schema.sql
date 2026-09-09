@@ -646,3 +646,27 @@ end $$;
 --   select * from cron.job;                                    -- is it registered and active
 --   select * from cron.job_run_details order by start_time desc limit 5;  -- did it fire
 --   select * from net._http_response order by id desc limit 5;           -- did the request succeed
+
+-- ---------------------------------------------------------------------------
+-- VAR — the admin correcting scores after an event's already finalized
+-- (someone's proof turns out to be fake, a mission was claimed but not
+-- actually done, whatever it is). See app/api/admin/revise-score. Every
+-- other write in this app either happens live or never happens again once
+-- an event's over; this is the one deliberate exception, and only the
+-- admin can reach it.
+-- ---------------------------------------------------------------------------
+
+-- Set only when a trophy is reassigned after already being awarded once —
+-- distinguishes "first time this trip got a winner" from "the winner just
+-- changed" so useEventCelebration (see lib/) can tell a fresh win from a
+-- VAR overturn, and so the per-player "have I seen this trophy" dismissal
+-- key changes and the popup shows again for everyone even if they already
+-- dismissed the original announcement.
+alter table trophies add column if not exists revised_at timestamptz;
+
+-- How many times a player has been caught: a post-finalization NEGATIVE
+-- score revision from the admin. Drives the second icon next to the crown
+-- on the leaderboard (see components/Board.js) — a placeholder emoji until
+-- Sam supplies the actual "growing nose" artwork (see the note in
+-- public/icons/ once that lands).
+alter table players add column if not exists cheat_count integer not null default 0;

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
 import { supabase } from "../../lib/supabaseClient";
@@ -481,7 +482,13 @@ export default function MissionsPage() {
   // what makes the list actually reset once one event ends and the next
   // starts, instead of showing every mission ever sent.
   useEffect(() => {
-    if (!supabase || !me || !currentTrip) {
+    // Once the event's finalized, this tab is no longer where its missions
+    // live — Secret Missions Review is (see app/missions-review), and
+    // scores are frozen from here bar the admin correcting them. Clearing
+    // rather than just hiding the Prove it/Decline buttons means a mission
+    // sent right at the wire can't be actioned from a page that was already
+    // open when the deadline hit.
+    if (!supabase || !me || !currentTrip || currentTrip.status === "finalized") {
       setMissions([]);
       return;
     }
@@ -558,6 +565,7 @@ export default function MissionsPage() {
         <EventCelebration
           trophy={celebrating.trophy}
           winner={celebrating.winner}
+          variant={celebrating.variant}
           onDismiss={dismiss}
         />
       )}
@@ -601,7 +609,18 @@ export default function MissionsPage() {
         </div>
       )}
 
-      {missions.length === 0 ? (
+      {currentTrip?.status === "finalized" ? (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="empty">
+            That event&#39;s over — whatever you were sent lives on Secret Missions Review now.
+          </div>
+          <div className="btn-row" style={{ justifyContent: "center", marginTop: 12 }}>
+            <Link href="/missions-review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
+              See all secret missions
+            </Link>
+          </div>
+        </div>
+      ) : missions.length === 0 ? (
         <div className="card" style={{ marginTop: 16 }}>
           <div className="empty">Nothing yet. Enjoy the quiet, it won&#39;t last.</div>
         </div>

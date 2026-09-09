@@ -26,7 +26,7 @@ export async function POST(request) {
 
   const { data: mission } = await supabaseAdmin
     .from("missions")
-    .select("id, status, players (user_id)")
+    .select("id, status, players (user_id), trips (status)")
     .eq("id", missionId)
     .maybeSingle();
   if (!mission || mission.players?.user_id !== callerId) {
@@ -34,6 +34,9 @@ export async function POST(request) {
   }
   if (mission.status !== "pending") {
     return NextResponse.json({ error: "This mission's already been dealt with." }, { status: 400 });
+  }
+  if (mission.trips?.status === "finalized") {
+    return NextResponse.json({ error: "That event's already over." }, { status: 400 });
   }
 
   const { error } = await supabaseAdmin

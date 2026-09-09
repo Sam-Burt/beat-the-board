@@ -111,6 +111,7 @@ export default function HomePage() {
         <EventCelebration
           trophy={celebrating.trophy}
           winner={celebrating.winner}
+          variant={celebrating.variant}
           onDismiss={dismiss}
         />
       )}
@@ -157,7 +158,8 @@ export default function HomePage() {
           <Board
             standings={standings}
             trophyCounts={trophyCounts}
-            isAdmin={hasActiveEvent && isAdmin}
+            isAdmin={isAdmin}
+            finalized={currentTrip?.status === "finalized"}
             onAddPoints={addPointAdjustment}
           />
         </>
