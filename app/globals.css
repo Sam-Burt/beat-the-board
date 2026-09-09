@@ -39,7 +39,7 @@ body {
   background: linear-gradient(180deg, rgba(6, 4, 8, 0.1), rgba(6, 4, 8, 0.28)),
     url("/bg-pattern.png"), var(--card);
   color: var(--ink);
-  font-family: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Striker", "Archivo", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   line-height: 1.45;
   min-height: 100vh;
@@ -231,6 +231,14 @@ textarea {
      was happening here — this keeps the zoom from triggering in the first
      place rather than fighting it after the fact. */
   font-size: 16px;
+  font-family: inherit;
+}
+/* Every other input type (number, datetime-local, ...) isn't in the list
+   above since those keep their own layout rules elsewhere, but still needs
+   to pick up the page's font rather than the browser's UI default. */
+input,
+textarea,
+select {
   font-family: inherit;
 }
 input[type="date"] {
