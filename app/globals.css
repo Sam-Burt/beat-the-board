@@ -29,6 +29,7 @@ label,
 .celebration-subtext,
 .celebration-trip {
   font-family: "Montserrat", "Archivo", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
 }
 
 :root {
