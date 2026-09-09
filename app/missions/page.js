@@ -622,10 +622,7 @@ export default function MissionsPage() {
         </div>
       ) : missions.length === 0 ? (
         <div className="card" style={{ marginTop: 16 }}>
-          <div
-            className="empty"
-            style={{ fontFamily: '"Striker", "Archivo", sans-serif', textAlign: "center" }}
-          >
+          <div className="empty" style={{ textAlign: "center" }}>
             Nothing yet. Enjoy the quiet, it won&#39;t last.
           </div>
         </div>
