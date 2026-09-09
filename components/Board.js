@@ -46,9 +46,6 @@ export default function Board({ standings, trophyCounts, isAdmin, finalized, onA
                 <div className="board-name">
                   <div className="n">
                     <span className="name-text">{p.name}</span>
-                    <span className="stat">
-                      {p.roundsPlayed} round{p.roundsPlayed === 1 ? "" : "s"}
-                    </span>
                     {wins > 0 && (
                       <span className="crown" title={`${wins} event${wins === 1 ? "" : "s"} won`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}

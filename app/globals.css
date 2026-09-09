@@ -1384,6 +1384,7 @@ label {
   margin: 0 auto 8px;
 }
 .celebration-kicker {
+  font-family: "Striker", "Archivo", sans-serif;
   color: var(--acid);
   font-size: 13px;
   text-transform: uppercase;
@@ -1393,9 +1394,17 @@ label {
 }
 .celebration-card--var .celebration-kicker {
   color: var(--pink);
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
 }
 .celebration-card--var .celebration-points {
   color: var(--pink);
+}
+.celebration-subtext {
+  font-family: "Striker", "Archivo", sans-serif;
+  color: var(--ink-dim);
+  font-size: 13px;
 }
 .celebration-badge {
   width: 120px;
@@ -1418,12 +1427,14 @@ label {
   font-size: 32px;
 }
 .celebration-points {
+  font-family: "Striker", "Archivo", sans-serif;
   color: var(--acid);
   font-size: 22px;
   font-weight: 800;
   margin-top: 8px;
 }
 .celebration-trip {
+  font-family: "Striker", "Archivo", sans-serif;
   color: var(--ink-dim);
   font-size: 14px;
   margin-top: 4px;

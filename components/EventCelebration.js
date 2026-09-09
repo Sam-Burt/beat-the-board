@@ -34,9 +34,9 @@ export default function EventCelebration({ trophy, winner, variant = "win", onDi
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="celebration-crown" src="/icons/crown-celebration.png" alt="" />
-        <div className="celebration-kicker">{isVar ? "📺 VAR" : "Well, go on then"}</div>
+        <div className="celebration-kicker">{isVar ? "VAR" : "Well, go on then"}</div>
         {isVar && (
-          <p className="muted" style={{ fontSize: 13, marginTop: -4, marginBottom: 10 }}>
+          <p className="celebration-subtext" style={{ marginTop: -4, marginBottom: 10 }}>
             The result&#39;s been overturned. New winner:
           </p>
         )}
