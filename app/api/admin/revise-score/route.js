@@ -56,20 +56,12 @@ export async function POST(request) {
   }
 
   // A negative revision after the fact means someone claimed points they
-  // hadn't actually earned — that's what the cheat counter tracks, whether
-  // or not it happens to change who's in first.
+  // hadn't actually earned — that's what the cheat flag marks. It sticks
+  // around (badge on the board, no counter) until they next place first
+  // in a future round, at which point that win gets voided and the flag
+  // clears (see saveEvent in lib/useBoardData.js).
   if (amount < 0) {
-    const { data: player } = await supabaseAdmin
-      .from("players")
-      .select("cheat_count")
-      .eq("id", playerId)
-      .maybeSingle();
-    if (player) {
-      await supabaseAdmin
-        .from("players")
-        .update({ cheat_count: (player.cheat_count || 0) + 1 })
-        .eq("id", playerId);
-    }
+    await supabaseAdmin.from("players").update({ cheat_flagged: true }).eq("id", playerId);
   }
 
   const [{ data: roster }, { data: events }, { data: adjustments }] = await Promise.all([

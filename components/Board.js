@@ -53,16 +53,10 @@ export default function Board({ standings, trophyCounts, isAdmin, finalized, onA
                         {wins > 1 && <span className="crown-count">{wins}</span>}
                       </span>
                     )}
-                    {p.cheatCount > 0 && (
-                      <span
-                        className="cheat-icon"
-                        title={`Caught cheating ${p.cheatCount} time${p.cheatCount === 1 ? "" : "s"}`}
-                      >
-                        {/* Placeholder emoji — swap for the growing-nose
-                            artwork once it's supplied, same "art lands
-                            later" pattern as the crown. */}
-                        🤥
-                        {p.cheatCount > 1 && <span className="crown-count">{p.cheatCount}</span>}
+                    {p.cheatFlagged && (
+                      <span className="cheat-icon" title="Caught cheating — cleared after their next win">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/icons/cheater-icon.png" alt="" />
                       </span>
                     )}
                   </div>

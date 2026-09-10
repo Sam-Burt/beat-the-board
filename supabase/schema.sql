@@ -680,9 +680,20 @@ end $$;
 -- dismissed the original announcement.
 alter table trophies add column if not exists revised_at timestamptz;
 
--- How many times a player has been caught: a post-finalization NEGATIVE
--- score revision from the admin. Drives the second icon next to the crown
--- on the leaderboard (see components/Board.js) — a placeholder emoji until
--- Sam supplies the actual "growing nose" artwork (see the note in
--- public/icons/ once that lands).
-alter table players add column if not exists cheat_count integer not null default 0;
+-- Set on a post-finalization NEGATIVE score revision from the admin —
+-- drives the second icon next to the crown on the leaderboard (see
+-- components/Board.js). Not a running count: it's a sticky flag that
+-- clears itself the next time this player places first in a round (see
+-- saveEvent in lib/useBoardData.js), which also voids that win's points
+-- as the penalty.
+alter table players add column if not exists cheat_flagged boolean not null default false;
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_name = 'players' and column_name = 'cheat_count'
+  ) then
+    update players set cheat_flagged = true where cheat_count > 0;
+    alter table players drop column cheat_count;
+  end if;
+end $$;
