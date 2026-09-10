@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
+import { useLeroyAlert } from "../../lib/useLeroyAlert";
 import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
+import LeroyAlert from "../../components/LeroyAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 export default function HotPotatoPage() {
@@ -21,11 +23,13 @@ export default function HotPotatoPage() {
     currentTrip,
     isAdmin,
     trophies,
+    leroySends,
     startHotPotato,
     passHotPotato,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
@@ -253,6 +257,9 @@ export default function HotPotatoPage() {
           variant={celebrating.variant}
           onDismiss={dismiss}
         />
+      )}
+      {leroyAlert && (
+        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
       )}
 
       <div className="card header-card">

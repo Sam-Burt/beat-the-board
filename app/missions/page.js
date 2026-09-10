@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
+import { useLeroyAlert } from "../../lib/useLeroyAlert";
 import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
+import LeroyAlert from "../../components/LeroyAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 // datetime-local inputs want "YYYY-MM-DDTHH:MM" in the browser's own
@@ -426,6 +428,7 @@ export default function MissionsPage() {
     players,
     currentTrip,
     trophies,
+    leroySends,
     isAdmin,
     missionTemplates,
     scheduledMissions,
@@ -468,6 +471,7 @@ export default function MissionsPage() {
   }
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -568,6 +572,9 @@ export default function MissionsPage() {
           variant={celebrating.variant}
           onDismiss={dismiss}
         />
+      )}
+      {leroyAlert && (
+        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
       )}
       <div className="card header-card">
         <div className="header-card-title-row">

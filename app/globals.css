@@ -1475,6 +1475,23 @@ label {
   font-size: 14px;
   margin-top: 4px;
 }
+.celebration-card--leroy .celebration-kicker {
+  color: var(--pink);
+  margin-top: 12px;
+}
+.celebration-card--leroy .celebration-winner {
+  margin-bottom: 6px;
+}
+.leroy-headline {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 26px;
+  line-height: 1.2;
+  text-wrap: balance;
+  margin: 0 0 14px;
+}
 
 /* admin sign-in / setup pages */
 .auth-wrap {

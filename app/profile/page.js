@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
+import { useLeroyAlert } from "../../lib/useLeroyAlert";
 import { supabase } from "../../lib/supabaseClient";
 import { iconSrc } from "../../lib/icons";
 import IconPicker from "../../components/IconPicker";
@@ -12,6 +13,7 @@ import TrophyCabinet from "../../components/TrophyCabinet";
 import BottomNav from "../../components/BottomNav";
 import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
+import LeroyAlert from "../../components/LeroyAlert";
 import {
   pushSupported,
   runningStandalone,
@@ -32,11 +34,13 @@ export default function ProfilePage() {
     currentTrip,
     trophies,
     myTrophies,
+    leroySends,
     updateMyIcon,
     updateMyName,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
 
   // A single "Edit profile" toggle (top-right of the hero card) now covers
   // both the display name and the icon, instead of separate pencils on
@@ -167,6 +171,9 @@ export default function ProfilePage() {
           variant={celebrating.variant}
           onDismiss={dismiss}
         />
+      )}
+      {leroyAlert && (
+        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
       )}
       <div className="card profile-hero">
         <div className="profile-icon-btn">

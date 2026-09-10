@@ -56,6 +56,25 @@ const HOT_POTATO_TAB = {
   ),
 };
 
+// Always available (not tied to a per-event toggle, unlike Gay Card) —
+// every player gets exactly one send per event, so this tab is where
+// they use it and where they can see if Leroy's currently on their tail.
+const LEROY_TAB = {
+  href: "/leroy",
+  label: "Leroy",
+  icon: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path
+        d="M12 3c-3 0-5 2-5 5v3c0 3.5 2.3 6 5 6s5-2.5 5-6V8c0-3-2-5-5-5Z"
+        strokeLinejoin="round"
+      />
+      <path d="M9 11.5c0 .8.6 1.5 1.3 1.5" strokeLinecap="round" />
+      <path d="M14.7 11.5c0 .8-.6 1.5-1.3 1.5" strokeLinecap="round" />
+      <path d="M8 9h3M13 9h3" strokeLinecap="round" />
+    </svg>
+  ),
+};
+
 // A fixed app-style tab bar, shown only to a signed-in player who has a
 // profile to navigate to (me). Kept as a separate component (rather than
 // living in Footer) so every page that needs it just renders <BottomNav />
@@ -106,8 +125,14 @@ export default function BottomNav({ session, me, hotPotatoEnabled }) {
 
   if (!session || !me) return null;
 
-  const tabs = hotPotatoEnabled ? [TABS[0], TABS[1], HOT_POTATO_TAB, TABS[2]] : TABS;
-  const dotFor = { "/missions": unreadKinds.has("mission"), "/hot-potato": unreadKinds.has("hot_potato") };
+  const tabs = hotPotatoEnabled
+    ? [TABS[0], TABS[1], LEROY_TAB, HOT_POTATO_TAB, TABS[2]]
+    : [TABS[0], TABS[1], LEROY_TAB, TABS[2]];
+  const dotFor = {
+    "/missions": unreadKinds.has("mission"),
+    "/hot-potato": unreadKinds.has("hot_potato"),
+    "/leroy": unreadKinds.has("leroy"),
+  };
 
   return (
     <nav className="bottom-nav" aria-label="Main">

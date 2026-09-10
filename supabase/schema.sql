@@ -625,6 +625,12 @@ begin
   ) then
     alter publication supabase_realtime add table notifications;
   end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'leroy_sends'
+  ) then
+    alter publication supabase_realtime add table leroy_sends;
+  end if;
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -683,9 +689,9 @@ alter table trophies add column if not exists revised_at timestamptz;
 -- Set on a post-finalization NEGATIVE score revision from the admin —
 -- drives the second icon next to the crown on the leaderboard (see
 -- components/Board.js). Not a running count: it's a sticky flag that
--- clears itself the next time this player places first in a round (see
--- saveEvent in lib/useBoardData.js), which also voids that win's points
--- as the penalty.
+-- clears itself the next time this player plays a round at all — win,
+-- lose, whatever (see saveEvent in lib/useBoardData.js) — which also
+-- voids that round's points and costs them 5 more, as the penalty.
 alter table players add column if not exists cheat_flagged boolean not null default false;
 do $$
 begin
@@ -697,3 +703,35 @@ begin
     alter table players drop column cheat_count;
   end if;
 end $$;
+
+-- Leroy: any player can send him after exactly one other player, once per
+-- event, to steal points off them — same delayed-trigger shape as the
+-- cheat flag (see above), resolved the next time the target plays any
+-- round, not necessarily one they win. Unlike the cheat flag it also has
+-- a shelf life: if the target doesn't play again within 18 hours the
+-- whole thing just quietly expires unresolved (see saveEvent).
+create table if not exists leroy_sends (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  sender_id uuid not null references players (id) on delete cascade,
+  target_id uuid not null references players (id) on delete cascade,
+  amount integer not null default 5,
+  sent_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  resolved_at timestamptz
+);
+alter table leroy_sends enable row level security;
+
+drop policy if exists "leroy_sends read for everyone" on leroy_sends;
+create policy "leroy_sends read for everyone" on leroy_sends
+  for select using (true);
+
+-- Sending only ever happens through app/api/leroy/send (service role,
+-- checked server-side: real player, real roster, hasn't already used
+-- theirs this trip) — no insert policy needed for ordinary clients.
+-- Resolving one (on the target's next round) is a plain admin write from
+-- saveEvent, same pattern as every other in-game scoring effect.
+drop policy if exists "leroy_sends write for admins" on leroy_sends;
+create policy "leroy_sends write for admins" on leroy_sends
+  for update using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));

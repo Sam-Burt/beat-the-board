@@ -3,7 +3,14 @@
 import { useState } from "react";
 import PlayerAvatar from "./PlayerAvatar";
 
-export default function Board({ standings, trophyCounts, isAdmin, finalized, onAddPoints }) {
+export default function Board({
+  standings,
+  trophyCounts,
+  leroyTargetedIds,
+  isAdmin,
+  finalized,
+  onAddPoints,
+}) {
   const [openFor, setOpenFor] = useState(null); // player id
   const [amount, setAmount] = useState(1);
   const [note, setNote] = useState("");
@@ -56,9 +63,15 @@ export default function Board({ standings, trophyCounts, isAdmin, finalized, onA
                     {p.cheatFlagged && (
                       <span
                         className="cheat-icon"
-                        title="Caught cheating — their next win scores nothing and costs 5 more"
+                        title="Caught cheating — their next game scores nothing and costs 5 more"
                       >
                         <span className="cheat-label">Cheater</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/icons/cheater-icon.png" alt="" />
+                      </span>
+                    )}
+                    {!p.cheatFlagged && leroyTargetedIds?.has(p.id) && (
+                      <span className="cheat-icon" title="Leroy's coming — next game they play, he takes 5">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/icons/cheater-icon.png" alt="" />
                       </span>

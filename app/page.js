@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useBoardData } from "../lib/useBoardData";
 import { useEventCelebration } from "../lib/useEventCelebration";
+import { useLeroyAlert } from "../lib/useLeroyAlert";
 import { totals } from "../lib/points";
 import Header from "../components/Header";
 import Champion from "../components/Champion";
@@ -16,6 +17,7 @@ import History from "../components/History";
 import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
 import EventCelebration from "../components/EventCelebration";
+import LeroyAlert from "../components/LeroyAlert";
 
 export default function HomePage() {
   const {
@@ -31,6 +33,8 @@ export default function HomePage() {
     adjustments,
     trophies,
     trophyCounts,
+    leroySends,
+    leroyTargetedIds,
     session,
     isAdmin,
     me,
@@ -52,6 +56,7 @@ export default function HomePage() {
   // Hooks must run every render regardless of the early returns below, so
   // these live here rather than after the loading/configured checks.
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
   const [showLastResults, setShowLastResults] = useState(false);
   const [tripPanelOpen, setTripPanelOpen] = useState(false);
 
@@ -115,6 +120,9 @@ export default function HomePage() {
           onDismiss={dismiss}
         />
       )}
+      {leroyAlert && (
+        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+      )}
       <Header tripName={tripName} badgeId={currentTrip?.badge_id} isAdmin={isAdmin} />
 
       {saveError && <div className="banner-note error">{saveError}</div>}
@@ -158,6 +166,7 @@ export default function HomePage() {
           <Board
             standings={standings}
             trophyCounts={trophyCounts}
+            leroyTargetedIds={leroyTargetedIds}
             isAdmin={isAdmin}
             finalized={currentTrip?.status === "finalized"}
             onAddPoints={addPointAdjustment}
