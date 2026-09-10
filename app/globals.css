@@ -523,7 +523,7 @@ label {
   letter-spacing: 0.02em;
   text-transform: uppercase;
   font-size: 13px;
-  color: var(--danger);
+  color: var(--ink);
   white-space: nowrap;
 }
 .crown-count {
