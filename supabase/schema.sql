@@ -51,6 +51,17 @@ create table if not exists events (
   created_at timestamptz not null default now()
 );
 
+-- Team scoring: a logged round's ranking is now an ordered array of
+-- placement *groups* (jsonb) instead of a flat list of player ids — each
+-- group is whoever tied for that position, so a doubles match at tennis
+-- or badminton logs as one team per placement rather than forcing an
+-- arbitrary order between teammates ([[a,b],[c,d]] beats a coin flip
+-- between a and b). A normal solo result is just a run of singleton
+-- groups. See lib/points.js eventPoints() for how a group's points split
+-- evenly across its members.
+alter table events drop column if exists ranking;
+alter table events add column if not exists ranking jsonb not null default '[]'::jsonb;
+
 -- The single table of who is allowed to edit the board. There should only
 -- ever be one row in here — see the /admin/setup bootstrap flow, which is
 -- the only thing allowed to insert into this table, and only while it's
@@ -315,6 +326,11 @@ create table if not exists trophies (
   ends_on date,
   awarded_at timestamptz not null default now()
 );
+
+-- A trophy's snapshotted point total can now be a half-integer (a team
+-- splitting an odd block of placement points from a team-scored round,
+-- e.g. 2.5 each) — widen from integer so that value isn't rejected.
+alter table trophies alter column points type numeric using points::numeric;
 
 alter table trips enable row level security;
 alter table trip_players enable row level security;

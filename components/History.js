@@ -69,12 +69,20 @@ export default function History({ players, events, adjustments = [], isAdmin, on
               <span className="history-date">{fmtDate(ev.date)}</span>
             </div>
             <div className="history-results">
-              {ev.ranking.map((pid, idx) => (
-                <div className="row" key={pid + idx}>
+              {ev.ranking.map((group, idx) => (
+                <div className="row" key={idx}>
                   <span className="place">{idx + 1}.</span>
-                  <span className="hname">{playerLabel(pid)}</span>
+                  <span className="hname">
+                    {group.map((pid, i) => (
+                      <span key={pid}>
+                        {i > 0 && " + "}
+                        {playerLabel(pid)}
+                      </span>
+                    ))}
+                  </span>
                   <span className="pts">
-                    {pts[pid] || 0} pt{pts[pid] === 1 ? "" : "s"}
+                    {pts[group[0]] || 0} pt{pts[group[0]] === 1 ? "" : "s"}
+                    {group.length > 1 ? " each" : ""}
                   </span>
                 </div>
               ))}

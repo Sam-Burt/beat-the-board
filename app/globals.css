@@ -623,6 +623,10 @@ label {
   font-weight: 400;
   letter-spacing: 0.02em;
   font-size: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
 }
 .history-results .place {
   width: 20px;
