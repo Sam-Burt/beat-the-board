@@ -16,7 +16,7 @@ function hoursLeft(expiresAt) {
   return Math.max(0, Math.ceil(ms / (60 * 60 * 1000)));
 }
 
-export default function LeroyPage() {
+export default function TricksPage() {
   const router = useRouter();
   const {
     configured,
@@ -29,6 +29,8 @@ export default function LeroyPage() {
     trophies,
     leroySends,
     sendLeroy,
+    pointBoosts,
+    activateBoost,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
@@ -39,6 +41,8 @@ export default function LeroyPage() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
   const [pushInfo, setPushInfo] = useState("");
+  const [boosting, setBoosting] = useState(false);
+  const [boostError, setBoostError] = useState("");
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -90,6 +94,7 @@ export default function LeroyPage() {
   const incoming = leroySends.find(
     (l) => l.target_id === me.id && !l.resolved_at && new Date(l.expires_at) > now
   );
+  const myBoost = pointBoosts.find((b) => b.player_id === me.id);
 
   function describePush(data) {
     if (!data?.pushConfigured) return "";
@@ -109,6 +114,16 @@ export default function LeroyPage() {
       setPushInfo(describePush(result.data));
     } else {
       setSendError(result?.error || "Couldn't send him — try again.");
+    }
+  }
+
+  async function handleBoost() {
+    setBoostError("");
+    setBoosting(true);
+    const result = await activateBoost();
+    setBoosting(false);
+    if (!result?.ok) {
+      setBoostError(result?.error || "Couldn't activate it — try again.");
     }
   }
 
@@ -155,6 +170,13 @@ export default function LeroyPage() {
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
               He&#39;s only got 18 hours in him. If they don&#39;t play anything before then,
               he gives up and goes home empty-handed — nobody gets anything.
+            </p>
+            <h3 style={{ marginTop: 18 }}>Jackpot</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              One shot per event, same as Leroy — but on yourself. Activate it and whatever
+              you score in your next game gets doubled. It has nothing to do with Leroy
+              either way: he always takes exactly 5, boosted or not, and doubling never
+              makes him take more. Also 18 hours — use it or lose it.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
@@ -239,6 +261,48 @@ export default function LeroyPage() {
               : new Date(mySend.expires_at) > now
               ? "Still waiting on him."
               : "He never caught them in time."}
+          </p>
+        </div>
+      )}
+
+      <div className="subtitle" style={{ textAlign: "center", marginTop: 28 }}>
+        Jackpot
+      </div>
+      <div className="card hot-potato-card-face" style={{ marginTop: 8 }}>
+        <div className="boost-emoji" style={{ fontSize: 56 }} aria-hidden="true">
+          🎰
+        </div>
+        <div className="hot-potato-card-label">Double or Nothing</div>
+      </div>
+
+      {!eventLive && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <p className="muted" style={{ textAlign: "center" }}>
+            Nothing to double yet. Wait for an event to start.
+          </p>
+        </div>
+      )}
+
+      {eventLive && !myBoost && (
+        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
+          <p className="muted" style={{ marginBottom: 10 }}>
+            Double whatever you score in your next game. One use, for the whole event.
+          </p>
+          <button className="btn btn-primary" disabled={boosting} onClick={handleBoost}>
+            {boosting ? "Activating…" : "Activate Jackpot"}
+          </button>
+          {boostError && <div className="banner-note error">{boostError}</div>}
+        </div>
+      )}
+
+      {eventLive && myBoost && (
+        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
+          <p className="muted">
+            {myBoost.resolved_at
+              ? "Jackpot's been and gone this event."
+              : new Date(myBoost.expires_at) > now
+              ? "Jackpot's live — whatever you score in your next game doubles."
+              : "Jackpot expired before you played anything. Gone, unused."}
           </p>
         </div>
       )}

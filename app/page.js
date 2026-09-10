@@ -35,6 +35,7 @@ export default function HomePage() {
     trophyCounts,
     leroySends,
     leroyTargetedIds,
+    boostedIds,
     session,
     isAdmin,
     me,
@@ -167,6 +168,7 @@ export default function HomePage() {
             standings={standings}
             trophyCounts={trophyCounts}
             leroyTargetedIds={leroyTargetedIds}
+            boostedIds={boostedIds}
             isAdmin={isAdmin}
             finalized={currentTrip?.status === "finalized"}
             onAddPoints={addPointAdjustment}

@@ -631,6 +631,12 @@ begin
   ) then
     alter publication supabase_realtime add table leroy_sends;
   end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'point_boosts'
+  ) then
+    alter publication supabase_realtime add table point_boosts;
+  end if;
 end $$;
 
 -- ---------------------------------------------------------------------------
@@ -733,5 +739,37 @@ create policy "leroy_sends read for everyone" on leroy_sends
 -- saveEvent, same pattern as every other in-game scoring effect.
 drop policy if exists "leroy_sends write for admins" on leroy_sends;
 create policy "leroy_sends write for admins" on leroy_sends
+  for update using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+-- Jackpot ("boost" internally): the self-directed counterpart to Leroy —
+-- a player activates it on themselves, once per event, and it doubles
+-- whatever they score in their next round. Same delayed-trigger shape
+-- and 18-hour shelf life as Leroy, resolved alongside it in saveEvent,
+-- but the two never interact: Leroy is always a flat 5 regardless of any
+-- boost in play, and a boost never inflates what Leroy steals — see the
+-- comment in lib/useBoardData.js for why. A cheat-flagged round overrides
+-- a boost outright: there's nothing positive left to double once the
+-- cheat penalty has voided it.
+create table if not exists point_boosts (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  player_id uuid not null references players (id) on delete cascade,
+  activated_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  resolved_at timestamptz
+);
+alter table point_boosts enable row level security;
+
+drop policy if exists "point_boosts read for everyone" on point_boosts;
+create policy "point_boosts read for everyone" on point_boosts
+  for select using (true);
+
+-- Activating only ever happens through app/api/tricks/boost (service
+-- role, checked server-side: real player, hasn't already used theirs
+-- this trip) — no insert policy needed for ordinary clients. Resolving
+-- one is a plain admin write from saveEvent, same as Leroy.
+drop policy if exists "point_boosts write for admins" on point_boosts;
+create policy "point_boosts write for admins" on point_boosts
   for update using (auth.uid() in (select user_id from admins))
   with check (auth.uid() in (select user_id from admins));

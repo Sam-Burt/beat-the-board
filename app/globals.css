@@ -498,6 +498,21 @@ label {
   object-fit: contain;
   display: block;
 }
+/* Wraps every "status" badge that can show up next to a name (Cheater,
+   Leroy, Jackpot) as one group, pushed to the far right of the name row
+   — right up against the score column — rather than sitting right after
+   the crown. Also clears the crown's count badge, which pokes out past
+   its own box (see .crown-count's negative right offset below). One
+   auto margin on the group rather than on each badge individually, so
+   multiple badges for the same player sit together instead of each
+   trying to claim the free space. */
+.board-status-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding-left: 14px;
+}
 .cheat-icon {
   position: relative;
   flex: none;
@@ -506,12 +521,6 @@ label {
   align-items: center;
   align-self: center;
   gap: 6px;
-  /* Pushed to the far right of the name row (right up against the score
-     column) rather than sitting right after the crown — also clears the
-     crown's count badge, which pokes out past its own box (see
-     .crown-count's negative right offset below). */
-  margin-left: auto;
-  padding-left: 14px;
 }
 .cheat-icon img {
   width: 32px;
@@ -526,6 +535,26 @@ label {
   text-transform: uppercase;
   font-size: 13px;
   color: var(--ink);
+  white-space: nowrap;
+}
+.boost-icon {
+  position: relative;
+  flex: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.boost-emoji {
+  font-size: 24px;
+}
+.boost-label {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--acid);
   white-space: nowrap;
 }
 .crown-count {

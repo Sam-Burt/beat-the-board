@@ -7,6 +7,7 @@ export default function Board({
   standings,
   trophyCounts,
   leroyTargetedIds,
+  boostedIds,
   isAdmin,
   finalized,
   onAddPoints,
@@ -44,6 +45,9 @@ export default function Board({
           const rank = i + 1;
           const badgeClass = rank === 1 ? "r1" : rank === 2 ? "r2" : rank === 3 ? "r3" : "";
           const wins = trophyCounts?.[p.id] || 0;
+          const isLeroyTarget = !p.cheatFlagged && !!leroyTargetedIds?.has(p.id);
+          const isBoosted = !!boostedIds?.has(p.id);
+          const hasStatusIcon = p.cheatFlagged || isLeroyTarget || isBoosted;
           const open = openFor === p.id;
           return (
             <div className="board-row-wrap" key={p.id}>
@@ -60,20 +64,32 @@ export default function Board({
                         {wins > 1 && <span className="crown-count">{wins}</span>}
                       </span>
                     )}
-                    {p.cheatFlagged && (
-                      <span
-                        className="cheat-icon"
-                        title="Caught cheating — their next game scores nothing and costs 5 more"
-                      >
-                        <span className="cheat-label">Cheater</span>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/icons/cheater-icon.png" alt="" />
-                      </span>
-                    )}
-                    {!p.cheatFlagged && leroyTargetedIds?.has(p.id) && (
-                      <span className="cheat-icon" title="Leroy's coming — next game they play, he takes 5">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/icons/cheater-icon.png" alt="" />
+                    {hasStatusIcon && (
+                      <span className="board-status-icons">
+                        {p.cheatFlagged && (
+                          <span
+                            className="cheat-icon"
+                            title="Caught cheating — their next game scores nothing and costs 5 more"
+                          >
+                            <span className="cheat-label">Cheater</span>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/icons/cheater-icon.png" alt="" />
+                          </span>
+                        )}
+                        {isLeroyTarget && (
+                          <span className="cheat-icon" title="Leroy's coming — next game they play, he takes 5">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/icons/cheater-icon.png" alt="" />
+                          </span>
+                        )}
+                        {isBoosted && (
+                          <span className="boost-icon" title="Jackpot — their next game score doubles">
+                            <span className="boost-emoji" aria-hidden="true">
+                              🎰
+                            </span>
+                            <span className="boost-label">×2</span>
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>
