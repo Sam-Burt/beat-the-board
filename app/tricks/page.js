@@ -36,7 +36,8 @@ export default function TricksPage() {
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
   const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
 
-  const [helpOpen, setHelpOpen] = useState(false);
+  const [leroyHelpOpen, setLeroyHelpOpen] = useState(false);
+  const [boostHelpOpen, setBoostHelpOpen] = useState(false);
   const [target, setTarget] = useState(null);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -142,22 +143,11 @@ export default function TricksPage() {
       )}
 
       <div className="card header-card">
-        <div className="header-card-title-row">
-          <span className="card-help-btn-spacer" aria-hidden="true" />
-          <h1 style={{ fontSize: 26 }}>Tricks</h1>
-          <button
-            type="button"
-            className="card-help-btn"
-            onClick={() => setHelpOpen(true)}
-            aria-label="What is this?"
-          >
-            ?
-          </button>
-        </div>
+        <h1 style={{ fontSize: 26 }}>Tricks</h1>
       </div>
 
-      {helpOpen && (
-        <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
+      {leroyHelpOpen && (
+        <div className="modal-backdrop" onClick={() => setLeroyHelpOpen(false)}>
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>Leroy</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
@@ -171,15 +161,8 @@ export default function TricksPage() {
               He&#39;s only got 18 hours in him. If they don&#39;t play anything before then,
               he gives up and goes home empty-handed — nobody gets anything.
             </p>
-            <h3 style={{ marginTop: 18 }}>Jackpot</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              One shot per event, same as Leroy — but on yourself. Activate it and whatever
-              you score in your next game gets doubled. It has nothing to do with Leroy
-              either way: he always takes exactly 5, boosted or not, and doubling never
-              makes him take more. Also 18 hours — use it or lose it.
-            </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
-              <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
+              <button type="button" className="btn" onClick={() => setLeroyHelpOpen(false)}>
                 Close
               </button>
             </div>
@@ -187,72 +170,108 @@ export default function TricksPage() {
         </div>
       )}
 
-      <div className="subtitle" style={{ textAlign: "center", marginTop: 20 }}>
-        Leroy
-      </div>
-      <div className="card hot-potato-card-face" style={{ marginTop: 8 }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/icons/cheater-icon.png" alt="" style={{ width: 72, height: 72, objectFit: "contain" }} />
-        <div className="hot-potato-card-label">He&#39;s Available</div>
-      </div>
+      {boostHelpOpen && (
+        <div className="modal-backdrop" onClick={() => setBoostHelpOpen(false)}>
+          <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>Jackpot</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              One shot per event, same as Leroy — but on yourself. Activate it and whatever
+              you score in your next game gets doubled.
+            </p>
+            <h3 style={{ marginTop: 18 }}>Does it work with Leroy?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Not really, on purpose. He always takes exactly 5, boosted or not, and doubling
+              never makes him take more.
+            </p>
+            <h3 style={{ marginTop: 18 }}>Fine print</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Also 18 hours — use it or lose it.
+            </p>
+            <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
+              <button type="button" className="btn" onClick={() => setBoostHelpOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {!eventLive && (
-        <div className="card" style={{ marginTop: 16 }}>
-          <p className="muted" style={{ textAlign: "center" }}>
+      <div className="card trick-card" style={{ marginTop: 16 }}>
+        <div className="header-card-title-row">
+          <span className="card-help-btn-spacer" aria-hidden="true" />
+          <h2 style={{ fontSize: 20, textAlign: "center" }}>Leroy</h2>
+          <button
+            type="button"
+            className="card-help-btn"
+            onClick={() => setLeroyHelpOpen(true)}
+            aria-label="What is this?"
+          >
+            ?
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/leroy.png" alt="" style={{ width: 110, height: 110, objectFit: "contain" }} />
+          <div className="hot-potato-card-label" style={{ marginTop: 4 }}>
+            He&#39;s Available
+          </div>
+        </div>
+
+        {!eventLive && (
+          <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
             Nothing to send him after. Wait for an event to start.
           </p>
-        </div>
-      )}
+        )}
 
-      {eventLive && incoming && (
-        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
-          <p className="gay-card-title">Leroy&#39;s coming for you</p>
-          <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-            Next time you play anything, he takes {incoming.amount} points off you. About{" "}
-            {hoursLeft(incoming.expires_at)} hour{hoursLeft(incoming.expires_at) === 1 ? "" : "s"} left
-            on the clock.
-          </p>
-        </div>
-      )}
-
-      {eventLive && !mySend && (
-        <div className="card" style={{ marginTop: 16 }}>
-          <label>Who&#39;s getting Leroy?</label>
-          <div className="chips" style={{ marginTop: 6 }}>
-            {tripPlayers
-              .filter((p) => p.id !== me.id)
-              .map((p) => (
-                <button
-                  type="button"
-                  key={p.id}
-                  className={`chip${target === p.id ? " selected" : ""}`}
-                  onClick={() => setTarget(p.id)}
-                >
-                  <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
-                  {p.name}
-                </button>
-              ))}
-          </div>
-          <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-            One send, once, for the whole event — choose wisely.
-          </p>
-          <div className="btn-row" style={{ marginTop: 10 }}>
-            <button className="btn btn-primary" disabled={!target || sending} onClick={handleSend}>
-              {sending ? "Sending…" : "Send Leroy"}
-            </button>
-          </div>
-          {sendError && <div className="banner-note error">{sendError}</div>}
-          {pushInfo && (
-            <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-              {pushInfo}
+        {eventLive && incoming && (
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            <p className="gay-card-title">Leroy&#39;s coming for you</p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Next time you play anything, he takes {incoming.amount} points off you. About{" "}
+              {hoursLeft(incoming.expires_at)} hour{hoursLeft(incoming.expires_at) === 1 ? "" : "s"} left
+              on the clock.
             </p>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
-      {eventLive && mySend && (
-        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
-          <p className="muted">
+        {eventLive && !mySend && (
+          <div style={{ marginTop: 16 }}>
+            <label>Who&#39;s getting Leroy?</label>
+            <div className="chips" style={{ marginTop: 6 }}>
+              {tripPlayers
+                .filter((p) => p.id !== me.id)
+                .map((p) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    className={`chip${target === p.id ? " selected" : ""}`}
+                    onClick={() => setTarget(p.id)}
+                  >
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
+                    {p.name}
+                  </button>
+                ))}
+            </div>
+            <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+              One send, once, for the whole event — choose wisely.
+            </p>
+            <div className="btn-row" style={{ marginTop: 10 }}>
+              <button className="btn btn-primary" disabled={!target || sending} onClick={handleSend}>
+                {sending ? "Sending…" : "Send Leroy"}
+              </button>
+            </div>
+            {sendError && <div className="banner-note error">{sendError}</div>}
+            {pushInfo && (
+              <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                {pushInfo}
+              </p>
+            )}
+          </div>
+        )}
+
+        {eventLive && mySend && (
+          <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
             You sent Leroy after{" "}
             <strong>{players.find((p) => p.id === mySend.target_id)?.name || "someone"}</strong> this
             event.{" "}
@@ -262,50 +281,60 @@ export default function TricksPage() {
               ? "Still waiting on him."
               : "He never caught them in time."}
           </p>
-        </div>
-      )}
-
-      <div className="subtitle" style={{ textAlign: "center", marginTop: 28 }}>
-        Jackpot
-      </div>
-      <div className="card hot-potato-card-face" style={{ marginTop: 8 }}>
-        <div className="boost-emoji" style={{ fontSize: 56 }} aria-hidden="true">
-          🎰
-        </div>
-        <div className="hot-potato-card-label">Double or Nothing</div>
+        )}
       </div>
 
-      {!eventLive && (
-        <div className="card" style={{ marginTop: 16 }}>
-          <p className="muted" style={{ textAlign: "center" }}>
+      <div className="card trick-card" style={{ marginTop: 16 }}>
+        <div className="header-card-title-row">
+          <span className="card-help-btn-spacer" aria-hidden="true" />
+          <h2 style={{ fontSize: 20, textAlign: "center" }}>Jackpot</h2>
+          <button
+            type="button"
+            className="card-help-btn"
+            onClick={() => setBoostHelpOpen(true)}
+            aria-label="What is this?"
+          >
+            ?
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <div style={{ fontSize: 56 }} aria-hidden="true">
+            🎰
+          </div>
+          <div className="hot-potato-card-label" style={{ marginTop: 4 }}>
+            Double or Nothing
+          </div>
+        </div>
+
+        {!eventLive && (
+          <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
             Nothing to double yet. Wait for an event to start.
           </p>
-        </div>
-      )}
+        )}
 
-      {eventLive && !myBoost && (
-        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
-          <p className="muted" style={{ marginBottom: 10 }}>
-            Double whatever you score in your next game. One use, for the whole event.
-          </p>
-          <button className="btn btn-primary" disabled={boosting} onClick={handleBoost}>
-            {boosting ? "Activating…" : "Activate Jackpot"}
-          </button>
-          {boostError && <div className="banner-note error">{boostError}</div>}
-        </div>
-      )}
+        {eventLive && !myBoost && (
+          <div style={{ marginTop: 16, textAlign: "center" }}>
+            <p className="muted" style={{ marginBottom: 10 }}>
+              Double whatever you score in your next game. One use, for the whole event.
+            </p>
+            <button className="btn btn-primary" disabled={boosting} onClick={handleBoost}>
+              {boosting ? "Activating…" : "Activate Jackpot"}
+            </button>
+            {boostError && <div className="banner-note error">{boostError}</div>}
+          </div>
+        )}
 
-      {eventLive && myBoost && (
-        <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
-          <p className="muted">
+        {eventLive && myBoost && (
+          <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
             {myBoost.resolved_at
               ? "Jackpot's been and gone this event."
               : new Date(myBoost.expires_at) > now
               ? "Jackpot's live — whatever you score in your next game doubles."
               : "Jackpot expired before you played anything. Gone, unused."}
           </p>
-        </div>
-      )}
+        )}
+      </div>
 
       <BottomNav session={session} me={me} hotPotatoEnabled={currentTrip?.hot_potato_enabled} />
     </div>
