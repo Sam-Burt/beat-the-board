@@ -57,11 +57,12 @@ const HOT_POTATO_TAB = {
 };
 
 // Always available (not tied to a per-event toggle, unlike Gay Card) —
-// every player gets exactly one send per event, so this tab is where
-// they use it and where they can see if Leroy's currently on their tail.
-const LEROY_TAB = {
-  href: "/leroy",
-  label: "Leroy",
+// the home for every dirty one-shot-per-event move (Leroy the thief for
+// now, more to come), so this is where you use one and where you can see
+// if someone's used one on you.
+const TRICKS_TAB = {
+  href: "/tricks",
+  label: "Tricks",
   icon: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path
@@ -126,12 +127,12 @@ export default function BottomNav({ session, me, hotPotatoEnabled }) {
   if (!session || !me) return null;
 
   const tabs = hotPotatoEnabled
-    ? [TABS[0], TABS[1], LEROY_TAB, HOT_POTATO_TAB, TABS[2]]
-    : [TABS[0], TABS[1], LEROY_TAB, TABS[2]];
+    ? [TABS[0], TABS[1], TRICKS_TAB, HOT_POTATO_TAB, TABS[2]]
+    : [TABS[0], TABS[1], TRICKS_TAB, TABS[2]];
   const dotFor = {
     "/missions": unreadKinds.has("mission"),
     "/hot-potato": unreadKinds.has("hot_potato"),
-    "/leroy": unreadKinds.has("leroy"),
+    "/tricks": unreadKinds.has("leroy"),
   };
 
   return (

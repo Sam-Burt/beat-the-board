@@ -129,7 +129,7 @@ export default function LeroyPage() {
       <div className="card header-card">
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
-          <h1 style={{ fontSize: 26 }}>Leroy</h1>
+          <h1 style={{ fontSize: 26 }}>Tricks</h1>
           <button
             type="button"
             className="card-help-btn"
@@ -144,7 +144,7 @@ export default function LeroyPage() {
       {helpOpen && (
         <div className="modal-backdrop" onClick={() => setHelpOpen(false)}>
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>What is this?</h3>
+            <h3>Leroy</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
               You get one shot per event. Pick anyone else on the board and send Leroy after
               them — next time they play anything, he takes 5 points off them and hands them
@@ -165,7 +165,10 @@ export default function LeroyPage() {
         </div>
       )}
 
-      <div className="card hot-potato-card-face" style={{ marginTop: 16 }}>
+      <div className="subtitle" style={{ textAlign: "center", marginTop: 20 }}>
+        Leroy
+      </div>
+      <div className="card hot-potato-card-face" style={{ marginTop: 8 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icons/cheater-icon.png" alt="" style={{ width: 72, height: 72, objectFit: "contain" }} />
         <div className="hot-potato-card-label">He&#39;s Available</div>

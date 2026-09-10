@@ -94,7 +94,7 @@ export async function POST(request) {
     kind: "leroy",
     title: "🥷 Leroy's on his way",
     body: pingBody,
-    url: "/leroy",
+    url: "/tricks",
   });
 
   if (!pushConfigured) {
