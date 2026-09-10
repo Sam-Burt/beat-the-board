@@ -55,9 +55,9 @@ export default function Board({ standings, trophyCounts, isAdmin, finalized, onA
                     )}
                     {p.cheatFlagged && (
                       <span className="cheat-icon" title="Caught cheating — cleared after their next win">
+                        <span className="cheat-label">Cheater</span>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/icons/cheater-icon.png" alt="" />
-                        <span className="cheat-label">Cheater</span>
                       </span>
                     )}
                   </div>
