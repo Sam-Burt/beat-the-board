@@ -151,28 +151,17 @@ export default function TricksPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              You get one shot per event to ruin someone&#39;s day.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Pick a victim.</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              The exact second they try to play anything, Leroy mugs them for 5 points and
-              hands them to you.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>We notify them immediately.</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              They can&#39;t stop it, they just have to sit there and take it like a bitch.
+              You get one shot per event to ruin someone&#39;s day. Pick a victim. The exact
+              second they try to play anything, Leroy mugs them for 5 points and hands them to
+              you. We notify them immediately. They can&#39;t stop it, they just have to sit
+              there and take it like a bitch.
             </p>
             <h3 style={{ marginTop: 18 }}>Fine print</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Leroy has better things to do. He gives it 18 hours.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              If your target is such a bitch that they refuse to play anything before time
-              runs out, Leroy gets bored and leaves.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>You get absolutely nothing.</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Don&#39;t cry about it. Just get on with it.
+              Leroy has better things to do. He gives it 18 hours. If your target is such a
+              bitch that they refuse to play anything before time runs out, Leroy gets bored
+              and leaves. You get absolutely nothing. Don&#39;t cry about it. Just get on with
+              it.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setLeroyHelpOpen(false)}>
@@ -188,28 +177,19 @@ export default function TricksPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              One shot per event. Same deal as Leroy, except this time you&#39;re the victim.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Hit activate and whatever you score in your next game gets doubled.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Congratulations, you&#39;re a gambler now.
+              One shot per event. Hit activate, and whatever tragic score you manage to scrape
+              together in your next game gets doubled. Congratulations, you&#39;re officially a
+              gambler.
             </p>
             <h3 style={{ marginTop: 18 }}>Does it work with Leroy?</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>No. Nice try.</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              He always takes exactly 5 off you, boosted or not.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Being greedy doesn&#39;t make him greedier.
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              No. Nice try, though. Leroy takes exactly 5 points off you, boosted or not. Your
+              desperate greed doesn&#39;t make him work any harder.
             </p>
             <h3 style={{ marginTop: 18 }}>Fine print</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              18 hours, same as everything else round here.
-            </p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Don&#39;t play anything in time and it&#39;s gone. Wasted. Like your potential.
+              You have 18 hours. If you&#39;re too lazy to actually play a game before the clock
+              runs out, the boost just vanishes. Completely wasted. Just like your potential.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setBoostHelpOpen(false)}>
