@@ -149,17 +149,30 @@ export default function TricksPage() {
       {leroyHelpOpen && (
         <div className="modal-backdrop" onClick={() => setLeroyHelpOpen(false)}>
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Leroy</h3>
+            <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              You get one shot per event. Pick anyone else on the board and send Leroy after
-              them — next time they play anything, he takes 5 points off them and hands them
-              straight to you. They&#39;ll get told the second you send him, so this isn&#39;t
-              exactly subtle. It just isn&#39;t stoppable either.
+              You get one shot per event to ruin someone&#39;s day.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>Pick a victim.</p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              The exact second they try to play anything, Leroy mugs them for 5 points and
+              hands them to you.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>We notify them immediately.</p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              They can&#39;t stop it, they just have to sit there and take it like a bitch.
             </p>
             <h3 style={{ marginTop: 18 }}>Fine print</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              He&#39;s only got 18 hours in him. If they don&#39;t play anything before then,
-              he gives up and goes home empty-handed — nobody gets anything.
+              Leroy has better things to do. He gives it 18 hours.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              If your target is such a bitch that they refuse to play anything before time
+              runs out, Leroy gets bored and leaves.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>You get absolutely nothing.</p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Don&#39;t cry about it. Just get on with it.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setLeroyHelpOpen(false)}>
@@ -173,19 +186,30 @@ export default function TricksPage() {
       {boostHelpOpen && (
         <div className="modal-backdrop" onClick={() => setBoostHelpOpen(false)}>
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
-            <h3>Jackpot</h3>
+            <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              One shot per event, same as Leroy — but on yourself. Activate it and whatever
-              you score in your next game gets doubled.
+              One shot per event. Same deal as Leroy, except this time you&#39;re the victim.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Hit activate and whatever you score in your next game gets doubled.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Congratulations, you&#39;re a gambler now.
             </p>
             <h3 style={{ marginTop: 18 }}>Does it work with Leroy?</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Not really, on purpose. He always takes exactly 5, boosted or not, and doubling
-              never makes him take more.
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>No. Nice try.</p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              He always takes exactly 5 off you, boosted or not.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Being greedy doesn&#39;t make him greedier.
             </p>
             <h3 style={{ marginTop: 18 }}>Fine print</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Also 18 hours — use it or lose it.
+              18 hours, same as everything else round here.
+            </p>
+            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
+              Don&#39;t play anything in time and it&#39;s gone. Wasted. Like your potential.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setBoostHelpOpen(false)}>
@@ -220,7 +244,7 @@ export default function TricksPage() {
 
         {!eventLive && (
           <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
-            Nothing to send him after. Wait for an event to start.
+            Nothing to send him after. No event, no victims, no fun.
           </p>
         )}
 
@@ -228,16 +252,16 @@ export default function TricksPage() {
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <p className="gay-card-title">Leroy&#39;s coming for you</p>
             <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              Next time you play anything, he takes {incoming.amount} points off you. About{" "}
-              {hoursLeft(incoming.expires_at)} hour{hoursLeft(incoming.expires_at) === 1 ? "" : "s"} left
-              on the clock.
+              The second you play anything, he&#39;s taking {incoming.amount} points off you and
+              legging it. About {hoursLeft(incoming.expires_at)} hour
+              {hoursLeft(incoming.expires_at) === 1 ? "" : "s"} before he gives up and goes home.
             </p>
           </div>
         )}
 
         {eventLive && !mySend && (
           <div style={{ marginTop: 16 }}>
-            <label>Who&#39;s getting Leroy?</label>
+            <label>Who&#39;s getting mugged?</label>
             <div className="chips" style={{ marginTop: 6 }}>
               {tripPlayers
                 .filter((p) => p.id !== me.id)
@@ -254,7 +278,7 @@ export default function TricksPage() {
                 ))}
             </div>
             <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-              One send, once, for the whole event — choose wisely.
+              One shot, once, for the whole event. Choose wisely, or don&#39;t — not my problem.
             </p>
             <div className="btn-row" style={{ marginTop: 10 }}>
               <button className="btn btn-primary" disabled={!target || sending} onClick={handleSend}>
@@ -276,10 +300,10 @@ export default function TricksPage() {
             <strong>{players.find((p) => p.id === mySend.target_id)?.name || "someone"}</strong> this
             event.{" "}
             {mySend.resolved_at
-              ? "He's been and gone."
+              ? "Job done. Hope it was worth it."
               : new Date(mySend.expires_at) > now
-              ? "Still waiting on him."
-              : "He never caught them in time."}
+              ? "Still waiting on him to earn his cut."
+              : "He bottled it. Nobody got anything."}
           </p>
         )}
       </div>
@@ -309,14 +333,14 @@ export default function TricksPage() {
 
         {!eventLive && (
           <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
-            Nothing to double yet. Wait for an event to start.
+            Nothing to double yet. No event, nothing to multiply.
           </p>
         )}
 
         {eventLive && !myBoost && (
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <p className="muted" style={{ marginBottom: 10 }}>
-              Double whatever you score in your next game. One use, for the whole event.
+              Whatever you score next game, doubled. One shot — don&#39;t fumble it.
             </p>
             <button className="btn btn-primary" disabled={boosting} onClick={handleBoost}>
               {boosting ? "Activating…" : "Activate Jackpot"}
@@ -328,10 +352,10 @@ export default function TricksPage() {
         {eventLive && myBoost && (
           <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
             {myBoost.resolved_at
-              ? "Jackpot's been and gone this event."
+              ? "Cashed in. However that went for you."
               : new Date(myBoost.expires_at) > now
-              ? "Jackpot's live — whatever you score in your next game doubles."
-              : "Jackpot expired before you played anything. Gone, unused."}
+              ? "Live and loaded. Next game you play, it's double or nothing."
+              : "Expired. You didn't even play. Embarrassing."}
           </p>
         )}
       </div>
