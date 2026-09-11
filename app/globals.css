@@ -730,9 +730,8 @@ label {
   font-weight: 700;
 }
 .review-achievements {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px 8px;
+  display: flex;
+  flex-direction: column;
   margin-top: 4px;
 }
 .review-achievement {
@@ -740,16 +739,16 @@ label {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
-  padding: 16px 8px;
+  gap: 6px;
+  padding: 20px 8px;
   border-top: 1px solid var(--border);
 }
 .review-achievement-emoji {
-  font-size: 28px;
+  font-size: 36px;
   line-height: 1;
 }
 .review-achievement h3 {
-  font-size: 14px;
+  font-size: 17px;
   margin: 0;
 }
 .review-achievement-names {
