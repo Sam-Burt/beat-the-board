@@ -35,13 +35,17 @@ export async function POST(request) {
 
   const { data: trip } = await supabaseAdmin
     .from("trips")
-    .select("id, hot_potato_enabled")
-    .in("status", ["active", "tied"])
+    .select("id, status, hot_potato_enabled")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (!trip?.hot_potato_enabled) {
     return NextResponse.json({ error: "Gay Card isn't switched on for this event." }, { status: 400 });
+  }
+  // Ends the same moment the event does — see app/api/hot-potato/pass for
+  // the matching check and why "tied" still counts as live.
+  if (trip.status === "finalized") {
+    return NextResponse.json({ error: "That event's over — nothing left to confess to." }, { status: 400 });
   }
 
   const { data: state } = await supabaseAdmin

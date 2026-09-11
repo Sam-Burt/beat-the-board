@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
 import { useEventCelebration } from "../../lib/useEventCelebration";
@@ -219,6 +220,10 @@ export default function HotPotatoPage() {
   }
 
   const enabled = !!currentTrip?.hot_potato_enabled;
+  // Same cutoff as Secret Missions (app/missions/page.js) — once the trip's
+  // finalized, passing/catching stops being a live action and becomes
+  // something you just read about on the review page instead.
+  const eventRunning = !!currentTrip && currentTrip.status !== "finalized";
   const isHolder = !!state?.holder_id && state.holder_id === me.id;
 
   // The route already knows exactly how many devices got pushed — worth
@@ -358,7 +363,20 @@ export default function HotPotatoPage() {
         </div>
       )}
 
-      {enabled && !state?.holder_id && (
+      {enabled && !eventRunning && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="empty">
+            That event&#39;s over — however it landed lives on the Event Review now.
+          </div>
+          <div className="btn-row" style={{ justifyContent: "center", marginTop: 12 }}>
+            <Link href="/review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
+              Review last event
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {enabled && eventRunning && !state?.holder_id && (
         <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
           {isAdmin ? (
             <>
@@ -381,7 +399,7 @@ export default function HotPotatoPage() {
         </div>
       )}
 
-      {enabled && state?.holder_id && (
+      {enabled && eventRunning && state?.holder_id && (
         <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
           {isHolder ? (
             <>
@@ -415,11 +433,11 @@ export default function HotPotatoPage() {
 
               {!passOpen ? (
                 <div className="btn-row" style={{ justifyContent: "center", marginTop: 12 }}>
-                  <button className="btn btn-primary" onClick={() => setPassOpen(true)}>
-                    I&#39;ve passed it on
-                  </button>
+                  {/* "I got caught" sits on the left, in solid pink — it needs
+                      to stand out and NOT be where a thumb reaching for
+                      "I've passed it on" lands by mistake. */}
                   {!catchConfirmOpen ? (
-                    <button className="btn btn-ghost" onClick={() => setCatchConfirmOpen(true)}>
+                    <button className="btn btn-signout" onClick={() => setCatchConfirmOpen(true)}>
                       I got caught
                     </button>
                   ) : (
@@ -432,6 +450,9 @@ export default function HotPotatoPage() {
                       </button>
                     </>
                   )}
+                  <button className="btn btn-primary" onClick={() => setPassOpen(true)}>
+                    I&#39;ve passed it on
+                  </button>
                 </div>
               ) : (
                 <form className="points-composer" style={{ textAlign: "left", marginTop: 12 }} onSubmit={handlePass}>
@@ -499,7 +520,7 @@ export default function HotPotatoPage() {
         </div>
       )}
 
-      {isAdmin && enabled && state?.holder_id && (
+      {isAdmin && enabled && eventRunning && state?.holder_id && (
         <div className="card" style={{ marginTop: 16 }}>
           <button className="btn toggle-panel-btn" onClick={() => setAdminViewOpen((o) => !o)}>
             <h2>Admin view</h2>

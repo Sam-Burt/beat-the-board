@@ -54,13 +54,19 @@ export async function POST(request) {
 
   const { data: trip } = await supabaseAdmin
     .from("trips")
-    .select("id, hot_potato_enabled")
-    .in("status", ["active", "tied"])
+    .select("id, status, hot_potato_enabled")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (!trip?.hot_potato_enabled) {
     return NextResponse.json({ error: "Gay Card isn't switched on for this event." }, { status: 400 });
+  }
+  // Ends the same moment the event does — same cutoff as Secret Missions
+  // (see app/api/missions/decline, app/api/missions/upload-proof). "tied"
+  // still counts as live: the game's over but nobody's declared a winner
+  // yet, so there's nothing final to protect.
+  if (trip.status === "finalized") {
+    return NextResponse.json({ error: "That event's over — nothing left to pass." }, { status: 400 });
   }
 
   const { data: state } = await supabaseAdmin
