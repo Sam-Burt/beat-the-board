@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
 import { pushConfigured, sendHotPotatoPing } from "../../../../lib/webpush";
 import { recordNotification } from "../../../../lib/notifications";
+import { isGayCardBlackout, GAY_CARD_BLACKOUT_MESSAGE } from "../../../../lib/gayCardBlackout";
 
 // Any signed-in player can call this — not just the admin — but only the
 // player who's actually holding the Gay Card right now is allowed to move
@@ -9,6 +10,12 @@ import { recordNotification } from "../../../../lib/notifications";
 // doc), and only onto someone else on the same event's roster. That check
 // is what this route exists to enforce server-side (the client never gets
 // to just declare who holds it).
+//
+// Every successful pass costs the RECEIVING player 2 points — but not
+// here, and not visibly: it's just logged to hot_potato_history (same as
+// always), and the whole tally gets applied as a single lump deduction
+// when the trip finalizes (see lib/tripFinalize.js). Nobody, including
+// the person it happened to, sees a running count during play.
 export async function POST(request) {
   if (!supabaseAdmin) {
     return NextResponse.json(
@@ -27,6 +34,10 @@ export async function POST(request) {
   const note = (body.note || "").trim();
   if (!toPlayerId) {
     return NextResponse.json({ error: "Pick who you passed it to." }, { status: 400 });
+  }
+
+  if (isGayCardBlackout()) {
+    return NextResponse.json({ error: GAY_CARD_BLACKOUT_MESSAGE }, { status: 400 });
   }
 
   const { data: me } = await supabaseAdmin
@@ -82,7 +93,9 @@ export async function POST(request) {
     .from("hot_potato_history")
     .insert({ trip_id: trip.id, from_player_id: me.id, to_player_id: toPlayerId, note });
 
-  const pingBody = `${me.name} has fobbed the card off on you. Lovely family you've got.`;
+  // Deliberately doesn't name who passed it — only that it landed and
+  // (if they left one) where it's hidden.
+  const pingBody = "The card's landed on you. Lovely family you've got.";
   await recordNotification(toPlayerId, {
     kind: "hot_potato",
     title: "GAAAAAYYYYY🌈",

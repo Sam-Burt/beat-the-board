@@ -449,11 +449,14 @@ create policy "scheduled_missions admin only" on scheduled_missions
 -- start); from then on the current holder secretly plants it on another
 -- player and confirms the pass in the app, which is what actually moves
 -- holder_id along and fires that player's "you've been tagged" alert.
--- Whoever's holding it when the event's deadline hits takes a points hit
--- (see lib/tripFinalize.js). Holder identity is deliberately NOT surfaced
--- in the UI to anyone but the holder themselves and the admin — read access
--- is left open at the database level (small trusted family app, same trust
--- model as the rest of this schema) but the app just doesn't display it.
+-- Every successful pass costs the receiving player 2 points, tallied in
+-- total secrecy until the event ends (see lib/tripFinalize.js and
+-- hot_potato_history.self_caught below) — there's no "whoever's holding
+-- it at the deadline" penalty any more. Holder identity is deliberately
+-- NOT surfaced in the UI to anyone but the holder themselves and the
+-- admin — read access is left open at the database level (small trusted
+-- family app, same trust model as the rest of this schema) but the app
+-- just doesn't display it.
 -- ---------------------------------------------------------------------------
 
 alter table trips add column if not exists hot_potato_enabled boolean not null default false;
@@ -492,6 +495,22 @@ drop policy if exists "hot_potato_history write for admins" on hot_potato_histor
 create policy "hot_potato_history write for admins" on hot_potato_history
   for all using (auth.uid() in (select user_id from admins))
   with check (auth.uid() in (select user_id from admins));
+
+-- Complete rules change: a pass no longer just tracks who's holding it —
+-- every successful pass costs the RECEIVING player 2 points, tallied up
+-- in total secrecy (nobody, not even the person it happened to, sees a
+-- running count) until the event ends, at which point the whole tally
+-- gets taken off the main leaderboard in one go (see lib/tripFinalize.js).
+-- The initial random deal at game start doesn't count as a pass (it has
+-- from_player_id null — see app/api/admin/start-hot-potato); the tally is
+-- every row here with a real from_player_id.
+--
+-- self_caught marks the other way a pass gets logged: the current holder
+-- pressing "I GOT CAUGHT" (app/api/hot-potato/caught) after someone spots
+-- them with it, witnessed in person rather than digitally. Counts exactly
+-- like a real pass for the tally — from_player_id and to_player_id are
+-- both the holder's own id — but the card never actually changes hands.
+alter table hot_potato_history add column if not exists self_caught boolean not null default false;
 
 -- ---------------------------------------------------------------------------
 -- Notification history — every push alert (secret mission or Hot Potato

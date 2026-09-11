@@ -27,6 +27,7 @@ export default function HotPotatoPage() {
     guessLeroy,
     startHotPotato,
     passHotPotato,
+    catchHotPotato,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
@@ -50,6 +51,10 @@ export default function HotPotatoPage() {
   const [passing, setPassing] = useState(false);
   const [passError, setPassError] = useState("");
   const [passPushInfo, setPassPushInfo] = useState("");
+  const [catchConfirmOpen, setCatchConfirmOpen] = useState(false);
+  const [catching, setCatching] = useState(false);
+  const [catchError, setCatchError] = useState("");
+  const [caught, setCaught] = useState(false);
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -101,7 +106,7 @@ export default function HotPotatoPage() {
     function load() {
       supabase
         .from("hot_potato_history")
-        .select("id, from_player_id, to_player_id, note, created_at")
+        .select("id, from_player_id, to_player_id, note, self_caught, created_at")
         .eq("trip_id", currentTrip.id)
         .order("created_at", { ascending: false })
         .then(({ data }) => {
@@ -158,6 +163,7 @@ export default function HotPotatoPage() {
         .select("from_player_id, note, created_at")
         .eq("trip_id", currentTrip.id)
         .eq("to_player_id", me.id)
+        .eq("self_caught", false)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle()
@@ -249,6 +255,20 @@ export default function HotPotatoPage() {
     }
   }
 
+  async function handleCatch() {
+    setCatchError("");
+    setCatching(true);
+    const result = await catchHotPotato();
+    setCatching(false);
+    if (result?.ok) {
+      setCatchConfirmOpen(false);
+      setCaught(true);
+      setTimeout(() => setCaught(false), 4000);
+    } else {
+      setCatchError(result?.error || "Couldn't log that — try again.");
+    }
+  }
+
   return (
     <div className="wrap">
       {celebrating && (
@@ -293,14 +313,21 @@ export default function HotPotatoPage() {
               it on somebody else — on them, or in something they&#39;re actually carrying about
               — without them noticing, then own up to it here. Shoving it in a suitcase under
               a bed does not count, and everyone knows that&#39;s exactly what you were
-              planning.
+              planning. Every successful pass costs whoever receives it 2 points — tallied in
+              total secret, nobody sees a running score, not even them. It all lands at once
+              when the event ends.
             </p>
-            <h3 style={{ marginTop: 18 }}>What to look out for?</h3>
+            <h3 style={{ marginTop: 18 }}>What if I get caught?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Anyone taking a suspicious interest in your pockets. Whoever&#39;s holding it when
-              the event ends drops 10 points. And if you were leading by more than that, you
-              don&#39;t just lose the points, you lose the lead — you finish 1 behind whoever
-              was second. Do try to enjoy the rest of your day.
+              If someone spots you holding it before you&#39;ve managed to plant it, you press
+              &quot;I got caught&quot; yourself, in front of them. It counts exactly like
+              another pass landing on you — another 2 points gone at the end — except the card
+              stays right where it is.
+            </p>
+            <h3 style={{ marginTop: 18 }}>Fine print</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              No passing (or confessing to being caught) between 7pm and 10:30pm. Some of us
+              are trying to eat.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
@@ -356,24 +383,15 @@ export default function HotPotatoPage() {
               {receivedInfo && (
                 <div className="received-info">
                   {receivedInfo.from_player_id ? (
-                    (() => {
-                      const fromPlayer = players.find((p) => p.id === receivedInfo.from_player_id);
-                      return (
+                    <>
+                      <p className="received-info-passed">It&#39;s been passed to you. No idea who — that&#39;s the point.</p>
+                      {receivedInfo.note && (
                         <>
-                          <div className="received-info-from">
-                            <PlayerAvatar iconId={fromPlayer?.icon_id} emoji={fromPlayer?.emoji} size={36} />
-                            <span>{fromPlayer?.name || "Someone"}</span>
-                          </div>
-                          <p className="received-info-passed">has passed this to you</p>
-                          {receivedInfo.note && (
-                            <>
-                              <h3 className="gay-card-title received-info-heading">Where to find it</h3>
-                              <p className="received-info-note">{receivedInfo.note}</p>
-                            </>
-                          )}
+                          <h3 className="gay-card-title received-info-heading">Where to find it</h3>
+                          <p className="received-info-note">{receivedInfo.note}</p>
                         </>
-                      );
-                    })()
+                      )}
+                    </>
                   ) : (
                     <p className="received-info-passed">Dealt to you at random. The universe has spoken.</p>
                   )}
@@ -390,9 +408,25 @@ export default function HotPotatoPage() {
               </p>
 
               {!passOpen ? (
-                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setPassOpen(true)}>
-                  I&#39;ve passed it on
-                </button>
+                <div className="btn-row" style={{ justifyContent: "center", marginTop: 12 }}>
+                  <button className="btn btn-primary" onClick={() => setPassOpen(true)}>
+                    I&#39;ve passed it on
+                  </button>
+                  {!catchConfirmOpen ? (
+                    <button className="btn btn-ghost" onClick={() => setCatchConfirmOpen(true)}>
+                      I got caught
+                    </button>
+                  ) : (
+                    <>
+                      <button className="btn btn-danger" disabled={catching} onClick={handleCatch}>
+                        {catching ? "Logging…" : "Yep, fair cop"}
+                      </button>
+                      <button className="btn btn-ghost" onClick={() => setCatchConfirmOpen(false)}>
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
               ) : (
                 <form className="points-composer" style={{ textAlign: "left", marginTop: 12 }} onSubmit={handlePass}>
                   <label>Who did you pass it to?</label>
@@ -439,6 +473,12 @@ export default function HotPotatoPage() {
                   {passError && <div className="banner-note error">{passError}</div>}
                 </form>
               )}
+              {catchError && <div className="banner-note error">{catchError}</div>}
+              {caught && (
+                <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                  Logged. Try to hide it properly next time.
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -484,8 +524,11 @@ export default function HotPotatoPage() {
                         })}
                       </div>
                       <div className="mission-text">
-                        {players.find((p) => p.id === h.from_player_id)?.name || "Game start"} →{" "}
-                        {players.find((p) => p.id === h.to_player_id)?.name || "?"}
+                        {h.self_caught
+                          ? `${players.find((p) => p.id === h.to_player_id)?.name || "?"} — caught red-handed`
+                          : `${players.find((p) => p.id === h.from_player_id)?.name || "Game start"} → ${
+                              players.find((p) => p.id === h.to_player_id)?.name || "?"
+                            }`}
                         {h.note && ` (${h.note})`}
                       </div>
                     </div>
@@ -493,9 +536,9 @@ export default function HotPotatoPage() {
                 </div>
               )}
               <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                Whoever&#39;s holding it when the event ends loses 10 points — unless they&#39;re
-                in 1st by more than 10, in which case they lose the lead entirely and end up 1
-                point behind whoever was in 2nd.
+                Every row above with an arrow (or a "caught red-handed") is worth −2 to whoever
+                received it — nobody's told, it all lands as one lump deduction when the event
+                ends.
               </p>
             </div>
           )}
