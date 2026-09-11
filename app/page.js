@@ -164,6 +164,9 @@ export default function HomePage() {
         <>
           {!hasActiveEvent && (
             <div className="btn-row" style={{ justifyContent: "center", marginTop: 16 }}>
+              <Link href="/review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
+                Review last event
+              </Link>
               <Link href="/missions-review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
                 See all secret missions
               </Link>

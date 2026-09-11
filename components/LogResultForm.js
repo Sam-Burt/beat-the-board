@@ -16,11 +16,22 @@ function teamName(team, players) {
     .join(" + ");
 }
 
+// The four house categories the review page's "best at X" achievements are
+// built from (see app/review) — fixed rather than admin-editable, since
+// the achievements are hardcoded to these four too.
+const CATEGORIES = [
+  { id: "cards", label: "Cards" },
+  { id: "board_games", label: "Board Games" },
+  { id: "sports", label: "Sports" },
+  { id: "weird_bullshit", label: "Weird Bullshit Challenges" },
+];
+
 export default function LogResultForm({ players, onSave }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [date, setDate] = useState(todayISO());
   const [note, setNote] = useState("");
+  const [category, setCategory] = useState(null);
   const [selected, setSelected] = useState([]);
   const [ranking, setRanking] = useState([]);
 
@@ -38,6 +49,7 @@ export default function LogResultForm({ players, onSave }) {
     setName("");
     setDate(todayISO());
     setNote("");
+    setCategory(null);
     setSelected([]);
     setRanking([]);
     setTeamMode(false);
@@ -113,18 +125,19 @@ export default function LogResultForm({ players, onSave }) {
   const canSave = teamMode
     ? Boolean(
         name.trim() &&
+          category &&
           teamPhase === "rank" &&
           teamRanking.length === nonEmptyTeams.length &&
           nonEmptyTeams.length >= 2
       )
-    : Boolean(name.trim() && selected.length >= 2 && ranking.length === selected.length);
+    : Boolean(name.trim() && category && selected.length >= 2 && ranking.length === selected.length);
 
   async function handleSave() {
     if (!canSave) return;
     const groupedRanking = teamMode
       ? teamRanking.map((idx) => nonEmptyTeams[idx])
       : ranking.map((id) => [id]);
-    const ok = await onSave({ name, date, note, ranking: groupedRanking });
+    const ok = await onSave({ name, date, note, category, ranking: groupedRanking });
     if (ok !== false) {
       reset();
       setOpen(false);
@@ -161,6 +174,22 @@ export default function LogResultForm({ players, onSave }) {
           <div className="field">
             <label htmlFor="ev-date">Date</label>
             <input id="ev-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+
+          <div className="field">
+            <label>What kind of game was it?</label>
+            <div className="chips">
+              {CATEGORIES.map((c) => (
+                <button
+                  type="button"
+                  key={c.id}
+                  className={`chip${category === c.id ? " selected" : ""}`}
+                  onClick={() => setCategory(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="field">

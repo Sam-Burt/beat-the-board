@@ -702,6 +702,73 @@ label {
   margin-top: 8px;
 }
 
+/* Event Review page (app/review) — final standings, Gay Card tally, and
+   achievement cards, all built on the same row/typography language as
+   History above so it reads as part of the same app rather than a bolted-on
+   screen. */
+.review-standing-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.review-standing-row + .review-standing-row {
+  border-top: 1px solid var(--border);
+}
+.review-standing-rank {
+  width: 20px;
+  color: var(--ink-dim);
+  font-weight: 700;
+  font-size: 12px;
+  flex: none;
+}
+.review-standing-points {
+  color: var(--acid);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 700;
+}
+.review-achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+.review-achievement {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+}
+.review-achievement + .review-achievement {
+  border-top: 1px solid var(--border);
+}
+.review-achievement-emoji {
+  font-size: 28px;
+  line-height: 1;
+  flex: none;
+}
+.review-achievement-body h3 {
+  font-size: 15px;
+  margin: 0;
+}
+.review-achievement-names {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 6px;
+}
+.review-achievement-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Striker", "Archivo", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-size: 15px;
+}
+
 .player-row {
   display: flex;
   align-items: center;
@@ -1168,17 +1235,43 @@ label {
   border-radius: 14px;
   padding: 14px;
   max-height: 70vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 14px 32px -12px rgba(0, 0, 0, 0.6);
 }
 .notif-panel-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
   margin-bottom: 8px;
 }
 .notif-panel-head h3 {
   margin: 0;
+}
+/* The list can be long enough to scroll — only this middle section does,
+   so the close button below it (the only way out of this panel) never
+   scrolls out of reach the way it used to when the whole panel scrolled
+   as one block. */
+.notif-panel-body {
+  overflow-y: auto;
+  min-height: 0;
+}
+.notif-panel-foot {
+  flex-shrink: 0;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.notif-panel-close {
+  width: 100%;
+  background: var(--pink);
+  border-color: var(--pink);
+  color: var(--ink);
+}
+.notif-panel-close:hover {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
 }
 .notif-list .mission-item {
   text-align: left;

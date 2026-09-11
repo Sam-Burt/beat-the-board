@@ -152,11 +152,6 @@ export default function TricksPage() {
               Guess right and they get their 5 back, plus 5 more out of your pocket. Guess
               wrong, or they&#39;re not fast enough, and they never find out it was you.
             </p>
-            <h3 style={{ marginTop: 18 }}>Fine print</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              No expiry. He waits as long as it takes for their next game — could be their very
-              next round, could be next week. He&#39;s patient. You should be too.
-            </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setLeroyHelpOpen(false)}>
                 Close
@@ -175,15 +170,10 @@ export default function TricksPage() {
               together in your next game gets doubled. Congratulations, you&#39;re officially a
               gambler.
             </p>
-            <h3 style={{ marginTop: 18 }}>Does it work with Leroy?</h3>
+            <h3 style={{ marginTop: 18, lineHeight: 1.15 }}>Does it work with Leroy?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
               No. Nice try, though. Leroy takes exactly 5 points off you, boosted or not. Your
               desperate greed doesn&#39;t make him work any harder.
-            </p>
-            <h3 style={{ marginTop: 18 }}>Fine print</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              You have 18 hours. If you&#39;re too lazy to actually play a game before the clock
-              runs out, the boost just vanishes. Completely wasted. Just like your potential.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setBoostHelpOpen(false)}>
@@ -212,7 +202,7 @@ export default function TricksPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/leroy.png" alt="" style={{ width: 110, height: 110, objectFit: "contain" }} />
           <div className="hot-potato-card-label" style={{ marginTop: 4 }}>
-            He&#39;s Available
+            {mySend ? "He's Bored Of Your Shit" : "He's Available"}
           </div>
         </div>
 

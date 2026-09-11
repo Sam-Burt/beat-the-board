@@ -82,40 +82,42 @@ export default function NotificationBell({ me }) {
         <div className="notif-panel">
           <div className="notif-panel-head">
             <h3>Notifications</h3>
-            <div className="btn-row" style={{ gap: 6 }}>
-              {items.length > 0 && (
-                <button type="button" className="btn btn-ghost" onClick={clearAll}>
-                  Clear all
-                </button>
-              )}
-              <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
-                Close
+            {items.length > 0 && (
+              <button type="button" className="btn btn-ghost" onClick={clearAll}>
+                Clear all
               </button>
-            </div>
+            )}
           </div>
-          {items.length === 0 ? (
-            <div className="empty">Nothing. Nobody&#39;s thinking about you.</div>
-          ) : (
-            <div className="mission-list notif-list">
-              {items.map((n) => (
-                <div className="mission-item" key={n.id}>
-                  <div className="mission-date">
-                    {new Date(n.created_at).toLocaleString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
+          <div className="notif-panel-body">
+            {items.length === 0 ? (
+              <div className="empty">Nothing. Nobody&#39;s thinking about you.</div>
+            ) : (
+              <div className="mission-list notif-list">
+                {items.map((n) => (
+                  <div className="mission-item" key={n.id}>
+                    <div className="mission-date">
+                      {new Date(n.created_at).toLocaleString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                    <div className="mission-text">
+                      <strong>{n.title}</strong>
+                      <br />
+                      {n.body}
+                    </div>
                   </div>
-                  <div className="mission-text">
-                    <strong>{n.title}</strong>
-                    <br />
-                    {n.body}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="notif-panel-foot">
+            <button type="button" className="btn notif-panel-close" onClick={() => setOpen(false)}>
+              Close
+            </button>
+          </div>
         </div>
       )}
     </>

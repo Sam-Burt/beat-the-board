@@ -6,11 +6,14 @@ import { recordNotification } from "../../../../lib/notifications";
 const GUESS_WINDOW_SECONDS = 60;
 
 // Called from saveEvent (lib/useBoardData.js) the moment a pending Leroy's
-// target plays any round — this is where he actually strikes. Everything
-// happens here in one place: the steal itself (flat 5, straight from
-// target to sender, same as it always was), and the reveal — the target
-// only finds out now, with a 60-second window to guess who did it (see
-// app/api/leroy/guess).
+// target plays any round — this is where he actually strikes. Deliberately
+// does NOT move any points yet: doing that here, before anyone's had a
+// chance to guess, would flash two matching +5/-5 rows into everyone's
+// History at the same instant — trivial for any onlooker to correlate into
+// "who sent it", even though the target themselves hasn't been told yet.
+// So this route only opens the 60-second guess window and notifies the
+// target; the actual steal (or its reversal) is applied by whichever of
+// app/api/leroy/guess or app/api/leroy/settle resolves that window.
 //
 // Admin-only because saveEvent is the only caller and it's already an
 // admin-gated action; the target themselves never calls this directly.
@@ -65,22 +68,7 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, alreadyResolved: true });
   }
 
-  await supabaseAdmin.from("point_adjustments").insert([
-    {
-      trip_id: leroy.trip_id,
-      player_id: leroy.target_id,
-      amount: -leroy.amount,
-      note: "Leroy struck — he's been and gone",
-    },
-    {
-      trip_id: leroy.trip_id,
-      player_id: leroy.sender_id,
-      amount: leroy.amount,
-      note: "Leroy delivered the goods",
-    },
-  ]);
-
-  const pingBody = "You've been Leroy'd! Quick — you've got 60 seconds to guess who sent him.";
+  const pingBody = "Leroy's here to steal your shit!! Who the fuck sent him?! Figure it out you prick…";
   await recordNotification(leroy.target_id, {
     kind: "leroy",
     title: "🥷 You've been Leroy'd",

@@ -2,11 +2,18 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
 
 // The target's one shot at guessing who sent Leroy, within the 60-second
-// window app/api/leroy/reveal opened. Guess right and it pays off — wrong,
-// too late, or a second attempt after the first one's already landed all
-// come back the same: no reveal, no payout. The deadline is enforced here
-// server-side (not just the client's own countdown) since that's the only
-// copy of "now" that actually matters.
+// window app/api/leroy/reveal opened. Nothing has moved points yet at this
+// point — reveal deliberately left the ledger untouched so nobody watching
+// History could correlate a synchronized +5/-5 pair back to a sender before
+// the target even had a chance to guess. This route is what actually
+// settles it: a correct guess pays the target a flat 5 (nothing shown on
+// the sender's side — net zero, nothing to correlate); anything else
+// (wrong guess, or a guess that arrives after the deadline) lets the
+// original steal stand, exactly like a timeout does (see
+// app/api/leroy/settle, which applies the same steal if the target never
+// guesses at all). The deadline is enforced here server-side (not just the
+// client's own countdown) since that's the only copy of "now" that
+// actually matters.
 export async function POST(request) {
   if (!supabaseAdmin) {
     return NextResponse.json(
@@ -77,19 +84,21 @@ export async function POST(request) {
   }
 
   if (correct) {
+    // Net zero for the sender — nothing gets written on their side at all,
+    // so there's no second row for anyone watching History to line up
+    // against this one.
+    await supabaseAdmin.from("point_adjustments").insert({
+      trip_id: leroy.trip_id,
+      player_id: leroy.target_id,
+      amount: leroy.amount,
+      note: "Caught Leroy's sender — bounty collected",
+    });
+  } else {
+    // Wrong guess, or a guess that lands after the deadline (withinWindow
+    // false) — same outcome as nobody guessing at all: the steal stands.
     await supabaseAdmin.from("point_adjustments").insert([
-      {
-        trip_id: leroy.trip_id,
-        player_id: leroy.target_id,
-        amount: leroy.amount * 2,
-        note: "Caught Leroy's sender — refund plus bounty",
-      },
-      {
-        trip_id: leroy.trip_id,
-        player_id: leroy.sender_id,
-        amount: -leroy.amount,
-        note: "Leroy blew your cover — bounty paid",
-      },
+      { trip_id: leroy.trip_id, player_id: leroy.target_id, amount: -leroy.amount, note: "Mugged blind — no idea who." },
+      { trip_id: leroy.trip_id, player_id: leroy.sender_id, amount: leroy.amount, note: "Clean getaway." },
     ]);
   }
 

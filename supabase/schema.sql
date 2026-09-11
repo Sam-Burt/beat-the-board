@@ -62,6 +62,15 @@ create table if not exists events (
 alter table events drop column if exists ranking;
 alter table events add column if not exists ranking jsonb not null default '[]'::jsonb;
 
+-- Which of the four house categories a logged round belongs to — powers
+-- the "best at X" achievements on the review page (app/review). Nullable
+-- so every event logged before this column existed stays valid; those
+-- just don't count toward any category's leaderboard.
+alter table events add column if not exists category text;
+alter table events drop constraint if exists events_category_check;
+alter table events add constraint events_category_check
+  check (category is null or category in ('cards', 'board_games', 'sports', 'weird_bullshit'));
+
 -- The single table of who is allowed to edit the board. There should only
 -- ever be one row in here — see the /admin/setup bootstrap flow, which is
 -- the only thing allowed to insert into this table, and only while it's
