@@ -3,17 +3,22 @@ import { supabaseAdmin, requireAdmin } from "../../../../lib/supabaseAdmin";
 import { pushConfigured, sendLeroyPing } from "../../../../lib/webpush";
 import { recordNotification } from "../../../../lib/notifications";
 
-const GUESS_WINDOW_SECONDS = 60;
-
 // Called from saveEvent (lib/useBoardData.js) the moment a pending Leroy's
 // target plays any round — this is where he actually strikes. Deliberately
 // does NOT move any points yet: doing that here, before anyone's had a
 // chance to guess, would flash two matching +5/-5 rows into everyone's
 // History at the same instant — trivial for any onlooker to correlate into
 // "who sent it", even though the target themselves hasn't been told yet.
-// So this route only opens the 60-second guess window and notifies the
-// target; the actual steal (or its reversal) is applied by whichever of
-// app/api/leroy/guess or app/api/leroy/settle resolves that window.
+// So this route only marks that he's struck and notifies the target; the
+// actual steal (or its reversal) is applied by whichever of
+// app/api/leroy/guess or app/api/leroy/settle resolves the guess window.
+//
+// Deliberately does NOT start the 60-second guess window either — that
+// would let it burn down in the background before the target's even
+// opened the app, which isn't a fair shot at guessing. The window only
+// starts once app/api/leroy/start-guess-window fires, which the target's
+// own client calls the moment it's actually about to show them the popup
+// (see lib/useLeroyAlert.js).
 //
 // Admin-only because saveEvent is the only caller and it's already an
 // admin-gated action; the target themselves never calls this directly.
@@ -51,14 +56,13 @@ export async function POST(request) {
   }
 
   const now = new Date();
-  const guessDeadline = new Date(now.getTime() + GUESS_WINDOW_SECONDS * 1000);
 
   // Atomic claim — only the call that actually flips resolved_at from null
-  // proceeds to move points and notify. Same race guard as tripFinalize's
-  // finalized_at claim.
+  // proceeds to notify. Same race guard as tripFinalize's finalized_at
+  // claim.
   const { data: claimed, error: claimError } = await supabaseAdmin
     .from("leroy_sends")
-    .update({ resolved_at: now.toISOString(), guess_deadline: guessDeadline.toISOString() })
+    .update({ resolved_at: now.toISOString() })
     .eq("id", leroySendId)
     .is("resolved_at", null)
     .select()

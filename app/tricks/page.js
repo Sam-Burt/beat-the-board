@@ -25,12 +25,18 @@ export default function TricksPage() {
     leroySends,
     sendLeroy,
     guessLeroy,
+    startLeroyGuessWindow,
     pointBoosts,
     activateBoost,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
-  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
+    leroySends,
+    players,
+    me,
+    startLeroyGuessWindow
+  );
 
   const [leroyHelpOpen, setLeroyHelpOpen] = useState(false);
   const [boostHelpOpen, setBoostHelpOpen] = useState(false);

@@ -35,6 +35,7 @@ export default function HomePage() {
     trophyCounts,
     leroySends,
     guessLeroy,
+    startLeroyGuessWindow,
     boostedIds,
     session,
     isAdmin,
@@ -57,8 +58,12 @@ export default function HomePage() {
   // Hooks must run every render regardless of the early returns below, so
   // these live here rather than after the loading/configured checks.
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
-  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
-  const [showLastResults, setShowLastResults] = useState(false);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
+    leroySends,
+    players,
+    me,
+    startLeroyGuessWindow
+  );
   const [tripPanelOpen, setTripPanelOpen] = useState(false);
 
   // Auto-expand the Event panel once there's no active event to show —
@@ -101,10 +106,11 @@ export default function HomePage() {
   const standings = totals(tripPlayers, events, adjustments);
 
   // Once a trip finalizes (or none has ever been started) there's nothing
-  // "current" to show — the board, champion star and history all go behind
-  // a "View last results" toggle instead of just staying up forever.
+  // "current" to show — the live board, champion star and round-by-round
+  // history all disappear. What that trip actually did is the Event
+  // Review page's job now (see the link below), not something this page
+  // shows inline any more.
   const hasActiveEvent = !!currentTrip && currentTrip.status !== "finalized";
-  const showResults = hasActiveEvent || showLastResults;
 
   function handleStartNewEvent() {
     setTripPanelOpen(true);
@@ -142,14 +148,9 @@ export default function HomePage() {
           </p>
           <div className="btn-row" style={{ justifyContent: "center", marginTop: 14 }}>
             {currentTrip && (
-              <button
-                type="button"
-                className="btn btn-signout"
-                style={{ textTransform: "uppercase" }}
-                onClick={() => setShowLastResults((v) => !v)}
-              >
-                {showLastResults ? "Hide last results" : "View last results"}
-              </button>
+              <Link href="/review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
+                Review last event
+              </Link>
             )}
             {isAdmin && (
               <button type="button" className="btn btn-primary" onClick={handleStartNewEvent}>
@@ -160,25 +161,15 @@ export default function HomePage() {
         </div>
       )}
 
-      {showResults && (
+      {hasActiveEvent && (
         <>
-          {!hasActiveEvent && (
-            <div className="btn-row" style={{ justifyContent: "center", marginTop: 16 }}>
-              <Link href="/review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
-                Review last event
-              </Link>
-              <Link href="/missions-review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
-                See all secret missions
-              </Link>
-            </div>
-          )}
           <Champion standings={standings} />
           <Board
             standings={standings}
             trophyCounts={trophyCounts}
             boostedIds={boostedIds}
             isAdmin={isAdmin}
-            finalized={currentTrip?.status === "finalized"}
+            finalized={false}
             onAddPoints={addPointAdjustment}
           />
         </>
@@ -216,12 +207,12 @@ export default function HomePage() {
         />
       )}
 
-      {showResults && (
+      {hasActiveEvent && (
         <History
           players={players}
           events={events}
           adjustments={adjustments}
-          isAdmin={hasActiveEvent && isAdmin}
+          isAdmin={isAdmin}
           onDelete={deleteEvent}
         />
       )}

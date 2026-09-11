@@ -431,6 +431,7 @@ export default function MissionsPage() {
     trophies,
     leroySends,
     guessLeroy,
+    startLeroyGuessWindow,
     isAdmin,
     missionTemplates,
     scheduledMissions,
@@ -473,7 +474,12 @@ export default function MissionsPage() {
   }
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
-  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
+    leroySends,
+    players,
+    me,
+    startLeroyGuessWindow
+  );
 
   useEffect(() => {
     if (!loading && configured && !session) {

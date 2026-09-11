@@ -37,12 +37,18 @@ export default function ProfilePage() {
     myTrophies,
     leroySends,
     guessLeroy,
+    startLeroyGuessWindow,
     updateMyIcon,
     updateMyName,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
-  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
+    leroySends,
+    players,
+    me,
+    startLeroyGuessWindow
+  );
 
   // A single "Edit profile" toggle (top-right of the hero card) now covers
   // both the display name and the icon, instead of separate pencils on

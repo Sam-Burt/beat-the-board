@@ -25,13 +25,19 @@ export default function HotPotatoPage() {
     trophies,
     leroySends,
     guessLeroy,
+    startLeroyGuessWindow,
     startHotPotato,
     passHotPotato,
     catchHotPotato,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
-  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(leroySends, players, me);
+  const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
+    leroySends,
+    players,
+    me,
+    startLeroyGuessWindow
+  );
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
