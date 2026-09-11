@@ -350,9 +350,8 @@ export default function HotPotatoPage() {
       )}
 
       <div className="card hot-potato-card-face" style={{ marginTop: 16 }}>
-        <div className="hot-potato-rainbow" />
-        <div className="hot-potato-emoji">🌈</div>
-        <div className="hot-potato-card-label">Top Secret</div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="hot-potato-card-img" src="/icons/gay-card.png" alt="Gay Card" />
       </div>
 
       {!enabled && (

@@ -1293,20 +1293,14 @@ label {
   border-radius: 16px;
   border: 1px solid var(--border);
   background: var(--card);
-  padding: 30px 20px 24px;
-  text-align: center;
+  padding: 0;
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.6);
 }
-.hot-potato-rainbow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 10px;
-  background: linear-gradient(90deg, #ff3b3b, #ff9f1c, #ffe066, #4ade80, #38bdf8, #a78bfa);
-}
-.hot-potato-emoji {
-  font-size: 56px;
-  margin: 12px 0 6px;
+.hot-potato-card-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
 }
 .hot-potato-card-label {
   font-family: "Striker", "Archivo", sans-serif;
