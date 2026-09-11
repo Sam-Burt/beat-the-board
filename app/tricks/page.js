@@ -11,11 +11,6 @@ import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
-function hoursLeft(expiresAt) {
-  const ms = new Date(expiresAt).getTime() - Date.now();
-  return Math.max(0, Math.ceil(ms / (60 * 60 * 1000)));
-}
-
 export default function TricksPage() {
   const router = useRouter();
   const {
@@ -29,6 +24,7 @@ export default function TricksPage() {
     trophies,
     leroySends,
     sendLeroy,
+    guessLeroy,
     pointBoosts,
     activateBoost,
   } = useBoardData();
@@ -41,7 +37,6 @@ export default function TricksPage() {
   const [target, setTarget] = useState(null);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
-  const [pushInfo, setPushInfo] = useState("");
   const [boosting, setBoosting] = useState(false);
   const [boostError, setBoostError] = useState("");
 
@@ -92,27 +87,16 @@ export default function TricksPage() {
   const eventLive = !!currentTrip && (currentTrip.status === "active" || currentTrip.status === "tied");
   const mySend = leroySends.find((l) => l.sender_id === me.id);
   const now = new Date();
-  const incoming = leroySends.find(
-    (l) => l.target_id === me.id && !l.resolved_at && new Date(l.expires_at) > now
-  );
   const myBoost = pointBoosts.find((b) => b.player_id === me.id);
-
-  function describePush(data) {
-    if (!data?.pushConfigured) return "";
-    if (data.pushed > 0) return `Pinged ${data.pushed} device${data.pushed === 1 ? "" : "s"}.`;
-    return "No push went out — they haven't turned on alerts, or it's gone stale.";
-  }
 
   async function handleSend() {
     if (!target) return;
     setSendError("");
-    setPushInfo("");
     setSending(true);
     const result = await sendLeroy({ targetId: target });
     setSending(false);
     if (result?.ok) {
       setTarget(null);
-      setPushInfo(describePush(result.data));
     } else {
       setSendError(result?.error || "Couldn't send him — try again.");
     }
@@ -139,7 +123,13 @@ export default function TricksPage() {
         />
       )}
       {leroyAlert && (
-        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+        <LeroyAlert
+          leroy={leroyAlert.leroy}
+          tripPlayers={tripPlayers}
+          me={me}
+          onGuess={guessLeroy}
+          onDismiss={dismissLeroyAlert}
+        />
       )}
 
       <div className="card header-card">
@@ -156,12 +146,16 @@ export default function TricksPage() {
               you. We notify them immediately. They can&#39;t stop it, they just have to sit
               there and take it like a bitch.
             </p>
+            <h3 style={{ marginTop: 18 }}>Can they get it back?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              The second he strikes, they get told and get 60 seconds to guess who sent him.
+              Guess right and they get their 5 back, plus 5 more out of your pocket. Guess
+              wrong, or they&#39;re not fast enough, and they never find out it was you.
+            </p>
             <h3 style={{ marginTop: 18 }}>Fine print</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              Leroy has better things to do. He gives it 18 hours. If your target is such a
-              bitch that they refuse to play anything before time runs out, Leroy gets bored
-              and leaves. You get absolutely nothing. Don&#39;t cry about it. Just get on with
-              it.
+              No expiry. He waits as long as it takes for their next game — could be their very
+              next round, could be next week. He&#39;s patient. You should be too.
             </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setLeroyHelpOpen(false)}>
@@ -228,17 +222,6 @@ export default function TricksPage() {
           </p>
         )}
 
-        {eventLive && incoming && (
-          <div style={{ marginTop: 16, textAlign: "center" }}>
-            <p className="gay-card-title">Leroy&#39;s coming for you</p>
-            <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>
-              The second you play anything, he&#39;s taking {incoming.amount} points off you and
-              legging it. About {hoursLeft(incoming.expires_at)} hour
-              {hoursLeft(incoming.expires_at) === 1 ? "" : "s"} before he gives up and goes home.
-            </p>
-          </div>
-        )}
-
         {eventLive && !mySend && (
           <div style={{ marginTop: 16 }}>
             <label>Who&#39;s getting mugged?</label>
@@ -266,11 +249,6 @@ export default function TricksPage() {
               </button>
             </div>
             {sendError && <div className="banner-note error">{sendError}</div>}
-            {pushInfo && (
-              <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
-                {pushInfo}
-              </p>
-            )}
           </div>
         )}
 
@@ -279,11 +257,13 @@ export default function TricksPage() {
             You sent Leroy after{" "}
             <strong>{players.find((p) => p.id === mySend.target_id)?.name || "someone"}</strong> this
             event.{" "}
-            {mySend.resolved_at
-              ? "Job done. Hope it was worth it."
-              : new Date(mySend.expires_at) > now
-              ? "Still waiting on him to earn his cut."
-              : "He bottled it. Nobody got anything."}
+            {!mySend.resolved_at
+              ? "Still waiting on him to earn his cut. They've no idea."
+              : !mySend.guessed_at
+              ? "He's struck. Any second now they'll find out — or won't."
+              : mySend.guess_correct
+              ? "They worked it out. Cost you 5 on top."
+              : "Job done. They never twigged it was you."}
           </p>
         )}
       </div>

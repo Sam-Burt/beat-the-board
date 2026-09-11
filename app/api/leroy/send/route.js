@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
-import { pushConfigured, sendLeroyPing } from "../../../../lib/webpush";
-import { recordNotification } from "../../../../lib/notifications";
 
 const AMOUNT = 5;
-const WINDOW_HOURS = 18;
 
 // Any signed-in player can call this — sending Leroy is a player action,
 // not an admin one. What this route actually enforces server-side: you're
 // a real player on the current event's roster, you're picking someone
 // else on that roster, and you haven't already used your one send this
-// event. The steal itself doesn't happen here — it's just a marker with a
-// shelf life (see saveEvent in lib/useBoardData.js, which resolves it the
-// next time the target plays any round, within the window).
+// event.
+//
+// Deliberately silent: no notification, no push, nothing. The whole point
+// is the target has no idea — they only find out once he actually
+// strikes (see app/api/leroy/reveal, called from saveEvent in
+// lib/useBoardData.js the next time the target plays any round).
 export async function POST(request) {
   if (!supabaseAdmin) {
     return NextResponse.json(
@@ -75,45 +75,16 @@ export async function POST(request) {
     return NextResponse.json({ error: "You've already sent Leroy this event." }, { status: 400 });
   }
 
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + WINDOW_HOURS * 60 * 60 * 1000);
   const { error: insertError } = await supabaseAdmin.from("leroy_sends").insert({
     trip_id: trip.id,
     sender_id: me.id,
     target_id: targetId,
     amount: AMOUNT,
-    sent_at: now.toISOString(),
-    expires_at: expiresAt.toISOString(),
+    sent_at: new Date().toISOString(),
   });
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 400 });
   }
 
-  const pingBody = `${me.name} has sent Leroy to steal your shit!`;
-  await recordNotification(targetId, {
-    kind: "leroy",
-    title: "🥷 Leroy's on his way",
-    body: pingBody,
-    url: "/tricks",
-  });
-
-  if (!pushConfigured) {
-    return NextResponse.json({ sent: true, pushed: 0, pushConfigured: false });
-  }
-
-  const { data: subs } = await supabaseAdmin
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth_key")
-    .eq("player_id", targetId);
-
-  let pushed = 0;
-  if (subs?.length) {
-    const deadIds = await sendLeroyPing(subs, pingBody);
-    pushed = subs.length - deadIds.length;
-    if (deadIds.length) {
-      await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
-    }
-  }
-
-  return NextResponse.json({ sent: true, pushed, pushConfigured: true });
+  return NextResponse.json({ sent: true });
 }

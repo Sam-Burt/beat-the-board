@@ -24,6 +24,7 @@ export default function HotPotatoPage() {
     isAdmin,
     trophies,
     leroySends,
+    guessLeroy,
     startHotPotato,
     passHotPotato,
   } = useBoardData();
@@ -259,7 +260,13 @@ export default function HotPotatoPage() {
         />
       )}
       {leroyAlert && (
-        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+        <LeroyAlert
+          leroy={leroyAlert.leroy}
+          tripPlayers={tripPlayers}
+          me={me}
+          onGuess={guessLeroy}
+          onDismiss={dismissLeroyAlert}
+        />
       )}
 
       <div className="card header-card">

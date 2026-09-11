@@ -426,9 +426,11 @@ export default function MissionsPage() {
     session,
     me,
     players,
+    tripPlayers,
     currentTrip,
     trophies,
     leroySends,
+    guessLeroy,
     isAdmin,
     missionTemplates,
     scheduledMissions,
@@ -574,7 +576,13 @@ export default function MissionsPage() {
         />
       )}
       {leroyAlert && (
-        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+        <LeroyAlert
+          leroy={leroyAlert.leroy}
+          tripPlayers={tripPlayers}
+          me={me}
+          onGuess={guessLeroy}
+          onDismiss={dismissLeroyAlert}
+        />
       )}
       <div className="card header-card">
         <div className="header-card-title-row">

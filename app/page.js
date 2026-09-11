@@ -34,7 +34,7 @@ export default function HomePage() {
     trophies,
     trophyCounts,
     leroySends,
-    leroyTargetedIds,
+    guessLeroy,
     boostedIds,
     session,
     isAdmin,
@@ -122,7 +122,13 @@ export default function HomePage() {
         />
       )}
       {leroyAlert && (
-        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+        <LeroyAlert
+          leroy={leroyAlert.leroy}
+          tripPlayers={tripPlayers}
+          me={me}
+          onGuess={guessLeroy}
+          onDismiss={dismissLeroyAlert}
+        />
       )}
       <Header tripName={tripName} badgeId={currentTrip?.badge_id} isAdmin={isAdmin} />
 
@@ -167,7 +173,6 @@ export default function HomePage() {
           <Board
             standings={standings}
             trophyCounts={trophyCounts}
-            leroyTargetedIds={leroyTargetedIds}
             boostedIds={boostedIds}
             isAdmin={isAdmin}
             finalized={currentTrip?.status === "finalized"}

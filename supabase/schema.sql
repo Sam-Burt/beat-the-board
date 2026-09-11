@@ -713,9 +713,7 @@ end $$;
 -- Leroy: any player can send him after exactly one other player, once per
 -- event, to steal points off them — same delayed-trigger shape as the
 -- cheat flag (see above), resolved the next time the target plays any
--- round, not necessarily one they win. Unlike the cheat flag it also has
--- a shelf life: if the target doesn't play again within 18 hours the
--- whole thing just quietly expires unresolved (see saveEvent).
+-- round, not necessarily one they win.
 create table if not exists leroy_sends (
   id uuid primary key default gen_random_uuid(),
   trip_id uuid not null references trips (id) on delete cascade,
@@ -723,7 +721,6 @@ create table if not exists leroy_sends (
   target_id uuid not null references players (id) on delete cascade,
   amount integer not null default 5,
   sent_at timestamptz not null default now(),
-  expires_at timestamptz not null,
   resolved_at timestamptz
 );
 alter table leroy_sends enable row level security;
@@ -732,15 +729,23 @@ drop policy if exists "leroy_sends read for everyone" on leroy_sends;
 create policy "leroy_sends read for everyone" on leroy_sends
   for select using (true);
 
--- Sending only ever happens through app/api/leroy/send (service role,
--- checked server-side: real player, real roster, hasn't already used
--- theirs this trip) — no insert policy needed for ordinary clients.
--- Resolving one (on the target's next round) is a plain admin write from
--- saveEvent, same pattern as every other in-game scoring effect.
+-- Sending is completely silent — no notification, no push, nothing —
+-- since the whole point is the target has no idea. He no longer has an
+-- expiry either (that was the original design; dropped below): he just
+-- waits for the target's next round, however long that takes. The moment
+-- he strikes, the target gets a notification and 60 seconds
+-- (guess_deadline) to guess who sent him — right, and they get their 5
+-- back plus 5 more out of the sender's pocket; wrong or too slow, and
+-- they never find out. See app/api/leroy/send, app/api/leroy/reveal and
+-- app/api/leroy/guess — every write goes through one of those three
+-- service-role routes now, so there's no client-facing write policy at
+-- all any more, not even for the admin.
+alter table leroy_sends add column if not exists guess_deadline timestamptz;
+alter table leroy_sends add column if not exists guessed_player_id uuid references players (id) on delete set null;
+alter table leroy_sends add column if not exists guess_correct boolean;
+alter table leroy_sends add column if not exists guessed_at timestamptz;
+alter table leroy_sends drop column if exists expires_at;
 drop policy if exists "leroy_sends write for admins" on leroy_sends;
-create policy "leroy_sends write for admins" on leroy_sends
-  for update using (auth.uid() in (select user_id from admins))
-  with check (auth.uid() in (select user_id from admins));
 
 -- Jackpot ("boost" internally): the self-directed counterpart to Leroy —
 -- a player activates it on themselves, once per event, and it doubles

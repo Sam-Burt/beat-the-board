@@ -31,10 +31,12 @@ export default function ProfilePage() {
     session,
     me,
     players,
+    tripPlayers,
     currentTrip,
     trophies,
     myTrophies,
     leroySends,
+    guessLeroy,
     updateMyIcon,
     updateMyName,
   } = useBoardData();
@@ -173,7 +175,13 @@ export default function ProfilePage() {
         />
       )}
       {leroyAlert && (
-        <LeroyAlert leroy={leroyAlert.leroy} sender={leroyAlert.sender} onDismiss={dismissLeroyAlert} />
+        <LeroyAlert
+          leroy={leroyAlert.leroy}
+          tripPlayers={tripPlayers}
+          me={me}
+          onGuess={guessLeroy}
+          onDismiss={dismissLeroyAlert}
+        />
       )}
       <div className="card profile-hero">
         <div className="profile-icon-btn">

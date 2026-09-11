@@ -1521,6 +1521,13 @@ label {
   text-wrap: balance;
   margin: 0 0 14px;
 }
+.leroy-timer {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 40px;
+  color: var(--pink);
+  margin-top: 12px;
+  font-variant-numeric: tabular-nums;
+}
 
 /* admin sign-in / setup pages */
 .auth-wrap {
