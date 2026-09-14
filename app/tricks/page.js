@@ -18,6 +18,7 @@ export default function TricksPage() {
     loading,
     session,
     me,
+    isAdmin,
     players,
     tripPlayers,
     currentTrip,
@@ -28,6 +29,7 @@ export default function TricksPage() {
     startLeroyGuessWindow,
     pointBoosts,
     activateBoost,
+    confirmBoost,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
@@ -45,6 +47,8 @@ export default function TricksPage() {
   const [sendError, setSendError] = useState("");
   const [boosting, setBoosting] = useState(false);
   const [boostError, setBoostError] = useState("");
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [confirmError, setConfirmError] = useState("");
 
   useEffect(() => {
     if (!loading && configured && !session) {
@@ -94,6 +98,12 @@ export default function TricksPage() {
   const mySend = leroySends.find((l) => l.sender_id === me.id);
   const now = new Date();
   const myBoost = pointBoosts.find((b) => b.player_id === me.id);
+  // Anything activated but not yet confirmed, and not already expired —
+  // this is what an admin needs to actually see and act on to make the
+  // trick usable at all (see app/api/admin/confirm-boost).
+  const pendingConfirmations = pointBoosts.filter(
+    (b) => !b.resolved_at && !b.confirmed_at && new Date(b.expires_at) > now
+  );
 
   async function handleSend() {
     if (!target) return;
@@ -115,6 +125,16 @@ export default function TricksPage() {
     setBoosting(false);
     if (!result?.ok) {
       setBoostError(result?.error || "Couldn't activate it — try again.");
+    }
+  }
+
+  async function handleConfirm(boostId) {
+    setConfirmError("");
+    setConfirmingId(boostId);
+    const result = await confirmBoost({ boostId });
+    setConfirmingId(null);
+    if (!result?.ok) {
+      setConfirmError(result?.error || "Couldn't confirm it — try again.");
     }
   }
 
@@ -172,9 +192,17 @@ export default function TricksPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              One shot per event. Hit activate, and whatever tragic score you manage to scrape
-              together in your next game gets doubled. Congratulations, you&#39;re officially a
-              gambler.
+              One shot per event. Real double or nothing: come first in your next game and
+              everything you scored gets doubled. Come anything else and that game&#39;s worth
+              precisely zero. No middle ground, no consolation prize.
+            </p>
+            <h3 style={{ marginTop: 18 }}>Why do I need it confirmed?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
+              Because results get logged after the fact, not live — so activating this the
+              second you already know you&#39;ve won (or that you haven&#39;t) would be free
+              money. It doesn&#39;t count until whoever runs the board confirms it, in person,
+              before that game happens. Try to sneak one in afterward and they&#39;ll just say
+              no.
             </p>
             <h3 style={{ marginTop: 18, lineHeight: 1.15 }}>Does it work with Leroy?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
@@ -296,7 +324,8 @@ export default function TricksPage() {
         {eventLive && !myBoost && (
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <p className="muted" style={{ marginBottom: 10 }}>
-              Whatever you score next game, doubled. One shot — don&#39;t fumble it.
+              Come first next game and it&#39;s doubled. Anything else and it scores nothing.
+              One shot — don&#39;t fumble it.
             </p>
             <button className="btn btn-primary" disabled={boosting} onClick={handleBoost}>
               {boosting ? "Activating…" : "Activate Jackpot"}
@@ -308,11 +337,47 @@ export default function TricksPage() {
         {eventLive && myBoost && (
           <p className="muted" style={{ marginTop: 16, textAlign: "center" }}>
             {myBoost.resolved_at
-              ? "Cashed in. However that went for you."
-              : new Date(myBoost.expires_at) > now
-              ? "Live and loaded. Next game you play, it's double or nothing."
-              : "Expired. You didn't even play. Embarrassing."}
+              ? "Cashed in. All or nothing, however that round went for you."
+              : new Date(myBoost.expires_at) <= now
+              ? myBoost.confirmed_at
+                ? "Expired. You never played. Embarrassing."
+                : "Expired. Nobody confirmed it in time — wasted."
+              : myBoost.confirmed_at
+              ? "Confirmed and live. Next game you play, it's everything or nothing."
+              : "Activated. Now go find whoever runs this and get them to confirm it — before your next game, not after."}
           </p>
+        )}
+
+        {isAdmin && eventLive && pendingConfirmations.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <p className="muted" style={{ fontSize: 12, textAlign: "center", marginBottom: 8 }}>
+              Only confirm one of these if you&#39;re watching it happen right now — not after
+              you already know how their next game went.
+            </p>
+            {pendingConfirmations.map((b) => {
+              const p = players.find((pl) => pl.id === b.player_id);
+              return (
+                <div
+                  className="btn-row"
+                  style={{ justifyContent: "center", alignItems: "center", marginTop: 8 }}
+                  key={b.id}
+                >
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <PlayerAvatar iconId={p?.icon_id} emoji={p?.emoji} size={20} />
+                    {p?.name || "?"}
+                  </span>
+                  <button
+                    className="btn btn-primary"
+                    disabled={confirmingId === b.id}
+                    onClick={() => handleConfirm(b.id)}
+                  >
+                    {confirmingId === b.id ? "Confirming…" : "Confirm"}
+                  </button>
+                </div>
+              );
+            })}
+            {confirmError && <div className="banner-note error">{confirmError}</div>}
+          </div>
         )}
       </div>
 

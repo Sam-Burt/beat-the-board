@@ -794,6 +794,17 @@ create table if not exists point_boosts (
 );
 alter table point_boosts enable row level security;
 
+-- A player activating Jackpot doesn't make it live on its own — an admin
+-- has to witness it and confirm it (app/api/admin/confirm-boost) before it
+-- counts toward anything. Without that, someone could sit on their phone
+-- mid-game, watch themselves clearly winning (or already have won), and
+-- only then tap activate — banking a double nobody actually risked, since
+-- results get logged well after the fact rather than live. Requiring a
+-- real person to confirm it happened BEFORE the round played out closes
+-- that gap; saveEvent (lib/useBoardData.js) ignores any boost that isn't
+-- confirmed when it resolves a player's next round.
+alter table point_boosts add column if not exists confirmed_at timestamptz;
+
 drop policy if exists "point_boosts read for everyone" on point_boosts;
 create policy "point_boosts read for everyone" on point_boosts
   for select using (true);
