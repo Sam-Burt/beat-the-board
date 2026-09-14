@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
+import { pushConfigured, sendJackpotRequestPing } from "../../../../lib/webpush";
+import { recordNotification } from "../../../../lib/notifications";
 
 const WINDOW_HOURS = 18;
 
@@ -9,7 +11,14 @@ const WINDOW_HOURS = 18;
 // used your one activation this event. The doubling itself doesn't
 // happen here — same as Leroy, this just plants a marker with a shelf
 // life that saveEvent (lib/useBoardData.js) resolves the next time you
-// play any round, within the window.
+// play any round, within the window, and only once an admin's confirmed
+// it (see app/api/admin/confirm-boost).
+//
+// Unlike Leroy, this request is announced to the WHOLE roster the moment
+// it goes in — that's deliberate, not an oversight: public pressure is
+// part of what makes "confirm it before you know the result" actually
+// hold up socially, and it gives everyone else a reason to go watch
+// whether whoever's asking actually pulls it off.
 export async function POST(request) {
   if (!supabaseAdmin) {
     return NextResponse.json(
@@ -25,7 +34,7 @@ export async function POST(request) {
 
   const { data: me } = await supabaseAdmin
     .from("players")
-    .select("id")
+    .select("id, name")
     .eq("user_id", callerId)
     .maybeSingle();
   if (!me) {
@@ -63,6 +72,33 @@ export async function POST(request) {
   });
   if (insertError) {
     return NextResponse.json({ error: insertError.message }, { status: 400 });
+  }
+
+  const { data: roster } = await supabaseAdmin
+    .from("trip_players")
+    .select("player_id")
+    .eq("trip_id", trip.id);
+  const rosterIds = (roster || []).map((r) => r.player_id);
+
+  const pingTitle = `👀 Look out, ${me.name}'s getting ahead of themselves`;
+  const pingBody = "Let's see if Barry Big Bollocks bottles it.";
+  await Promise.all(
+    rosterIds.map((playerId) =>
+      recordNotification(playerId, { kind: "jackpot", title: pingTitle, body: pingBody, url: "/tricks" })
+    )
+  );
+
+  if (pushConfigured && rosterIds.length) {
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth_key")
+      .in("player_id", rosterIds);
+    if (subs?.length) {
+      const deadIds = await sendJackpotRequestPing(subs, pingTitle);
+      if (deadIds.length) {
+        await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
+      }
+    }
   }
 
   return NextResponse.json({ activated: true });

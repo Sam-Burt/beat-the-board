@@ -56,16 +56,16 @@ export default function TricksPage() {
     }
   }, [loading, configured, session, router]);
 
-  // Clears the pink dot BottomNav shows for a send landing on you —
-  // landing on this tab at all counts as "seen", same as Missions/Gay
-  // Card do.
+  // Clears the pink dot BottomNav shows for a Leroy send landing on you,
+  // or a Jackpot request going out — landing on this tab at all counts as
+  // "seen", same as Missions/Gay Card do.
   useEffect(() => {
     if (!supabase || !me) return;
     supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("player_id", me.id)
-      .eq("kind", "leroy")
+      .in("kind", ["leroy", "jackpot"])
       .is("read_at", null)
       .then(() => {});
   }, [me]);

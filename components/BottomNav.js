@@ -132,7 +132,7 @@ export default function BottomNav({ session, me, hotPotatoEnabled }) {
   const dotFor = {
     "/missions": unreadKinds.has("mission"),
     "/hot-potato": unreadKinds.has("hot_potato"),
-    "/tricks": unreadKinds.has("leroy"),
+    "/tricks": unreadKinds.has("leroy") || unreadKinds.has("jackpot"),
   };
 
   return (
