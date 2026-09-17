@@ -743,9 +743,10 @@ label {
   padding: 20px 8px;
   border-top: 1px solid var(--border);
 }
-.review-achievement-emoji {
-  font-size: 36px;
-  line-height: 1;
+.review-achievement-icon {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
 }
 .review-achievement h3 {
   font-size: 17px;

@@ -49,12 +49,11 @@ function leaderLabel(counts, players) {
   return `${names.map((p) => p.name).join(" & ")} (${top})`;
 }
 
-function AchievementCard({ emoji, title, caption, leaders: { names } }) {
+function AchievementCard({ icon, title, caption, leaders: { names } }) {
   return (
     <div className="review-achievement">
-      <div className="review-achievement-emoji" aria-hidden="true">
-        {emoji}
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="review-achievement-icon" src={icon} alt="" />
       <h3>{title}</h3>
       {names.length === 0 ? (
         <p className="muted" style={{ fontSize: 13 }}>Nobody. Not one.</p>
@@ -336,38 +335,38 @@ export default function ReviewPage() {
         ) : (
           <div className="review-achievements">
             <AchievementCard
-              emoji="🏆"
+              icon="/icons/review/most-games-won.png"
               title="Most Games Won"
               caption={countCaption(leaders(winCounts, rosterForAchievements).top, "win")}
               leaders={leaders(winCounts, rosterForAchievements)}
             />
             <AchievementCard
-              emoji="🎮"
+              icon="/icons/review/most-games-completed.png"
               title="Most Games Completed"
               caption={countCaption(leaders(roundsPlayedCounts, rosterForAchievements).top, "game played", "games played")}
               leaders={leaders(roundsPlayedCounts, rosterForAchievements)}
             />
             <AchievementCard
-              emoji="🪦"
+              icon="/icons/review/most-last-places.png"
               title="Most Last Places"
               caption={countCaption(leaders(lastCounts, rosterForAchievements).top, "last place")}
               leaders={leaders(lastCounts, rosterForAchievements)}
             />
             <AchievementCard
-              emoji="💥"
+              icon="/icons/review/best-single-day.png"
               title="Best Single Day"
               caption={`${fmtPts(leaders(bestDayCounts, rosterForAchievements).top)} pts in one day`}
               leaders={leaders(bestDayCounts, rosterForAchievements)}
             />
             <AchievementCard
-              emoji="🥷"
+              icon="/icons/review/mugged-by-leroy.png"
               title="Mugged By Leroy The Most"
               caption={countCaption(leaders(leroyMuggedCounts, rosterForAchievements).top, "time")}
               leaders={leaders(leroyMuggedCounts, rosterForAchievements)}
             />
             {currentTrip.hot_potato_enabled && (
               <AchievementCard
-                emoji="🫣"
+                icon="/icons/review/failed-to-pass-gay.png"
                 title="Failed To Pass The Gay Card The Most"
                 caption={countCaption(leaders(selfCaughtCounts, rosterForAchievements).top, "time")}
                 leaders={leaders(selfCaughtCounts, rosterForAchievements)}
@@ -376,7 +375,7 @@ export default function ReviewPage() {
             {Object.entries(CATEGORY_LABELS).map(([id, label]) => (
               <AchievementCard
                 key={id}
-                emoji="🎯"
+                icon="/icons/review/best-at.png"
                 title={`Best at ${label}`}
                 caption={countCaption(leaders(categoryWinCounts[id], rosterForAchievements).top, "win")}
                 leaders={leaders(categoryWinCounts[id], rosterForAchievements)}
