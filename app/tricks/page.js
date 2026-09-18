@@ -30,16 +30,19 @@ const CHEAT_CODE_COPY = {
     kicker: "Nice",
     headline: "+5 Points",
     subtext: "Lucky sod. Don't get used to it.",
+    icon: { type: "emoji", char: "🎲" },
   },
   leroy: {
     kicker: "Nice",
     headline: "An Extra Leroy",
     subtext: "Go on then. Ruin someone else's day too.",
+    icon: { type: "img", src: "/icons/leroy.png" },
   },
   jackpot: {
     kicker: "Nice",
     headline: "An Extra Jackpot",
     subtext: "Don't waste this one either.",
+    icon: { type: "emoji", char: "🎰" },
   },
 };
 
@@ -272,6 +275,15 @@ export default function TricksPage() {
       {resultCopy && (
         <div className="celebration-backdrop" onClick={() => setRedeemResult(null)}>
           <div className="card celebration-card" onClick={(e) => e.stopPropagation()}>
+            {resultCopy.icon?.type === "img" && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="celebration-crown" src={resultCopy.icon.src} alt="" />
+            )}
+            {resultCopy.icon?.type === "emoji" && (
+              <div className="celebration-crown celebration-crown-emoji" aria-hidden="true">
+                {resultCopy.icon.char}
+              </div>
+            )}
             <div className="celebration-kicker">{resultCopy.kicker}</div>
             <h2 className="leroy-headline">{resultCopy.headline}</h2>
             <p className="celebration-subtext">{resultCopy.subtext}</p>

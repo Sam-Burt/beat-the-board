@@ -1573,6 +1573,13 @@ label {
   display: block;
   margin: 0 auto 8px;
 }
+.celebration-crown-emoji {
+  width: auto;
+  height: auto;
+  font-size: 72px;
+  line-height: 1;
+  text-align: center;
+}
 .celebration-kicker {
   font-family: "Striker", "Archivo", sans-serif;
   color: var(--acid);
