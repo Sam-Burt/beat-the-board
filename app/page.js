@@ -193,6 +193,24 @@ export default function HomePage() {
         </>
       )}
 
+      {/* Once a trip finalizes, the live board above disappears for
+          everyone (see hasActiveEvent) — but an admin still needs a way to
+          revise a score after the fact (fake mission proof, a scoring
+          mistake, etc. — see app/api/admin/revise-score). This is that
+          entry point: same Board component, same "±" control, just scoped
+          to admins only so a non-admin still just sees "no current event"
+          and gets pointed at Review instead. */}
+      {!hasActiveEvent && isAdmin && currentTrip?.status === "finalized" && (
+        <Board
+          standings={standings}
+          trophyCounts={trophyCounts}
+          boostedIds={boostedIds}
+          isAdmin={isAdmin}
+          finalized={true}
+          onAddPoints={addPointAdjustment}
+        />
+      )}
+
       {me && !me.icon_id && <IconPicker onPick={updateMyIcon} />}
 
       {isAdmin && currentTrip?.status === "active" && (
