@@ -779,6 +779,32 @@ label {
   border-bottom: 1px solid var(--border);
 }
 
+/* Tricks page — how many charges of Leroy/Jackpot a player currently has
+   left, once cheat codes make that more than a flat yes/no. `.card`
+   already has position: relative, so this just needs to sit in the
+   corner of whichever trick-card div it's dropped into. */
+.trick-charge-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 12px;
+  background: var(--acid);
+  color: #0b0b0b;
+  font-family: "Archivo", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cheat-code-input {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .player-row {
   display: flex;
   align-items: center;

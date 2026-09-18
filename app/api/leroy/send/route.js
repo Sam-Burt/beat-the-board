@@ -6,8 +6,9 @@ const AMOUNT = 5;
 // Any signed-in player can call this — sending Leroy is a player action,
 // not an admin one. What this route actually enforces server-side: you're
 // a real player on the current event's roster, you're picking someone
-// else on that roster, and you haven't already used your one send this
-// event.
+// else on that roster, and you're still within your allowance for this
+// event — one free send, plus one more per cheat-code "leroy" win (see
+// app/api/tricks/cheat-code).
 //
 // Deliberately silent: no notification, no push, nothing. The whole point
 // is the target has no idea — they only find out once he actually
@@ -65,14 +66,24 @@ export async function POST(request) {
     return NextResponse.json({ error: "That player isn't on this event's roster." }, { status: 400 });
   }
 
-  const { data: alreadySent } = await supabaseAdmin
-    .from("leroy_sends")
-    .select("id")
-    .eq("trip_id", trip.id)
-    .eq("sender_id", me.id)
-    .maybeSingle();
-  if (alreadySent) {
-    return NextResponse.json({ error: "You've already sent Leroy this event." }, { status: 400 });
+  // One free send, plus one more for every cheat code this player's won a
+  // "leroy" bonus from this event (see app/api/tricks/cheat-code).
+  const [{ count: sentCount }, { count: bonusCount }] = await Promise.all([
+    supabaseAdmin
+      .from("leroy_sends")
+      .select("id", { count: "exact", head: true })
+      .eq("trip_id", trip.id)
+      .eq("sender_id", me.id),
+    supabaseAdmin
+      .from("cheat_code_redemptions")
+      .select("id", { count: "exact", head: true })
+      .eq("trip_id", trip.id)
+      .eq("player_id", me.id)
+      .eq("reward", "leroy"),
+  ]);
+  const allowed = 1 + (bonusCount || 0);
+  if ((sentCount || 0) >= allowed) {
+    return NextResponse.json({ error: "You've used all your Leroys this event." }, { status: 400 });
   }
 
   const { error: insertError } = await supabaseAdmin.from("leroy_sends").insert({

@@ -859,3 +859,78 @@ end $$;
 insert into storage.buckets (id, name, public)
 values ('event-trophies', 'event-trophies', true)
 on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- Cheat codes — a secret word/phrase Sam hands out (verbally, wherever) that
+-- any player can type into the Tricks page for a one-shot gamble: 50% a
+-- flat 5 points, 25% an extra Leroy, 25% an extra Jackpot. Codes themselves
+-- persist across events (Sam adds them when he feels like it, clears them
+-- all with one button when he wants a clean slate) — what resets per event
+-- is REDEMPTION, via cheat_code_redemptions being scoped to trip_id.
+create table if not exists cheat_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  created_at timestamptz not null default now()
+);
+alter table cheat_codes enable row level security;
+
+-- Only admins ever see the actual code text — the redemption check itself
+-- happens server-side (app/api/tricks/cheat-code, service role), so a
+-- regular player's client never needs to read this table at all.
+drop policy if exists "cheat_codes read for admins" on cheat_codes;
+create policy "cheat_codes read for admins" on cheat_codes
+  for select using (auth.uid() in (select user_id from admins));
+
+drop policy if exists "cheat_codes write for admins" on cheat_codes;
+create policy "cheat_codes write for admins" on cheat_codes
+  for all using (auth.uid() in (select user_id from admins))
+  with check (auth.uid() in (select user_id from admins));
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'cheat_codes'
+  ) then
+    alter publication supabase_realtime add table cheat_codes;
+  end if;
+end $$;
+
+-- One row per WINNING code entry — the unique constraint is what actually
+-- enforces "once per player per event": app/api/tricks/cheat-code tries
+-- the insert first, and a unique-violation on it (23505) IS the signal
+-- that this player's already redeemed this exact code this trip, which is
+-- when the -5 "greedy bastard" penalty applies instead — that attempt
+-- never gets a row of its own. `reward` is what lib/useBoardData.js counts
+-- (grouped by player) to work out how many bonus Leroy/Jackpot charges
+-- someone currently has, on top of their base one each.
+create table if not exists cheat_code_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  player_id uuid not null references players (id) on delete cascade,
+  code_id uuid not null references cheat_codes (id) on delete cascade,
+  reward text not null check (reward in ('points', 'leroy', 'jackpot')),
+  created_at timestamptz not null default now(),
+  unique (trip_id, player_id, code_id)
+);
+alter table cheat_code_redemptions enable row level security;
+
+drop policy if exists "cheat_code_redemptions read own" on cheat_code_redemptions;
+create policy "cheat_code_redemptions read own" on cheat_code_redemptions
+  for select using (
+    exists (select 1 from players p where p.id = cheat_code_redemptions.player_id and p.user_id = auth.uid())
+  );
+
+-- No insert/update/delete policy for ordinary clients — only
+-- app/api/tricks/cheat-code (service role) ever writes here. Clearing all
+-- codes (cheat_codes write-for-admins policy above) cascades into wiping
+-- every redemption too, which is the whole point of that reset button.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'cheat_code_redemptions'
+  ) then
+    alter publication supabase_realtime add table cheat_code_redemptions;
+  end if;
+end $$;

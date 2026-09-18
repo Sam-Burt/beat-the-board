@@ -7,12 +7,13 @@ const WINDOW_HOURS = 18;
 
 // Any signed-in player can call this — Jackpot is self-directed (there's
 // no target, unlike Leroy), so all this route checks is: you're a real
-// player, there's an event actually running, and you haven't already
-// used your one activation this event. The doubling itself doesn't
-// happen here — same as Leroy, this just plants a marker with a shelf
-// life that saveEvent (lib/useBoardData.js) resolves the next time you
-// play any round, within the window, and only once an admin's confirmed
-// it (see app/api/admin/confirm-boost).
+// player, there's an event actually running, and you're still within your
+// allowance for this event — one free activation, plus one more per
+// cheat-code "jackpot" win (see app/api/tricks/cheat-code). The doubling
+// itself doesn't happen here — same as Leroy, this just plants a marker
+// with a shelf life that saveEvent (lib/useBoardData.js) resolves the next
+// time you play any round, within the window, and only once an admin's
+// confirmed it (see app/api/admin/confirm-boost).
 //
 // Unlike Leroy, this request is announced to the WHOLE roster the moment
 // it goes in — that's deliberate, not an oversight: public pressure is
@@ -52,14 +53,22 @@ export async function POST(request) {
     return NextResponse.json({ error: "There's no event running." }, { status: 400 });
   }
 
-  const { data: already } = await supabaseAdmin
-    .from("point_boosts")
-    .select("id")
-    .eq("trip_id", trip.id)
-    .eq("player_id", me.id)
-    .maybeSingle();
-  if (already) {
-    return NextResponse.json({ error: "You've already used Jackpot this event." }, { status: 400 });
+  const [{ count: usedCount }, { count: bonusCount }] = await Promise.all([
+    supabaseAdmin
+      .from("point_boosts")
+      .select("id", { count: "exact", head: true })
+      .eq("trip_id", trip.id)
+      .eq("player_id", me.id),
+    supabaseAdmin
+      .from("cheat_code_redemptions")
+      .select("id", { count: "exact", head: true })
+      .eq("trip_id", trip.id)
+      .eq("player_id", me.id)
+      .eq("reward", "jackpot"),
+  ]);
+  const allowed = 1 + (bonusCount || 0);
+  if ((usedCount || 0) >= allowed) {
+    return NextResponse.json({ error: "You've used all your Jackpots this event." }, { status: 400 });
   }
 
   const now = new Date();
