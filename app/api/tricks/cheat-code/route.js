@@ -1,7 +1,85 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
+import { pushConfigured, sendPush } from "../../../../lib/webpush";
+import { recordNotification } from "../../../../lib/notifications";
 
 const REUSE_PENALTY = 5;
+const ADMIN_BONUS_EVERY = 3;
+
+// Sam's the one handing codes out, so him redeeming them too would be
+// judge, jury and executioner — every ADMIN_BONUS_EVERY-th code someone
+// ELSE successfully redeems this trip, every admin actually PLAYING this
+// trip gets their own automatic 50/25/25 roll for free, no code typed.
+// Doesn't touch or reset anything about the normal flow — an admin can
+// still type in a real code themselves too (see the callerIsAdmin check
+// below, which just skips counting THEIR OWN win toward this milestone so
+// they can't trigger their own bonus).
+//
+// excludeAdminIds (every admin-linked player, system-wide) is what keeps
+// the milestone count honest — an admin's own win never counts as one of
+// the "others". rewardAdminIds is deliberately a SEPARATE, narrower list:
+// only admins on THIS trip's roster. An admin account that isn't even
+// playing this event has no business getting pinged or paid out for it.
+async function maybeGrantAdminBonus(tripId, excludeAdminIds, rewardAdminIds) {
+  if (!rewardAdminIds.length) return;
+
+  const { data: redemptions } = await supabaseAdmin
+    .from("cheat_code_redemptions")
+    .select("player_id")
+    .eq("trip_id", tripId);
+  const excludeSet = new Set(excludeAdminIds);
+  const nonAdminCount = (redemptions || []).filter((r) => !excludeSet.has(r.player_id)).length;
+  if (nonAdminCount === 0 || nonAdminCount % ADMIN_BONUS_EVERY !== 0) return;
+
+  for (const adminPlayerId of rewardAdminIds) {
+    const roll = Math.random();
+    const reward = roll < 0.5 ? "points" : roll < 0.75 ? "leroy" : "jackpot";
+
+    // code_id is null — this isn't tied to any real code text, it's a
+    // milestone bonus. Nothing about the (trip_id, player_id, code_id)
+    // uniqueness check minds multiple null code_ids for the same admin
+    // across different milestones (SQL never treats two nulls as equal).
+    const { error: insertError } = await supabaseAdmin.from("cheat_code_redemptions").insert({
+      trip_id: tripId,
+      player_id: adminPlayerId,
+      code_id: null,
+      reward,
+    });
+    if (insertError) continue; // one admin's failure shouldn't block another's
+
+    if (reward === "points") {
+      await supabaseAdmin.from("point_adjustments").insert({
+        trip_id: tripId,
+        player_id: adminPlayerId,
+        amount: 5,
+        note: `Cheat code — admin's cut after ${nonAdminCount} redemptions`,
+      });
+    }
+
+    const title = "🎁 Three suckers took the bait";
+    const body =
+      reward === "points"
+        ? "Your cut: +5 points, straight to your score."
+        : reward === "leroy"
+        ? "Your cut: an extra Leroy."
+        : "Your cut: an extra Jackpot.";
+
+    await recordNotification(adminPlayerId, { kind: "admin", title, body, url: "/tricks" });
+
+    if (pushConfigured) {
+      const { data: subs } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth_key")
+        .eq("player_id", adminPlayerId);
+      if (subs?.length) {
+        const deadIds = await sendPush(subs, { title, body, url: "/tricks", tag: "beat-the-board-admin" });
+        if (deadIds.length) {
+          await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
+        }
+      }
+    }
+  }
+}
 
 // Any signed-in player can call this. A real code, entered for the first
 // time this event, rolls a flat 50/25/25: 5 points, an extra Leroy charge,
@@ -62,6 +140,30 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, outcome: "invalid" });
   }
 
+  const { data: adminRows } = await supabaseAdmin.from("admins").select("user_id");
+  const adminUserIds = (adminRows || []).map((a) => a.user_id);
+  let adminPlayerIds = [];
+  if (adminUserIds.length) {
+    const { data: adminPlayers } = await supabaseAdmin
+      .from("players")
+      .select("id")
+      .in("user_id", adminUserIds);
+    adminPlayerIds = (adminPlayers || []).map((p) => p.id);
+  }
+  const callerIsAdmin = adminPlayerIds.includes(me.id);
+
+  // Only admins actually on this trip's roster are eligible to receive the
+  // automatic bonus — see maybeGrantAdminBonus above.
+  let rosterAdminPlayerIds = [];
+  if (adminPlayerIds.length) {
+    const { data: rosterRows } = await supabaseAdmin
+      .from("trip_players")
+      .select("player_id")
+      .eq("trip_id", trip.id)
+      .in("player_id", adminPlayerIds);
+    rosterAdminPlayerIds = (rosterRows || []).map((r) => r.player_id);
+  }
+
   const roll = Math.random();
   const reward = roll < 0.5 ? "points" : roll < 0.75 ? "leroy" : "jackpot";
 
@@ -94,6 +196,10 @@ export async function POST(request) {
       amount: 5,
       note: "Cheat code — got lucky",
     });
+  }
+
+  if (!callerIsAdmin) {
+    await maybeGrantAdminBonus(trip.id, adminPlayerIds, rosterAdminPlayerIds);
   }
 
   return NextResponse.json({ ok: true, outcome: "won", reward });
