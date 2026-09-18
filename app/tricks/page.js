@@ -423,15 +423,15 @@ export default function TricksPage() {
         </div>
 
         {!eventLive && (
-          <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
+          <p className="muted" style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
             Nothing to send him after. No event, no victims, no fun.
           </p>
         )}
 
         {eventLive && leroyRemaining > 0 && (
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 16, textAlign: "center" }}>
             <label>Who&#39;s getting mugged?</label>
-            <div className="chips" style={{ marginTop: 6 }}>
+            <div className="chips" style={{ marginTop: 6, justifyContent: "center" }}>
               {tripPlayers
                 .filter((p) => p.id !== me.id)
                 .map((p) => (
@@ -446,12 +446,12 @@ export default function TricksPage() {
                   </button>
                 ))}
             </div>
-            <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
+            <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>
               {leroyAllowed > 1
                 ? `${leroyRemaining} of ${leroyAllowed} left this event. Choose wisely, or don't — not my problem.`
                 : "One shot, once, for the whole event. Choose wisely, or don't — not my problem."}
             </p>
-            <div className="btn-row" style={{ marginTop: 10 }}>
+            <div className="btn-row" style={{ marginTop: 10, justifyContent: "center" }}>
               <button className="btn btn-primary" disabled={!target || sending} onClick={handleSend}>
                 {sending ? "Sending…" : "Send Leroy"}
               </button>
@@ -511,14 +511,14 @@ export default function TricksPage() {
         </div>
 
         {!eventLive && (
-          <p className="muted" style={{ textAlign: "center", marginTop: 16 }}>
+          <p className="muted" style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
             Nothing to double yet. No event, nothing to multiply.
           </p>
         )}
 
         {eventLive && jackpotRemaining > 0 && (
           <div style={{ marginTop: 16, textAlign: "center" }}>
-            <p className="muted" style={{ marginBottom: 10 }}>
+            <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>
               Come first next game and it&#39;s doubled. Anything else and it scores nothing.
               {jackpotAllowed > 1
                 ? ` ${jackpotRemaining} of ${jackpotAllowed} left this event.`
@@ -551,7 +551,7 @@ export default function TricksPage() {
 
         {isAdmin && eventLive && pendingConfirmations.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <p className="muted" style={{ fontSize: 12, textAlign: "center", marginBottom: 8 }}>
+            <p className="muted" style={{ fontSize: 13, textAlign: "center", marginBottom: 8 }}>
               Only confirm one of these if you&#39;re watching it happen right now — not after
               you already know how their next game went.
             </p>
@@ -584,7 +584,7 @@ export default function TricksPage() {
 
       {isAdmin && (
         <div className="card" style={{ marginTop: 16 }}>
-          <h2>Cheat Codes</h2>
+          <h2 style={{ fontSize: 20 }}>Cheat Codes</h2>
           <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
             Hand these out however you like — each one's good for one shot per player, per
             event.
