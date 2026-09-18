@@ -61,7 +61,7 @@ async function maybeGrantAdminBonus(tripId, excludeAdminIds, rewardAdminIds) {
         trip_id: tripId,
         player_id: adminPlayerId,
         amount: 5,
-        note: `Cheat code — admin's cut after ${nonAdminCount} redemptions`,
+        note: `Admin's cut — ${nonAdminCount} nosey gits got lucky`,
       });
     }
 
@@ -190,7 +190,7 @@ export async function POST(request) {
         trip_id: trip.id,
         player_id: me.id,
         amount: -REUSE_PENALTY,
-        note: "Cheat code — tried to reuse one, greedy bastard",
+        note: "Had a nosey somewhere they'd already been — greedy bastard",
       });
       return NextResponse.json({ ok: true, outcome: "reused" });
     }
@@ -202,7 +202,7 @@ export async function POST(request) {
       trip_id: trip.id,
       player_id: me.id,
       amount: 5,
-      note: "Cheat code — got lucky",
+      note: "Had a nosey and got lucky",
     });
   }
 
