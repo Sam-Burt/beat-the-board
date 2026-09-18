@@ -14,6 +14,7 @@ import BottomNav from "../../components/BottomNav";
 import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
+import PlayerAvatar from "../../components/PlayerAvatar";
 import {
   pushSupported,
   runningStandalone,
@@ -23,6 +24,117 @@ import {
   unsubscribeFromMissionAlerts,
 } from "../../lib/push";
 
+// Same "who's it for" + title/text + Send shape as AdminMissionComposer
+// (app/missions/page.js) — but there's no pool/scheduler/points here, since
+// this isn't a hidden task, it's just a direct push alert. Whatever's typed
+// in IS the notification.
+function AdminNotificationComposer({ players, onSend }) {
+  const [open, setOpen] = useState(false);
+  const eligiblePlayers = players.filter((p) => p.user_id);
+
+  const [playerId, setPlayerId] = useState(null);
+  const [title, setTitle] = useState("");
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sentFor, setSentFor] = useState(null);
+  const [sentPushInfo, setSentPushInfo] = useState("");
+  const [error, setError] = useState("");
+
+  function describePush(data) {
+    if (!data?.pushConfigured) return "";
+    if (data.pushed > 0) return ` (pinged ${data.pushed} device${data.pushed === 1 ? "" : "s"})`;
+    return " (no push — they haven't turned on mission alerts, or it's gone stale)";
+  }
+
+  async function handleSend() {
+    if (!playerId || !title.trim() || !text.trim()) return;
+    setError("");
+    setSending(true);
+    const result = await onSend({ playerId, title: title.trim(), text: text.trim() });
+    setSending(false);
+    if (result?.ok) {
+      setTitle("");
+      setText("");
+      setSentFor(playerId);
+      setSentPushInfo(describePush(result.data));
+      setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
+    } else {
+      setError(result?.error || "Couldn't send that — try again.");
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
+        <h2>Send a notification</h2>
+        <span className={`chevron${open ? " open" : ""}`}>▾</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          <div className="field">
+            <label>Who&#39;s it for?</label>
+            {eligiblePlayers.length === 0 ? (
+              <div className="empty">Nobody to ping yet.</div>
+            ) : (
+              <div className="chips">
+                {eligiblePlayers.map((p) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    className={`chip${playerId === p.id ? " selected" : ""}`}
+                    onClick={() => setPlayerId(p.id)}
+                  >
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="notification-title">Title</label>
+            <input
+              id="notification-title"
+              type="text"
+              placeholder="e.g. Get to the pub"
+              maxLength={60}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+              style={{ marginTop: 8 }}
+              placeholder="What do you want to tell them?"
+              maxLength={280}
+              rows={3}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </div>
+
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={!playerId || !title.trim() || !text.trim() || sending}
+              onClick={handleSend}
+            >
+              {sending ? "Sending…" : sentFor === playerId ? "Sent! 🔔" : "Send it"}
+            </button>
+          </div>
+          {sentFor === playerId && sentPushInfo && (
+            <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+              {sentPushInfo}
+            </p>
+          )}
+          {error && <div className="banner-note error">{error}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const {
@@ -30,6 +142,7 @@ export default function ProfilePage() {
     loading,
     session,
     me,
+    isAdmin,
     players,
     tripPlayers,
     currentTrip,
@@ -41,6 +154,7 @@ export default function ProfilePage() {
     startLeroyGuessWindow,
     updateMyIcon,
     updateMyName,
+    sendNotification,
   } = useBoardData();
 
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
@@ -277,6 +391,8 @@ export default function ProfilePage() {
         )}
         {alertsError && <div className="banner-note error">{alertsError}</div>}
       </div>
+
+      {isAdmin && <AdminNotificationComposer players={players} onSend={sendNotification} />}
 
       <div className="btn-row" style={{ marginTop: 16, marginBottom: 4, justifyContent: "center" }}>
         <button type="button" className="btn btn-signout" onClick={signOut}>
