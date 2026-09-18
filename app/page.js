@@ -32,6 +32,7 @@ export default function HomePage() {
     events,
     adjustments,
     trophies,
+    eventTrophies,
     trophyCounts,
     leroySends,
     guessLeroy,
@@ -51,6 +52,7 @@ export default function HomePage() {
     addPointAdjustment,
     updateTripDetails,
     createTrip,
+    uploadEventTrophy,
     endTripNow,
     declareTripWinner,
   } = useBoardData();
@@ -124,6 +126,7 @@ export default function HomePage() {
           trophy={celebrating.trophy}
           winner={celebrating.winner}
           variant={celebrating.variant}
+          eventTrophies={eventTrophies}
           onDismiss={dismiss}
         />
       )}
@@ -136,7 +139,12 @@ export default function HomePage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
-      <Header tripName={tripName} badgeId={currentTrip?.badge_id} isAdmin={isAdmin} />
+      <Header
+        tripName={tripName}
+        badgeId={currentTrip?.badge_id}
+        eventTrophies={eventTrophies}
+        isAdmin={isAdmin}
+      />
 
       {saveError && <div className="banner-note error">{saveError}</div>}
 
@@ -193,6 +201,8 @@ export default function HomePage() {
             onEndTripNow={endTripNow}
             onDeclareWinner={declareTripWinner}
             onUpdateTrip={updateTripDetails}
+            eventTrophies={eventTrophies}
+            onUploadEventTrophy={uploadEventTrophy}
           />
         </div>
       )}

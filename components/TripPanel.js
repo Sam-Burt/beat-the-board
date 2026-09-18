@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { badgeSrc } from "../lib/badges";
-import BadgePicker from "./BadgePicker";
+import { trophySrc } from "../lib/trophies";
+import TrophyPicker from "./TrophyPicker";
 import PlayerAvatar from "./PlayerAvatar";
 
 function fmtDate(iso) {
@@ -45,6 +45,8 @@ export default function TripPanel({
   onEndTripNow,
   onDeclareWinner,
   onUpdateTrip,
+  eventTrophies,
+  onUploadEventTrophy,
 }) {
 
   // "Start a new event" form state
@@ -161,9 +163,13 @@ export default function TripPanel({
         <div style={{ marginTop: 14 }}>
           {currentTrip && currentTrip.status !== "finalized" && !editingTrip && (
             <div className="trip-status-card">
-              {badgeSrc(currentTrip.badge_id) && (
+              {trophySrc(currentTrip.badge_id, eventTrophies) && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="trip-status-badge" src={badgeSrc(currentTrip.badge_id)} alt="" />
+                <img
+                  className="trip-status-badge"
+                  src={trophySrc(currentTrip.badge_id, eventTrophies)}
+                  alt=""
+                />
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="trip-status-name">{currentTrip.name}</div>
@@ -199,8 +205,13 @@ export default function TripPanel({
               </div>
 
               <div className="field">
-                <label>Badge (this event&#39;s trophy)</label>
-                <BadgePicker value={editBadgeId} onChange={setEditBadgeId} />
+                <label>Trophy</label>
+                <TrophyPicker
+                  value={editBadgeId}
+                  onChange={setEditBadgeId}
+                  eventTrophies={eventTrophies}
+                  onUpload={onUploadEventTrophy}
+                />
               </div>
 
               <div className="field" style={{ display: "flex", gap: 10 }}>
@@ -341,8 +352,13 @@ export default function TripPanel({
               </div>
 
               <div className="field">
-                <label>Badge (this event&#39;s trophy)</label>
-                <BadgePicker value={badgeId} onChange={setBadgeId} />
+                <label>Trophy</label>
+                <TrophyPicker
+                  value={badgeId}
+                  onChange={setBadgeId}
+                  eventTrophies={eventTrophies}
+                  onUpload={onUploadEventTrophy}
+                />
               </div>
 
               <div className="field" style={{ display: "flex", gap: 10 }}>

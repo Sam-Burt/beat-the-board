@@ -817,3 +817,45 @@ drop policy if exists "point_boosts write for admins" on point_boosts;
 create policy "point_boosts write for admins" on point_boosts
   for update using (auth.uid() in (select user_id from admins))
   with check (auth.uid() in (select user_id from admins));
+
+-- ---------------------------------------------------------------------------
+-- Event trophies — real artwork uploaded for a specific one-off event (e.g.
+-- Centre Parcs 2026), as opposed to the fixed "generic" trophy pool
+-- (lib/trophies.js GENERIC_TROPHY_IDS, still just static files under
+-- public/generic-trophies/ — no DB row needed for those). A trip's
+-- badge_id is a plain text column either way; it holds a generic id
+-- ("badge-3") or one of this table's uuids, and lib/trophies.js's
+-- trophySrc() is what tells them apart when resolving an id to an image.
+create table if not exists event_trophies (
+  id uuid primary key default gen_random_uuid(),
+  label text not null,
+  image_url text not null,
+  created_at timestamptz not null default now()
+);
+alter table event_trophies enable row level security;
+
+drop policy if exists "event_trophies read for everyone" on event_trophies;
+create policy "event_trophies read for everyone" on event_trophies
+  for select using (true);
+
+-- No insert/update/delete policy — uploading only ever happens through
+-- app/api/admin/upload-event-trophy, service-role, which is what actually
+-- checks the caller's an admin.
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'event_trophies'
+  ) then
+    alter publication supabase_realtime add table event_trophies;
+  end if;
+end $$;
+
+-- Public bucket (same trust model as mission-photos — see its comment
+-- above) so a plain <img src> works with no signed URLs. Nobody uploads to
+-- it directly; only app/api/admin/upload-event-trophy, server-side with
+-- the service role key.
+insert into storage.buckets (id, name, public)
+values ('event-trophies', 'event-trophies', true)
+on conflict (id) do nothing;

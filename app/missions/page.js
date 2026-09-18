@@ -429,6 +429,7 @@ export default function MissionsPage() {
     tripPlayers,
     currentTrip,
     trophies,
+    eventTrophies,
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
@@ -578,6 +579,7 @@ export default function MissionsPage() {
           trophy={celebrating.trophy}
           winner={celebrating.winner}
           variant={celebrating.variant}
+          eventTrophies={eventTrophies}
           onDismiss={dismiss}
         />
       )}

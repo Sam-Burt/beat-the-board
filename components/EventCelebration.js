@@ -1,7 +1,7 @@
 "use client";
 
 import PlayerAvatar from "./PlayerAvatar";
-import { badgeSrc } from "../lib/badges";
+import { trophySrc } from "../lib/trophies";
 
 const CONFETTI_COUNT = 18;
 const CONFETTI = Array.from({ length: CONFETTI_COUNT }, (_, i) => i);
@@ -16,9 +16,9 @@ const CONFETTI = Array.from({ length: CONFETTI_COUNT }, (_, i) => i);
 // event was already decided and it changed who won. Same layout, red
 // instead of green, and it announces the trophy's new holder rather than
 // its first one.
-export default function EventCelebration({ trophy, winner, variant = "win", onDismiss }) {
+export default function EventCelebration({ trophy, winner, variant = "win", eventTrophies, onDismiss }) {
   if (!trophy) return null;
-  const src = badgeSrc(trophy.badge_id);
+  const src = trophySrc(trophy.badge_id, eventTrophies);
   const isVar = variant === "var";
 
   return (

@@ -1,12 +1,12 @@
-import { badgeSrc } from "../lib/badges";
+import { trophySrc } from "../lib/trophies";
 
 // Pure display now — no inline rename here (that used to add a pencil
 // button next to the title, which threw the centering off since the title
 // was no longer the only thing in the row). Renaming/editing the current
 // event's details lives in the Event panel instead (see TripPanel's "Edit
 // event" button), right next to the rest of the event's settings.
-export default function Header({ tripName, badgeId, isAdmin }) {
-  const src = badgeSrc(badgeId);
+export default function Header({ tripName, badgeId, eventTrophies, isAdmin }) {
+  const src = trophySrc(badgeId, eventTrophies);
 
   return (
     <div className="card header-card">

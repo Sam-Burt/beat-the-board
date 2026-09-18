@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, requireAdmin } from "../../../../lib/supabaseAdmin";
-import { BADGE_IDS } from "../../../../lib/badges";
+import { GENERIC_TROPHY_IDS } from "../../../../lib/trophies";
 
 // Starts a new trip: a name, an optional badge/date-window/deadline, and a
 // roster of existing player accounts. All-or-nothing — if the roster insert
@@ -22,7 +22,21 @@ export async function POST(request) {
 
   const body = await request.json().catch(() => ({}));
   const name = (body.name || "").trim();
-  const badgeId = BADGE_IDS.includes(body.badgeId) ? body.badgeId : null;
+  let badgeId = null;
+  if (body.badgeId) {
+    if (GENERIC_TROPHY_IDS.includes(body.badgeId)) {
+      badgeId = body.badgeId;
+    } else {
+      // Not a generic id — check it's a real uploaded event trophy before
+      // trusting it (see app/api/admin/upload-event-trophy).
+      const { data: eventTrophy } = await supabaseAdmin
+        .from("event_trophies")
+        .select("id")
+        .eq("id", body.badgeId)
+        .maybeSingle();
+      if (eventTrophy) badgeId = body.badgeId;
+    }
+  }
   const startsOn = body.startsOn || null;
   const endsOn = body.endsOn || null;
   const deadline = body.deadline || null;

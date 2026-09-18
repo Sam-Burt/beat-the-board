@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { badgeSrc } from "../lib/badges";
+import { trophySrc } from "../lib/trophies";
 
 const MIN_SLOTS = 9;
 
@@ -26,7 +26,7 @@ function fmtDate(iso) {
 // that's what was making the first (image-filled) trophy render as an oval
 // next to perfectly circular empty ones. The padding hack sidesteps the
 // stretch behaviour entirely instead of fighting it.
-export default function TrophyCabinet({ trophies }) {
+export default function TrophyCabinet({ trophies, eventTrophies }) {
   const [open, setOpen] = useState(null); // trophy object, or null
 
   const slotCount = Math.max(MIN_SLOTS, trophies.length);
@@ -50,9 +50,9 @@ export default function TrophyCabinet({ trophies }) {
                 onClick={() => setOpen(t)}
                 aria-label={`${t.trip_name} — view details`}
               >
-                {badgeSrc(t.badge_id) && (
+                {trophySrc(t.badge_id, eventTrophies) && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={badgeSrc(t.badge_id)} alt="" />
+                  <img src={trophySrc(t.badge_id, eventTrophies)} alt="" />
                 )}
               </button>
             ) : (
@@ -65,9 +65,9 @@ export default function TrophyCabinet({ trophies }) {
       {open && (
         <div className="modal-backdrop" onClick={() => setOpen(null)}>
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
-            {badgeSrc(open.badge_id) && (
+            {trophySrc(open.badge_id, eventTrophies) && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={badgeSrc(open.badge_id)} alt="" />
+              <img src={trophySrc(open.badge_id, eventTrophies)} alt="" />
             )}
             <h3>{open.trip_name}</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 6 }}>

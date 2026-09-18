@@ -35,6 +35,7 @@ export default function ProfilePage() {
     currentTrip,
     trophies,
     myTrophies,
+    eventTrophies,
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
@@ -177,6 +178,7 @@ export default function ProfilePage() {
           trophy={celebrating.trophy}
           winner={celebrating.winner}
           variant={celebrating.variant}
+          eventTrophies={eventTrophies}
           onDismiss={dismiss}
         />
       )}
@@ -233,7 +235,7 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <TrophyCabinet trophies={myTrophies || []} />
+      <TrophyCabinet trophies={myTrophies || []} eventTrophies={eventTrophies} />
 
       <div className="card" style={{ marginTop: 16, textAlign: "center" }}>
         <h2>Mission alerts</h2>

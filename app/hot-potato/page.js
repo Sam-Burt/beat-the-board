@@ -24,6 +24,7 @@ export default function HotPotatoPage() {
     currentTrip,
     isAdmin,
     trophies,
+    eventTrophies,
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
@@ -287,6 +288,7 @@ export default function HotPotatoPage() {
           trophy={celebrating.trophy}
           winner={celebrating.winner}
           variant={celebrating.variant}
+          eventTrophies={eventTrophies}
           onDismiss={dismiss}
         />
       )}

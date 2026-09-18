@@ -23,6 +23,7 @@ export default function TricksPage() {
     tripPlayers,
     currentTrip,
     trophies,
+    eventTrophies,
     leroySends,
     sendLeroy,
     guessLeroy,
@@ -145,6 +146,7 @@ export default function TricksPage() {
           trophy={celebrating.trophy}
           winner={celebrating.winner}
           variant={celebrating.variant}
+          eventTrophies={eventTrophies}
           onDismiss={dismiss}
         />
       )}
