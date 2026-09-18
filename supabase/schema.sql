@@ -904,15 +904,30 @@ end $$;
 -- never gets a row of its own. `reward` is what lib/useBoardData.js counts
 -- (grouped by player) to work out how many bonus Leroy/Jackpot charges
 -- someone currently has, on top of their base one each.
+--
+-- code_id is deliberately "on delete set null", not cascade: the Clear All
+-- Codes button (cheat_codes write-for-admins policy above) is meant to
+-- retire the codes themselves, not take back what anyone's already won —
+-- so wiping cheat_codes leaves these rows (and everyone's earned charges)
+-- alone, it just nulls out which code they came from. That nullability is
+-- also what makes "clear a code, then re-add the exact same text" work as
+-- a genuinely fresh code for everyone: the new row gets a new id, so the
+-- (trip_id, player_id, code_id) uniqueness check doesn't remember anyone
+-- who redeemed the old one.
 create table if not exists cheat_code_redemptions (
   id uuid primary key default gen_random_uuid(),
   trip_id uuid not null references trips (id) on delete cascade,
   player_id uuid not null references players (id) on delete cascade,
-  code_id uuid not null references cheat_codes (id) on delete cascade,
+  code_id uuid references cheat_codes (id) on delete set null,
   reward text not null check (reward in ('points', 'leroy', 'jackpot')),
   created_at timestamptz not null default now(),
   unique (trip_id, player_id, code_id)
 );
+alter table cheat_code_redemptions alter column code_id drop not null;
+alter table cheat_code_redemptions drop constraint if exists cheat_code_redemptions_code_id_fkey;
+alter table cheat_code_redemptions
+  add constraint cheat_code_redemptions_code_id_fkey
+  foreign key (code_id) references cheat_codes (id) on delete set null;
 alter table cheat_code_redemptions enable row level security;
 
 drop policy if exists "cheat_code_redemptions read own" on cheat_code_redemptions;
@@ -922,9 +937,7 @@ create policy "cheat_code_redemptions read own" on cheat_code_redemptions
   );
 
 -- No insert/update/delete policy for ordinary clients — only
--- app/api/tricks/cheat-code (service role) ever writes here. Clearing all
--- codes (cheat_codes write-for-admins policy above) cascades into wiping
--- every redemption too, which is the whole point of that reset button.
+-- app/api/tricks/cheat-code (service role) ever writes here.
 do $$
 begin
   if not exists (

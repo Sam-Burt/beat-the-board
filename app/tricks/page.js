@@ -396,7 +396,11 @@ export default function TricksPage() {
       )}
 
       <div className="card trick-card" style={{ marginTop: 16 }}>
-        {eventLive && leroyAllowed > 1 && <div className="trick-charge-badge">{leroyRemaining}</div>}
+        {eventLive && leroyAllowed > 1 && (
+          <div className="trick-charge-badge" title={`${leroyRemaining} of ${leroyAllowed} Leroys left this event`}>
+            {leroyRemaining} left
+          </div>
+        )}
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
           <h2 style={{ fontSize: 20, textAlign: "center" }}>Leroy</h2>
@@ -476,7 +480,14 @@ export default function TricksPage() {
       </div>
 
       <div className="card trick-card" style={{ marginTop: 16 }}>
-        {eventLive && jackpotAllowed > 1 && <div className="trick-charge-badge">{jackpotRemaining}</div>}
+        {eventLive && jackpotAllowed > 1 && (
+          <div
+            className="trick-charge-badge"
+            title={`${jackpotRemaining} of ${jackpotAllowed} Jackpots left this event`}
+          >
+            {jackpotRemaining} left
+          </div>
+        )}
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
           <h2 style={{ fontSize: 20, textAlign: "center" }}>Jackpot</h2>
@@ -618,7 +629,8 @@ export default function TricksPage() {
             ) : (
               <>
                 <span className="muted" style={{ fontSize: 13 }}>
-                  Wipe every code and everyone&#39;s redemption history?
+                  Kill every code so none of them work anymore? Anyone who&#39;s already won a
+                  charge off one keeps it.
                 </span>
                 <button className="btn btn-danger" disabled={clearing} onClick={handleClearCodes}>
                   {clearing ? "Clearing…" : "Yes, clear them"}
