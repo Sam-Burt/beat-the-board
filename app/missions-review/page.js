@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useBoardData } from "../../lib/useBoardData";
 import { totals } from "../../lib/points";
+import { rewardLabel } from "../../lib/missionReward";
 import { supabase } from "../../lib/supabaseClient";
 import PlayerAvatar from "../../components/PlayerAvatar";
 import BottomNav from "../../components/BottomNav";
@@ -50,7 +51,7 @@ export default function MissionsReviewPage() {
     setMissionsLoading(true);
     supabase
       .from("missions")
-      .select("id, player_id, title, text, status, photo_url, points, created_at")
+      .select("id, player_id, title, text, status, photo_url, points, reward_kind, created_at")
       .eq("trip_id", currentTrip.id)
       .order("created_at", { ascending: true })
       .then(({ data }) => {
@@ -171,11 +172,11 @@ export default function MissionsReviewPage() {
                       {m.title && <div className="mission-proof-title">{m.title}</div>}
                       <div className="mission-proof-text">{m.text}</div>
                       <div className="mission-proof-points">
-                        Worth {m.points} pt{m.points === 1 ? "" : "s"}
+                        Worth {rewardLabel(m.reward_kind, m.points)}
                       </div>
                       <p className="muted" style={{ fontSize: 12, marginTop: 4 }}>
                         {m.status === "completed"
-                          ? `Actually did it. ${m.points} pt${m.points === 1 ? "" : "s"} ✅`
+                          ? `Actually did it. Bagged ${rewardLabel(m.reward_kind, m.points)} ✅`
                           : m.status === "declined"
                             ? "Declined. Coward 🙅"
                             : "Ignored it and hoped nobody would notice"}

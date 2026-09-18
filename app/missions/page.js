@@ -11,6 +11,7 @@ import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
+import { rewardLabel } from "../../lib/missionReward";
 
 // datetime-local inputs want "YYYY-MM-DDTHH:MM" in the browser's own
 // timezone, which is what the scheduler's min (no scheduling into the past)
@@ -25,6 +26,27 @@ function toLocalValue(date) {
 
 function nowLocalValue() {
   return toLocalValue(new Date());
+}
+
+function RewardKindPicker({ value, onChange }) {
+  return (
+    <div className="chips" style={{ marginBottom: 8 }}>
+      {[
+        { id: "points", label: "Points" },
+        { id: "leroy", label: "Leroy" },
+        { id: "jackpot", label: "Jackpot" },
+      ].map((opt) => (
+        <button
+          type="button"
+          key={opt.id}
+          className={`chip${value === opt.id ? " selected" : ""}`}
+          onClick={() => onChange(opt.id)}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function AdminMissionComposer({
@@ -51,6 +73,7 @@ function AdminMissionComposer({
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [points, setPoints] = useState(5);
+  const [rewardKind, setRewardKind] = useState("points");
   const [sending, setSending] = useState(false);
   const [sentFor, setSentFor] = useState(null);
   const [sentPushInfo, setSentPushInfo] = useState("");
@@ -59,6 +82,7 @@ function AdminMissionComposer({
   const [poolTitle, setPoolTitle] = useState("");
   const [poolText, setPoolText] = useState("");
   const [poolPoints, setPoolPoints] = useState(5);
+  const [poolRewardKind, setPoolRewardKind] = useState("points");
   const [poolSaving, setPoolSaving] = useState(false);
 
   // scheduler
@@ -67,6 +91,7 @@ function AdminMissionComposer({
   const [schedTitle, setSchedTitle] = useState("");
   const [schedText, setSchedText] = useState("");
   const [schedPoints, setSchedPoints] = useState(5);
+  const [schedRewardKind, setSchedRewardKind] = useState("points");
   const [schedWhen, setSchedWhen] = useState("");
   const [schedSaving, setSchedSaving] = useState(false);
 
@@ -82,12 +107,13 @@ function AdminMissionComposer({
   async function handleSend() {
     if (!playerId || !text.trim()) return;
     setSending(true);
-    const result = await onSendMission({ playerId, title: title.trim(), text: text.trim(), points });
+    const result = await onSendMission({ playerId, title: title.trim(), text: text.trim(), points, rewardKind });
     setSending(false);
     if (result?.ok) {
       setTitle("");
       setText("");
       setPoints(5);
+      setRewardKind("points");
       setSentFor(playerId);
       setSentPushInfo(describePush(result.data));
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
@@ -109,11 +135,17 @@ function AdminMissionComposer({
   async function handleAddTemplate() {
     if (!poolText.trim()) return;
     setPoolSaving(true);
-    await onAddTemplate({ title: poolTitle.trim(), text: poolText.trim(), points: poolPoints });
+    await onAddTemplate({
+      title: poolTitle.trim(),
+      text: poolText.trim(),
+      points: poolPoints,
+      rewardKind: poolRewardKind,
+    });
     setPoolSaving(false);
     setPoolTitle("");
     setPoolText("");
     setPoolPoints(5);
+    setPoolRewardKind("points");
   }
 
   // The date input's max stops the obvious mistake, but a typed-in date can
@@ -132,12 +164,14 @@ function AdminMissionComposer({
       text: schedRandom ? null : schedText.trim(),
       random: schedRandom,
       points: schedPoints,
+      rewardKind: schedRewardKind,
       scheduledFor: new Date(schedWhen).toISOString(),
     });
     setSchedSaving(false);
     setSchedTitle("");
     setSchedText("");
     setSchedPoints(5);
+    setSchedRewardKind("points");
     setSchedWhen("");
     setSchedPlayerId(null);
   }
@@ -173,6 +207,8 @@ function AdminMissionComposer({
           </div>
 
           <div className="field">
+            <label>Reward</label>
+            <RewardKindPicker value={rewardKind} onChange={setRewardKind} />
             <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
               <div style={{ flex: 1 }}>
                 <label htmlFor="mission-title">Mission title (optional)</label>
@@ -185,17 +221,19 @@ function AdminMissionComposer({
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </div>
-              <div style={{ width: 76 }}>
-                <label htmlFor="mission-points">Points</label>
-                <input
-                  id="mission-points"
-                  type="number"
-                  min={0}
-                  max={999}
-                  value={points}
-                  onChange={(e) => setPoints(Math.max(0, Number(e.target.value) || 0))}
-                />
-              </div>
+              {rewardKind === "points" && (
+                <div style={{ width: 76 }}>
+                  <label htmlFor="mission-points">Points</label>
+                  <input
+                    id="mission-points"
+                    type="number"
+                    min={0}
+                    max={999}
+                    value={points}
+                    onChange={(e) => setPoints(Math.max(0, Number(e.target.value) || 0))}
+                  />
+                </div>
+              )}
             </div>
             <textarea
               placeholder="What do they have to do?"
@@ -245,7 +283,7 @@ function AdminMissionComposer({
                     <div className="mission-text">
                       {m.title && <strong>{m.title} — </strong>}
                       {m.text}
-                      <span className="muted"> ({m.points} pt{m.points === 1 ? "" : "s"})</span>
+                      <span className="muted"> ({rewardLabel(m.reward_kind, m.points)})</span>
                     </div>
                     <button
                       type="button"
@@ -259,6 +297,7 @@ function AdminMissionComposer({
                 ))}
               </div>
             )}
+            <RewardKindPicker value={poolRewardKind} onChange={setPoolRewardKind} />
             <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
               <input
                 type="text"
@@ -268,15 +307,17 @@ function AdminMissionComposer({
                 onChange={(e) => setPoolTitle(e.target.value)}
                 style={{ flex: 1 }}
               />
-              <input
-                type="number"
-                min={0}
-                max={999}
-                aria-label="Points"
-                value={poolPoints}
-                onChange={(e) => setPoolPoints(Math.max(0, Number(e.target.value) || 0))}
-                style={{ width: 76 }}
-              />
+              {poolRewardKind === "points" && (
+                <input
+                  type="number"
+                  min={0}
+                  max={999}
+                  aria-label="Points"
+                  value={poolPoints}
+                  onChange={(e) => setPoolPoints(Math.max(0, Number(e.target.value) || 0))}
+                  style={{ width: 76 }}
+                />
+              )}
             </div>
             <textarea
               placeholder="Add a task to the pool…"
@@ -334,6 +375,7 @@ function AdminMissionComposer({
             </label>
             {!schedRandom && (
               <>
+                <RewardKindPicker value={schedRewardKind} onChange={setSchedRewardKind} />
                 <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                   <input
                     type="text"
@@ -343,15 +385,17 @@ function AdminMissionComposer({
                     onChange={(e) => setSchedTitle(e.target.value)}
                     style={{ flex: 1 }}
                   />
-                  <input
-                    type="number"
-                    min={0}
-                    max={999}
-                    aria-label="Points"
-                    value={schedPoints}
-                    onChange={(e) => setSchedPoints(Math.max(0, Number(e.target.value) || 0))}
-                    style={{ width: 76 }}
-                  />
+                  {schedRewardKind === "points" && (
+                    <input
+                      type="number"
+                      min={0}
+                      max={999}
+                      aria-label="Points"
+                      value={schedPoints}
+                      onChange={(e) => setSchedPoints(Math.max(0, Number(e.target.value) || 0))}
+                      style={{ width: 76 }}
+                    />
+                  )}
                 </div>
                 <textarea
                   placeholder="What do they have to do?"
@@ -392,10 +436,7 @@ function AdminMissionComposer({
                         Queued for <strong>{p?.name || "someone"}</strong> —{" "}
                         {s.random ? "random from pool" : s.title || "custom task"}
                         {!s.random && (
-                          <span className="muted">
-                            {" "}
-                            ({s.points} pt{s.points === 1 ? "" : "s"})
-                          </span>
+                          <span className="muted"> ({rewardLabel(s.reward_kind, s.points)})</span>
                         )}
                       </div>
                       <button
@@ -510,7 +551,7 @@ export default function MissionsPage() {
     function load() {
       supabase
         .from("missions")
-        .select("id, title, text, status, photo_url, points, created_at")
+        .select("id, title, text, status, photo_url, points, reward_kind, created_at")
         .eq("player_id", me.id)
         .eq("trip_id", currentTrip.id)
         .order("created_at", { ascending: false })
@@ -666,9 +707,7 @@ export default function MissionsPage() {
                     })}
                   </div>
                   <div className="mission-proof-text">{m.text}</div>
-                  <div className="mission-proof-points">
-                    Worth {m.points} pt{m.points === 1 ? "" : "s"}
-                  </div>
+                  <div className="mission-proof-points">Worth {rewardLabel(m.reward_kind, m.points)}</div>
 
                   {pending && (
                     <div className="btn-row" style={{ marginTop: 12 }}>
@@ -704,7 +743,7 @@ export default function MissionsPage() {
                   )}
                   {m.status === "completed" && (
                     <p className="muted" style={{ fontSize: 12, marginTop: 10 }}>
-                      Done. {m.points} pt{m.points === 1 ? "" : "s"}, and a photo that will
+                      Done. Bagged {rewardLabel(m.reward_kind, m.points)}, and a photo that will
                       follow you around forever ✅
                     </p>
                   )}

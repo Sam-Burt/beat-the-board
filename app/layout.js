@@ -2,7 +2,7 @@ import "./globals.css";
 
 export const metadata = {
   title: "Beat The Board",
-  description: "Player leaderboard — 1 point per person beaten.",
+  description: "Player leaderboard — everyone scores, top spot scores most.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

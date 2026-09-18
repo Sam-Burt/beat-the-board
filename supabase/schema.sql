@@ -231,6 +231,31 @@ alter table missions add column if not exists points integer not null default 5;
 alter table mission_templates add column if not exists points integer not null default 5;
 alter table scheduled_missions add column if not exists points integer;
 
+-- A mission's reward doesn't have to be points — the admin can make it pay
+-- out an extra Leroy or Jackpot charge instead, same "banked entitlement"
+-- mechanism cheat codes use (see cheat_code_redemptions below): completing
+-- one inserts a redemption row with code_id null and reward set to
+-- whichever kind this is, rather than a point_adjustments row. `points` on
+-- a non-points mission is just left at 0 — it's not read for anything.
+-- scheduled_missions.reward_kind is nullable because a random=true queue
+-- entry doesn't pick its reward until fire time either (same reason its
+-- points column above is nullable) — the picked template's own reward_kind
+-- decides it then.
+alter table missions add column if not exists reward_kind text not null default 'points';
+alter table missions drop constraint if exists missions_reward_kind_check;
+alter table missions add constraint missions_reward_kind_check
+  check (reward_kind in ('points', 'leroy', 'jackpot'));
+
+alter table mission_templates add column if not exists reward_kind text not null default 'points';
+alter table mission_templates drop constraint if exists mission_templates_reward_kind_check;
+alter table mission_templates add constraint mission_templates_reward_kind_check
+  check (reward_kind in ('points', 'leroy', 'jackpot'));
+
+alter table scheduled_missions add column if not exists reward_kind text;
+alter table scheduled_missions drop constraint if exists scheduled_missions_reward_kind_check;
+alter table scheduled_missions add constraint scheduled_missions_reward_kind_check
+  check (reward_kind is null or reward_kind in ('points', 'leroy', 'jackpot'));
+
 -- A queued mission belongs to the event it was queued for, and dies with it
 -- (see lib/tripFinalize.js, which clears the pending queue when an event
 -- finishes). Previously the trip was resolved at fire time instead, so a

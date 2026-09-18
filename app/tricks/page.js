@@ -30,7 +30,6 @@ const CHEAT_CODE_COPY = {
     kicker: "Nice",
     headline: "+5 Points",
     subtext: "Lucky sod. Don't get used to it.",
-    icon: { type: "emoji", char: "🎲" },
   },
   leroy: {
     kicker: "Nice",

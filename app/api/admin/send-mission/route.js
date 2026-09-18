@@ -25,13 +25,17 @@ export async function POST(request) {
   let title = (body.title || "").trim() || null;
   let text = (body.text || "").trim();
   let points = Number.isFinite(body.points) ? Math.max(0, Math.round(body.points)) : 5;
+  let rewardKind = ["points", "leroy", "jackpot"].includes(body.rewardKind) ? body.rewardKind : "points";
 
   // "Send a random one" — picked here, server-side, so the admin genuinely
   // doesn't see which task from the pool went out (same spirit as the
-  // scheduler below picking a random one at fire time). Points come along
-  // with whichever task gets picked, same as title/text.
+  // scheduler below picking a random one at fire time). Reward (points or
+  // otherwise) comes along with whichever task gets picked, same as
+  // title/text.
   if (body.random) {
-    const { data: pool } = await supabaseAdmin.from("mission_templates").select("title, text, points");
+    const { data: pool } = await supabaseAdmin
+      .from("mission_templates")
+      .select("title, text, points, reward_kind");
     if (!pool?.length) {
       return NextResponse.json(
         { error: "The mission pool is empty — add some tasks first." },
@@ -42,11 +46,17 @@ export async function POST(request) {
     title = picked.title || null;
     text = picked.text;
     points = picked.points;
+    rewardKind = picked.reward_kind || "points";
   }
 
   if (!text) {
     return NextResponse.json({ error: "playerId and text are required." }, { status: 400 });
   }
+
+  // Points aren't read for anything on a non-points mission — keeping it
+  // at 0 rather than whatever the admin last had in that field avoids a
+  // stale number ever leaking into the "Worth X pts" display.
+  if (rewardKind !== "points") points = 0;
 
   // A mission belongs to an event — the Missions tab only shows missions
   // for the current one, so one sent with no event running would ping
@@ -68,7 +78,7 @@ export async function POST(request) {
 
   const { data: mission, error: insertError } = await supabaseAdmin
     .from("missions")
-    .insert({ player_id: playerId, title, text, points, trip_id: trip.id })
+    .insert({ player_id: playerId, title, text, points, reward_kind: rewardKind, trip_id: trip.id })
     .select()
     .single();
   if (insertError) {

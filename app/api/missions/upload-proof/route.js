@@ -32,7 +32,7 @@ export async function POST(request) {
 
   const { data: mission } = await supabaseAdmin
     .from("missions")
-    .select("id, status, player_id, trip_id, title, points, players (user_id), trips (status)")
+    .select("id, status, player_id, trip_id, title, points, reward_kind, players (user_id), trips (status)")
     .eq("id", missionId)
     .maybeSingle();
   if (!mission || mission.players?.user_id !== callerId) {
@@ -81,8 +81,21 @@ export async function POST(request) {
     return NextResponse.json({ error: updateError.message }, { status: 400 });
   }
 
-  if (updated && mission.points > 0) {
-    if (mission.trip_id) {
+  if (updated) {
+    if (!mission.trip_id) {
+      console.error(`mission ${missionId} completed with no trip_id — reward not awarded`);
+    } else if (mission.reward_kind === "leroy" || mission.reward_kind === "jackpot") {
+      // Same banked-entitlement mechanism cheat codes use — code_id null
+      // since this isn't tied to any real code, just this mission. Picked
+      // up automatically by the Tricks page's leroyAllowed/jackpotAllowed
+      // counts, no separate plumbing needed.
+      await supabaseAdmin.from("cheat_code_redemptions").insert({
+        trip_id: mission.trip_id,
+        player_id: mission.player_id,
+        code_id: null,
+        reward: mission.reward_kind,
+      });
+    } else if (mission.points > 0) {
       await supabaseAdmin.from("point_adjustments").insert({
         trip_id: mission.trip_id,
         player_id: mission.player_id,
@@ -91,10 +104,13 @@ export async function POST(request) {
           ? `Completed a secret mission: "${mission.title}"`
           : "Completed a secret mission",
       });
-    } else {
-      console.error(`mission ${missionId} completed with no trip_id — points not awarded`);
     }
   }
 
-  return NextResponse.json({ ok: true, photoUrl: publicUrlData.publicUrl, points: mission.points });
+  return NextResponse.json({
+    ok: true,
+    photoUrl: publicUrlData.publicUrl,
+    points: mission.points,
+    rewardKind: mission.reward_kind,
+  });
 }

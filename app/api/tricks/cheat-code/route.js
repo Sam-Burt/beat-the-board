@@ -6,10 +6,20 @@ import { recordNotification } from "../../../../lib/notifications";
 const REUSE_PENALTY = 5;
 const ADMIN_BONUS_EVERY = 3;
 
+// Leroy's a genuinely strong win (a whole free mugging), so he's rationed
+// harder than the other two: 60% points, 25% Jackpot, 15% Leroy.
+function rollReward() {
+  const roll = Math.random();
+  if (roll < 0.6) return "points";
+  if (roll < 0.85) return "jackpot";
+  return "leroy";
+}
+
 // Sam's the one handing codes out, so him redeeming them too would be
 // judge, jury and executioner — every ADMIN_BONUS_EVERY-th code someone
 // ELSE successfully redeems this trip, every admin actually PLAYING this
-// trip gets their own automatic 50/25/25 roll for free, no code typed.
+// trip gets their own automatic roll of the same odds, for free, no code
+// typed.
 // Doesn't touch or reset anything about the normal flow — an admin can
 // still type in a real code themselves too (see the callerIsAdmin check
 // below, which just skips counting THEIR OWN win toward this milestone so
@@ -32,8 +42,7 @@ async function maybeGrantAdminBonus(tripId, excludeAdminIds, rewardAdminIds) {
   if (nonAdminCount === 0 || nonAdminCount % ADMIN_BONUS_EVERY !== 0) return;
 
   for (const adminPlayerId of rewardAdminIds) {
-    const roll = Math.random();
-    const reward = roll < 0.5 ? "points" : roll < 0.75 ? "leroy" : "jackpot";
+    const reward = rollReward();
 
     // code_id is null — this isn't tied to any real code text, it's a
     // milestone bonus. Nothing about the (trip_id, player_id, code_id)
@@ -82,8 +91,8 @@ async function maybeGrantAdminBonus(tripId, excludeAdminIds, rewardAdminIds) {
 }
 
 // Any signed-in player can call this. A real code, entered for the first
-// time this event, rolls a flat 50/25/25: 5 points, an extra Leroy charge,
-// or an extra Jackpot charge (see lib/useBoardData.js for how those extra
+// time this event, rolls 60/25/15: 5 points, an extra Jackpot charge, or
+// an extra Leroy charge (see lib/useBoardData.js for how those extra
 // charges actually get counted — nothing here touches leroy_sends or
 // point_boosts directly, redeeming just banks the entitlement). A code
 // that doesn't exist at all is a harmless miss. The one real trap: typing
@@ -164,8 +173,7 @@ export async function POST(request) {
     rosterAdminPlayerIds = (rosterRows || []).map((r) => r.player_id);
   }
 
-  const roll = Math.random();
-  const reward = roll < 0.5 ? "points" : roll < 0.75 ? "leroy" : "jackpot";
+  const reward = rollReward();
 
   const { error: insertError } = await supabaseAdmin.from("cheat_code_redemptions").insert({
     trip_id: trip.id,
