@@ -66,6 +66,10 @@ export default function TrophyPicker({ value, onChange, eventTrophies, onUpload 
       ) : (
         <form className="points-composer" style={{ marginBottom: 14 }} onSubmit={handleUpload}>
           <label>New event trophy</label>
+          <p className="muted" style={{ fontSize: 12, marginTop: -4, marginBottom: 8 }}>
+            One-off, just for this event — once someone actually wins with it, it drops off
+            this list for good and lives on their profile instead.
+          </p>
           <input
             type="text"
             placeholder="Name it, e.g. Centre Parcs 2026"

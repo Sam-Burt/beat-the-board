@@ -28,13 +28,19 @@ export async function POST(request) {
       badgeId = body.badgeId;
     } else {
       // Not a generic id — check it's a real uploaded event trophy before
-      // trusting it (see app/api/admin/upload-event-trophy).
+      // trusting it (see app/api/admin/upload-event-trophy), and that it
+      // hasn't already been won. Once one's awarded it drops out of the
+      // picker (see app/page.js's pickableEventTrophies) so a fresh client
+      // wouldn't normally send this, but a stale tab could.
       const { data: eventTrophy } = await supabaseAdmin
         .from("event_trophies")
         .select("id")
         .eq("id", body.badgeId)
         .maybeSingle();
-      if (eventTrophy) badgeId = body.badgeId;
+      const { data: alreadyAwarded } = eventTrophy
+        ? await supabaseAdmin.from("trophies").select("id").eq("badge_id", body.badgeId).maybeSingle()
+        : { data: null };
+      if (eventTrophy && !alreadyAwarded) badgeId = body.badgeId;
     }
   }
   const startsOn = body.startsOn || null;

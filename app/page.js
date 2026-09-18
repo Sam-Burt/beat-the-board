@@ -114,6 +114,16 @@ export default function HomePage() {
   // shows inline any more.
   const hasActiveEvent = !!currentTrip && currentTrip.status !== "finalized";
 
+  // Once an uploaded event trophy has actually been won (there's a
+  // trophies row pointing at it), it drops out of the picker for good —
+  // it was uploaded for that one event, not to start a reusable gallery.
+  // The image itself isn't touched; it stays exactly where it is in
+  // Storage and keeps resolving fine everywhere that still references it
+  // (the winner's Trophy Cabinet, this same trip's own frozen header) —
+  // this only affects what's OFFERED as a new pick going forward.
+  const awardedEventTrophyIds = new Set(trophies.map((t) => t.badge_id));
+  const pickableEventTrophies = eventTrophies.filter((t) => !awardedEventTrophyIds.has(t.id));
+
   function handleStartNewEvent() {
     setTripPanelOpen(true);
     document.getElementById("event-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -201,7 +211,7 @@ export default function HomePage() {
             onEndTripNow={endTripNow}
             onDeclareWinner={declareTripWinner}
             onUpdateTrip={updateTripDetails}
-            eventTrophies={eventTrophies}
+            eventTrophies={pickableEventTrophies}
             onUploadEventTrophy={uploadEventTrophy}
           />
         </div>
