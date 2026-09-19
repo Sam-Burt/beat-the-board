@@ -8,6 +8,8 @@ import { recordNotification } from "../../../../lib/notifications";
 // the admin types here IS the notification. Not tied to an event, so
 // there's no active-trip check like send-mission has: an admin might want
 // to ping someone before or after an event just as easily as during one.
+// playerIds can be one or many — same title/text goes to every recipient,
+// each getting their own notification row and their own push.
 export async function POST(request) {
   if (!supabaseAdmin) {
     return NextResponse.json(
@@ -22,24 +24,26 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const playerId = body.playerId;
+  const playerIds = Array.isArray(body.playerIds) ? [...new Set(body.playerIds.filter(Boolean))] : [];
   const title = (body.title || "").trim();
   const text = (body.text || "").trim();
 
-  if (!playerId || !title || !text) {
-    return NextResponse.json({ error: "playerId, title and text are required." }, { status: 400 });
+  if (!playerIds.length || !title || !text) {
+    return NextResponse.json({ error: "playerIds, title and text are required." }, { status: 400 });
   }
 
-  await recordNotification(playerId, { kind: "admin", title, body: text, url: "/" });
+  await Promise.all(
+    playerIds.map((playerId) => recordNotification(playerId, { kind: "admin", title, body: text, url: "/" }))
+  );
 
   if (!pushConfigured) {
-    return NextResponse.json({ sent: true, pushed: 0, pushConfigured: false });
+    return NextResponse.json({ sent: true, pushed: 0, pushConfigured: false, recipients: playerIds.length });
   }
 
   const { data: subs } = await supabaseAdmin
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth_key")
-    .eq("player_id", playerId);
+    .in("player_id", playerIds);
 
   let pushed = 0;
   if (subs?.length) {
@@ -50,5 +54,5 @@ export async function POST(request) {
     }
   }
 
-  return NextResponse.json({ sent: true, pushed, pushConfigured: true });
+  return NextResponse.json({ sent: true, pushed, pushConfigured: true, recipients: playerIds.length });
 }

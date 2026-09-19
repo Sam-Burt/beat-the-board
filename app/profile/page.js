@@ -32,13 +32,17 @@ function AdminNotificationComposer({ players, onSend }) {
   const [open, setOpen] = useState(false);
   const eligiblePlayers = players.filter((p) => p.user_id);
 
-  const [playerId, setPlayerId] = useState(null);
+  const [playerIds, setPlayerIds] = useState([]);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
-  const [sentFor, setSentFor] = useState(null);
+  const [justSent, setJustSent] = useState(false);
   const [sentPushInfo, setSentPushInfo] = useState("");
   const [error, setError] = useState("");
+
+  function togglePlayer(id) {
+    setPlayerIds((ids) => (ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]));
+  }
 
   function describePush(data) {
     if (!data?.pushConfigured) return "";
@@ -47,17 +51,18 @@ function AdminNotificationComposer({ players, onSend }) {
   }
 
   async function handleSend() {
-    if (!playerId || !title.trim() || !text.trim()) return;
+    if (!playerIds.length || !title.trim() || !text.trim()) return;
     setError("");
     setSending(true);
-    const result = await onSend({ playerId, title: title.trim(), text: text.trim() });
+    const result = await onSend({ playerIds, title: title.trim(), text: text.trim() });
     setSending(false);
     if (result?.ok) {
       setTitle("");
       setText("");
-      setSentFor(playerId);
+      setPlayerIds([]);
+      setJustSent(true);
       setSentPushInfo(describePush(result.data));
-      setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
+      setTimeout(() => setJustSent(false), 4000);
     } else {
       setError(result?.error || "Couldn't send that — try again.");
     }
@@ -82,8 +87,8 @@ function AdminNotificationComposer({ players, onSend }) {
                   <button
                     type="button"
                     key={p.id}
-                    className={`chip${playerId === p.id ? " selected" : ""}`}
-                    onClick={() => setPlayerId(p.id)}
+                    className={`chip${playerIds.includes(p.id) ? " selected" : ""}`}
+                    onClick={() => togglePlayer(p.id)}
                   >
                     <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                     {p.name}
@@ -117,13 +122,19 @@ function AdminNotificationComposer({ players, onSend }) {
             <button
               type="button"
               className="btn btn-primary"
-              disabled={!playerId || !title.trim() || !text.trim() || sending}
+              disabled={!playerIds.length || !title.trim() || !text.trim() || sending}
               onClick={handleSend}
             >
-              {sending ? "Sending…" : sentFor === playerId ? "Sent! 🔔" : "Send it"}
+              {sending
+                ? "Sending…"
+                : justSent
+                ? "Sent! 🔔"
+                : playerIds.length > 1
+                ? `Send to ${playerIds.length}`
+                : "Send it"}
             </button>
           </div>
-          {sentFor === playerId && sentPushInfo && (
+          {justSent && sentPushInfo && (
             <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
               {sentPushInfo}
             </p>
