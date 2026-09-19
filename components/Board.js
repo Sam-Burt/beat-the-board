@@ -69,10 +69,8 @@ export default function Board({ standings, trophyCounts, boostedIds, isAdmin, fi
                         )}
                         {isBoosted && (
                           <span className="boost-icon" title="Jackpot — their next game score doubles">
-                            <span className="boost-emoji" aria-hidden="true">
-                              🎰
-                            </span>
-                            <span className="boost-label">×2</span>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src="/icons/x2-icon.png" alt="×2" />
                           </span>
                         )}
                       </span>

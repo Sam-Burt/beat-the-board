@@ -41,7 +41,7 @@ const CHEAT_CODE_COPY = {
     kicker: "Nice",
     headline: "An Extra Jackpot",
     subtext: "Don't waste this one either.",
-    icon: { type: "emoji", char: "🎰" },
+    icon: { type: "img", src: "/icons/jackpot-icon.png" },
   },
 };
 
@@ -513,9 +513,8 @@ export default function TricksPage() {
         </div>
 
         <div style={{ textAlign: "center", marginTop: 10 }}>
-          <div style={{ fontSize: 56 }} aria-hidden="true">
-            🎰
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/jackpot-icon.png" alt="" style={{ width: 110, height: 110, objectFit: "contain" }} />
           <div className="hot-potato-card-label" style={{ marginTop: 4 }}>
             Double or Nothing
           </div>
