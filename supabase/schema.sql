@@ -256,6 +256,15 @@ alter table scheduled_missions drop constraint if exists scheduled_missions_rewa
 alter table scheduled_missions add constraint scheduled_missions_reward_kind_check
   check (reward_kind is null or reward_kind in ('points', 'leroy', 'jackpot'));
 
+-- Which pool task (if any) a mission actually came from — null for one
+-- typed by hand. This is what lets lib/missionPool.js stop the same
+-- player getting the same pool task twice in one event: it just excludes
+-- any template_id already on one of their missions this trip from the
+-- next random pick. on delete set null (not cascade) so clearing the pool
+-- later doesn't touch anyone's mission history, just frees up template_ids
+-- to be picked "fresh" again if the same text gets re-added.
+alter table missions add column if not exists template_id uuid references mission_templates (id) on delete set null;
+
 -- A queued mission belongs to the event it was queued for, and dies with it
 -- (see lib/tripFinalize.js, which clears the pending queue when an event
 -- finishes). Previously the trip was resolved at fire time instead, so a

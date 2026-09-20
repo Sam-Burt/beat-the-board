@@ -58,6 +58,7 @@ function AdminMissionComposer({
   onSendRandomMission,
   onAddTemplate,
   onDeleteTemplate,
+  onClearTemplates,
   onSchedule,
   onCancelScheduled,
 }) {
@@ -77,13 +78,17 @@ function AdminMissionComposer({
   const [sending, setSending] = useState(false);
   const [sentFor, setSentFor] = useState(null);
   const [sentPushInfo, setSentPushInfo] = useState("");
+  const [sendError, setSendError] = useState("");
 
   // task pool
+  const [poolOpen, setPoolOpen] = useState(false);
   const [poolTitle, setPoolTitle] = useState("");
   const [poolText, setPoolText] = useState("");
   const [poolPoints, setPoolPoints] = useState(5);
   const [poolRewardKind, setPoolRewardKind] = useState("points");
   const [poolSaving, setPoolSaving] = useState(false);
+  const [confirmClearPool, setConfirmClearPool] = useState(false);
+  const [clearingPool, setClearingPool] = useState(false);
 
   // scheduler
   const [schedPlayerId, setSchedPlayerId] = useState(null);
@@ -106,6 +111,7 @@ function AdminMissionComposer({
 
   async function handleSend() {
     if (!playerId || !text.trim()) return;
+    setSendError("");
     setSending(true);
     const result = await onSendMission({ playerId, title: title.trim(), text: text.trim(), points, rewardKind });
     setSending(false);
@@ -117,11 +123,14 @@ function AdminMissionComposer({
       setSentFor(playerId);
       setSentPushInfo(describePush(result.data));
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
+    } else {
+      setSendError(result?.error || "Couldn't send that — try again.");
     }
   }
 
   async function handleSendRandom() {
     if (!playerId) return;
+    setSendError("");
     setSending(true);
     const result = await onSendRandomMission({ playerId });
     setSending(false);
@@ -129,6 +138,8 @@ function AdminMissionComposer({
       setSentFor(playerId);
       setSentPushInfo(describePush(result.data));
       setTimeout(() => setSentFor((id) => (id === playerId ? null : id)), 4000);
+    } else {
+      setSendError(result?.error || "Couldn't send that — try again.");
     }
   }
 
@@ -146,6 +157,13 @@ function AdminMissionComposer({
     setPoolText("");
     setPoolPoints(5);
     setPoolRewardKind("points");
+  }
+
+  async function handleClearPool() {
+    setClearingPool(true);
+    await onClearTemplates();
+    setClearingPool(false);
+    setConfirmClearPool(false);
   }
 
   // The date input's max stops the obvious mistake, but a typed-in date can
@@ -268,74 +286,123 @@ function AdminMissionComposer({
               {sentPushInfo}
             </p>
           )}
+          {sendError && <div className="banner-note error">{sendError}</div>}
 
           <div className="field" style={{ marginTop: 22 }}>
-            <label>Task pool ({missionTemplates.length})</label>
-            <p className="muted" style={{ fontSize: 12, marginTop: -4, marginBottom: 8 }}>
-              Write a load of humiliating nonsense in here once. &quot;Send random&quot; and the
-              scheduler pull from it without telling you which one landed, so you get to look
-              innocent while someone eats a raw onion.
-            </p>
-            {missionTemplates.length > 0 && (
-              <div className="mission-list" style={{ marginBottom: 10 }}>
-                {missionTemplates.map((m) => (
-                  <div className="mission-item" key={m.id}>
-                    <div className="mission-text">
-                      {m.title && <strong>{m.title} — </strong>}
-                      {m.text}
-                      <span className="muted"> ({rewardLabel(m.reward_kind, m.points)})</span>
-                    </div>
+            <button type="button" className="btn toggle-panel-btn" onClick={() => setPoolOpen((o) => !o)}>
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: "var(--ink-dim)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                Task pool ({missionTemplates.length})
+              </span>
+              <span className={`chevron${poolOpen ? " open" : ""}`}>▾</span>
+            </button>
+
+            {poolOpen && (
+              <div style={{ marginTop: 10 }}>
+                <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+                  Write a load of humiliating nonsense in here once. &quot;Send random&quot; and
+                  the scheduler pull from it without telling you which one landed, so you get to
+                  look innocent while someone eats a raw onion. Nobody gets the same one twice in
+                  one event.
+                </p>
+                {missionTemplates.length > 0 && (
+                  <div className="mission-list" style={{ marginBottom: 10 }}>
+                    {missionTemplates.map((m) => (
+                      <div className="mission-item" key={m.id}>
+                        <div className="mission-text">
+                          {m.title && <strong>{m.title} — </strong>}
+                          {m.text}
+                          <span className="muted"> ({rewardLabel(m.reward_kind, m.points)})</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          style={{ marginTop: 4 }}
+                          onClick={() => onDeleteTemplate(m.id)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <RewardKindPicker value={poolRewardKind} onChange={setPoolRewardKind} />
+                <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  <input
+                    type="text"
+                    placeholder="Title (optional)"
+                    maxLength={60}
+                    value={poolTitle}
+                    onChange={(e) => setPoolTitle(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  {poolRewardKind === "points" && (
+                    <input
+                      type="number"
+                      min={0}
+                      max={999}
+                      aria-label="Points"
+                      value={poolPoints}
+                      onChange={(e) => setPoolPoints(Math.max(0, Number(e.target.value) || 0))}
+                      style={{ width: 76 }}
+                    />
+                  )}
+                </div>
+                <textarea
+                  placeholder="Add a task to the pool…"
+                  maxLength={280}
+                  rows={2}
+                  value={poolText}
+                  onChange={(e) => setPoolText(e.target.value)}
+                />
+                <div className="btn-row">
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={!poolText.trim() || poolSaving}
+                    onClick={handleAddTemplate}
+                  >
+                    {poolSaving ? "Adding…" : "Add to pool"}
+                  </button>
+                </div>
+
+                <div className="btn-row" style={{ marginTop: 16 }}>
+                  {!confirmClearPool ? (
                     <button
                       type="button"
                       className="btn btn-ghost"
-                      style={{ marginTop: 4 }}
-                      onClick={() => onDeleteTemplate(m.id)}
+                      disabled={missionTemplates.length === 0}
+                      onClick={() => setConfirmClearPool(true)}
                     >
-                      Remove
+                      Remove all
                     </button>
-                  </div>
-                ))}
+                  ) : (
+                    <>
+                      <span className="muted" style={{ fontSize: 13 }}>
+                        Wipe every task in the pool?
+                      </span>
+                      <button className="btn btn-danger" disabled={clearingPool} onClick={handleClearPool}>
+                        {clearingPool ? "Clearing…" : "Yes, clear them"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setConfirmClearPool(false)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             )}
-            <RewardKindPicker value={poolRewardKind} onChange={setPoolRewardKind} />
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-              <input
-                type="text"
-                placeholder="Title (optional)"
-                maxLength={60}
-                value={poolTitle}
-                onChange={(e) => setPoolTitle(e.target.value)}
-                style={{ flex: 1 }}
-              />
-              {poolRewardKind === "points" && (
-                <input
-                  type="number"
-                  min={0}
-                  max={999}
-                  aria-label="Points"
-                  value={poolPoints}
-                  onChange={(e) => setPoolPoints(Math.max(0, Number(e.target.value) || 0))}
-                  style={{ width: 76 }}
-                />
-              )}
-            </div>
-            <textarea
-              placeholder="Add a task to the pool…"
-              maxLength={280}
-              rows={2}
-              value={poolText}
-              onChange={(e) => setPoolText(e.target.value)}
-            />
-            <div className="btn-row">
-              <button
-                type="button"
-                className="btn"
-                disabled={!poolText.trim() || poolSaving}
-                onClick={handleAddTemplate}
-              >
-                {poolSaving ? "Adding…" : "Add to pool"}
-              </button>
-            </div>
           </div>
 
           <div className="field" style={{ marginTop: 22 }}>
@@ -483,6 +550,7 @@ export default function MissionsPage() {
     uploadMissionProof,
     addMissionTemplate,
     deleteMissionTemplate,
+    clearMissionTemplates,
     scheduleMission,
     cancelScheduledMission,
   } = useBoardData();
@@ -796,6 +864,7 @@ export default function MissionsPage() {
           onSendRandomMission={sendRandomMission}
           onAddTemplate={addMissionTemplate}
           onDeleteTemplate={deleteMissionTemplate}
+          onClearTemplates={clearMissionTemplates}
           onSchedule={scheduleMission}
           onCancelScheduled={cancelScheduledMission}
         />
