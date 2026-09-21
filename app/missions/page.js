@@ -197,7 +197,7 @@ function AdminMissionComposer({
   return (
     <div className="card" style={{ marginTop: 16 }}>
       <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
-        <h2>Send a secret mission</h2>
+        <h2>Send a mission</h2>
         <span className={`chevron${open ? " open" : ""}`}>▾</span>
       </button>
 
@@ -704,7 +704,7 @@ export default function MissionsPage() {
       <div className="card header-card">
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
-          <h2>Secret missions</h2>
+          <h2>Missions</h2>
           <button
             type="button"
             className="card-help-btn"
@@ -744,11 +744,11 @@ export default function MissionsPage() {
       {currentTrip?.status === "finalized" ? (
         <div className="card" style={{ marginTop: 16 }}>
           <div className="empty">
-            That event&#39;s over — whatever you were sent lives on Secret Missions Review now.
+            That event&#39;s over — whatever you were sent lives on Missions Review now.
           </div>
           <div className="btn-row" style={{ justifyContent: "center", marginTop: 12 }}>
             <Link href="/missions-review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
-              See all secret missions
+              See all missions
             </Link>
           </div>
         </div>

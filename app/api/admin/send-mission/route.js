@@ -105,8 +105,8 @@ export async function POST(request) {
 
   await recordNotification(playerId, {
     kind: "mission",
-    title: "🤫 Don't tell anyone",
-    body: "You've got a secret mission. Try not to bottle it like last time.",
+    title: "😈 Mission for you, prick",
+    body: "Someone thinks you can handle this. Prove them wrong.",
     url: "/missions",
   });
 

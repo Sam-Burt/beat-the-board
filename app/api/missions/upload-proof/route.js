@@ -101,8 +101,8 @@ export async function POST(request) {
         player_id: mission.player_id,
         amount: mission.points,
         note: mission.title
-          ? `Completed a secret mission: "${mission.title}"`
-          : "Completed a secret mission",
+          ? `Completed a mission: "${mission.title}"`
+          : "Completed a mission",
       });
     }
   }

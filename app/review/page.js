@@ -296,7 +296,7 @@ export default function ReviewPage() {
       )}
 
       <div className="card" style={{ marginTop: 16 }}>
-        <h2 style={{ textAlign: "center" }}>Secret Missions</h2>
+        <h2 style={{ textAlign: "center" }}>Missions</h2>
         {extraLoading ? (
           <p className="muted" style={{ fontSize: 13, textAlign: "center" }}>Loading&hellip;</p>
         ) : allMissions.length === 0 ? (
@@ -323,7 +323,7 @@ export default function ReviewPage() {
         )}
         <div className="btn-row" style={{ justifyContent: "center", marginTop: 14 }}>
           <Link href="/missions-review" className="btn btn-signout" style={{ textTransform: "uppercase" }}>
-            See all secret missions
+            See all missions
           </Link>
         </div>
       </div>

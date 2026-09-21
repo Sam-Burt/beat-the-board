@@ -137,7 +137,7 @@ export default function MissionsReviewPage() {
   return (
     <div className="wrap">
       <div className="card header-card">
-        <h1 style={{ fontSize: 22 }}>Secret Missions Review</h1>
+        <h1 style={{ fontSize: 22 }}>Missions Review</h1>
         <p className="muted" style={{ fontSize: 13, marginTop: 4 }}>
           {currentTrip.name} — worst first, as is traditional
         </p>
