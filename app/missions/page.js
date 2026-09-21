@@ -979,38 +979,43 @@ export default function MissionsPage() {
                 Nobody else has anything pending to trade right now.
               </p>
             ) : (
-              tradablePlayers.map((p) => (
-                <div key={p.playerId} style={{ marginTop: 18 }}>
+              tradablePlayers.map((p, playerIndex) => (
+                <div
+                  key={p.playerId}
+                  className={playerIndex > 0 ? "trade-pick-player" : undefined}
+                  style={{ marginTop: playerIndex > 0 ? 20 : 18 }}
+                >
                   <div
                     style={{
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
-                      gap: 4,
-                      marginBottom: 4,
+                      gap: 6,
+                      marginBottom: 16,
                     }}
                   >
                     <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={32} />
-                    <strong>{p.name}</strong>
+                    <div className="trade-pick-name">{p.name}</div>
                   </div>
                   <div className="mission-list">
                     {p.missions.map((m) => (
-                      <button
-                        type="button"
-                        key={m.id}
-                        className="trade-pick-item"
-                        disabled={!!proposingId}
-                        onClick={() => handleProposeTrade(m.id)}
-                      >
-                        <div className="mission-item">
-                          {m.title && <div className="mission-title">{m.title}</div>}
-                          <div className="mission-text">{m.text}</div>
-                          <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
-                            Worth {rewardLabel(m.rewardKind, m.points)}
-                            {proposingId === m.id ? " — sending…" : ""}
-                          </div>
+                      <div className="mission-item" key={m.id}>
+                        {m.title && <div className="mission-title">{m.title}</div>}
+                        <div className="mission-text">{m.text}</div>
+                        <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                          Worth {rewardLabel(m.rewardKind, m.points)}
                         </div>
-                      </button>
+                        <div className="btn-row" style={{ justifyContent: "center", marginTop: 8 }}>
+                          <button
+                            type="button"
+                            className="btn"
+                            disabled={!!proposingId}
+                            onClick={() => handleProposeTrade(m.id)}
+                          >
+                            {proposingId === m.id ? "Sending…" : "Trade for this"}
+                          </button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

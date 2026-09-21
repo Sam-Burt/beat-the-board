@@ -1708,27 +1708,19 @@ label {
   margin-top: 6px;
 }
 
-/* trade picker (app/missions/page.js) — a plain button wrapping a
-   .mission-item, so the item itself keeps the same centered title/date/text
-   styling the task pool and Missions tab already use; the button just
-   resets its own default chrome and adds the row's border-bottom. */
-.trade-pick-item {
-  display: block;
-  width: 100%;
-  text-align: center;
-  padding: 0;
-  margin: 0;
-  background: none;
-  border: none;
-  color: var(--ink);
-  cursor: pointer;
+/* trade picker (app/missions/page.js) */
+.trade-pick-name {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  font-size: 22px;
 }
-.trade-pick-item:hover .mission-title {
-  color: var(--pink);
-}
-.trade-pick-item[disabled] {
-  opacity: 0.5;
-  cursor: default;
+/* Divider between one player's last mission and the next player's icon —
+   skipped on the first player in the list, which already has the intro
+   paragraph above it doing that job. */
+.trade-pick-player {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
 }
 
 /* admin sign-in / setup pages */
