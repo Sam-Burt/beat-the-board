@@ -887,7 +887,7 @@ export default function MissionsPage() {
                       </label>
                       <button
                         type="button"
-                        className="btn btn-ghost"
+                        className="btn btn-ghost btn-outline-pink"
                         disabled={uploading || declining}
                         onClick={() => handleDecline(m.id)}
                       >
@@ -895,7 +895,7 @@ export default function MissionsPage() {
                       </button>
                       <button
                         type="button"
-                        className="btn btn-ghost"
+                        className="btn btn-ghost btn-outline-acid"
                         disabled={uploading || declining}
                         onClick={() => openTradeModal(m.id)}
                       >
@@ -955,6 +955,14 @@ export default function MissionsPage() {
 
       {tradeModalFor && (
         <div className="modal-backdrop" onClick={closeTradeModal}>
+          <button
+            type="button"
+            className="modal-close-btn"
+            onClick={closeTradeModal}
+            aria-label="Close"
+          >
+            ✕
+          </button>
           <div
             className="card modal-card"
             style={{ maxWidth: 420, maxHeight: "80vh", overflowY: "auto" }}
@@ -1008,7 +1016,7 @@ export default function MissionsPage() {
                         <div className="btn-row" style={{ justifyContent: "center", marginTop: 8 }}>
                           <button
                             type="button"
-                            className="btn"
+                            className="btn btn-outline-acid"
                             disabled={!!proposingId}
                             onClick={() => handleProposeTrade(m.id)}
                           >
@@ -1022,7 +1030,7 @@ export default function MissionsPage() {
               ))
             )}
             <div className="btn-row" style={{ justifyContent: "center", marginTop: 18 }}>
-              <button type="button" className="btn" onClick={closeTradeModal}>
+              <button type="button" className="btn btn-signout" onClick={closeTradeModal}>
                 Close
               </button>
             </div>

@@ -1723,6 +1723,54 @@ label {
   border-top: 1px solid var(--border);
 }
 
+/* Fixed to the viewport rather than the card, same as
+   .mission-lightbox-close — stays put in the corner regardless of how far
+   the modal's own content has scrolled. */
+.modal-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--pink);
+  border: none;
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.6);
+}
+.modal-close-btn:hover {
+  background: var(--pink-deep);
+}
+
+/* Outlined button colour variants — same fill/text as whatever base .btn
+   or .btn-ghost they're paired with, just a coloured border to mark
+   "positive, green" vs "negative, pink" actions (Trade vs Decline, etc.).
+   Written against both bases since .btn-ghost's own border-color rule is
+   equally specific and would otherwise win depending on source order. */
+.btn-outline-acid,
+.btn-ghost.btn-outline-acid {
+  border-color: var(--acid);
+}
+.btn-outline-acid:hover,
+.btn-ghost.btn-outline-acid:hover {
+  border-color: var(--acid-deep);
+}
+.btn-outline-pink,
+.btn-ghost.btn-outline-pink {
+  border-color: var(--pink);
+}
+.btn-outline-pink:hover,
+.btn-ghost.btn-outline-pink:hover {
+  border-color: var(--pink-deep);
+}
+
 /* admin sign-in / setup pages */
 .auth-wrap {
   max-width: 420px;
