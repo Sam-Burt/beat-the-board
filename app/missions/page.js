@@ -957,7 +957,7 @@ export default function MissionsPage() {
         <div className="modal-backdrop" onClick={closeTradeModal}>
           <div
             className="card modal-card"
-            style={{ maxWidth: 420, textAlign: "left", maxHeight: "80vh", overflowY: "auto" }}
+            style={{ maxWidth: 420, maxHeight: "80vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
             <h3 style={{ textAlign: "center" }}>Trade for what?</h3>
@@ -981,8 +981,16 @@ export default function MissionsPage() {
             ) : (
               tradablePlayers.map((p) => (
                 <div key={p.playerId} style={{ marginTop: 18 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={22} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 4,
+                      marginBottom: 4,
+                    }}
+                  >
+                    <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={32} />
                     <strong>{p.name}</strong>
                   </div>
                   <div className="mission-list">

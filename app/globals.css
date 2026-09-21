@@ -1709,22 +1709,19 @@ label {
 }
 
 /* trade picker (app/missions/page.js) — a plain button wrapping a
-   .mission-item, so the item itself keeps the same title/date/text
+   .mission-item, so the item itself keeps the same centered title/date/text
    styling the task pool and Missions tab already use; the button just
    resets its own default chrome and adds the row's border-bottom. */
 .trade-pick-item {
   display: block;
   width: 100%;
-  text-align: left;
+  text-align: center;
   padding: 0;
   margin: 0;
   background: none;
   border: none;
   color: var(--ink);
   cursor: pointer;
-}
-.trade-pick-item .mission-item {
-  text-align: left;
 }
 .trade-pick-item:hover .mission-title {
   color: var(--pink);
