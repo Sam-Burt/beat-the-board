@@ -14,6 +14,7 @@ import BottomNav from "../../components/BottomNav";
 import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
+import TradeAlert from "../../components/TradeAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 import {
   pushSupported,
@@ -163,6 +164,8 @@ export default function ProfilePage() {
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
+    missionTrades,
+    respondTrade,
     updateMyIcon,
     updateMyName,
     sendNotification,
@@ -175,6 +178,15 @@ export default function ProfilePage() {
     me,
     startLeroyGuessWindow
   );
+  const incomingTrade =
+    me && currentTrip && currentTrip.status !== "finalized"
+      ? missionTrades.find(
+          (t) => t.recipient_player_id === me.id && t.status === "pending" && t.trip_id === currentTrip.id
+        )
+      : null;
+  const incomingTradeProposer = incomingTrade
+    ? players.find((p) => p.id === incomingTrade.proposer_player_id)
+    : null;
 
   // A single "Edit profile" toggle (top-right of the hero card) now covers
   // both the display name and the icon, instead of separate pencils on
@@ -316,6 +328,7 @@ export default function ProfilePage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
+      <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
       <div className="card profile-hero">
         <div className="profile-icon-btn">
           {src ? (

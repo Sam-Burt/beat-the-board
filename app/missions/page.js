@@ -10,6 +10,7 @@ import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
+import TradeAlert from "../../components/TradeAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 import { rewardLabel } from "../../lib/missionReward";
 
@@ -553,6 +554,11 @@ export default function MissionsPage() {
     clearMissionTemplates,
     scheduleMission,
     cancelScheduledMission,
+    missionTrades,
+    fetchTradablePlayers,
+    proposeTrade,
+    respondTrade,
+    cancelTrade,
   } = useBoardData();
 
   const [missions, setMissions] = useState([]);
@@ -560,6 +566,12 @@ export default function MissionsPage() {
   const [decliningId, setDecliningId] = useState(null);
   const [errorFor, setErrorFor] = useState({}); // mission id -> error message
   const [lightboxUrl, setLightboxUrl] = useState(null);
+  const [tradeModalFor, setTradeModalFor] = useState(null); // my mission id currently being offered
+  const [tradablePlayers, setTradablePlayers] = useState([]);
+  const [tradableLoading, setTradableLoading] = useState(false);
+  const [tradeError, setTradeError] = useState("");
+  const [proposingId, setProposingId] = useState(null); // recipient mission id being offered against right now
+  const [cancellingTradeId, setCancellingTradeId] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
 
   async function handleProveIt(missionId, file) {
@@ -583,12 +595,69 @@ export default function MissionsPage() {
     }
   }
 
+  async function openTradeModal(missionId) {
+    setTradeModalFor(missionId);
+    setTradeError("");
+    setTradablePlayers([]);
+    setTradableLoading(true);
+    const result = await fetchTradablePlayers();
+    setTradableLoading(false);
+    if (result?.ok) {
+      setTradablePlayers(result.data.players || []);
+    } else {
+      setTradeError(result?.error || "Couldn't load anyone to trade with.");
+    }
+  }
+
+  function closeTradeModal() {
+    setTradeModalFor(null);
+    setTradablePlayers([]);
+    setTradeError("");
+    setProposingId(null);
+  }
+
+  async function handleProposeTrade(recipientMissionId) {
+    setTradeError("");
+    setProposingId(recipientMissionId);
+    const result = await proposeTrade({ proposerMissionId: tradeModalFor, recipientMissionId });
+    setProposingId(null);
+    if (result?.ok) {
+      closeTradeModal();
+    } else {
+      setTradeError(result?.error || "Couldn't send that trade.");
+    }
+  }
+
+  async function handleCancelTrade(tradeId) {
+    setCancellingTradeId(tradeId);
+    await cancelTrade(tradeId);
+    setCancellingTradeId(null);
+  }
+
   const { celebrating, dismiss } = useEventCelebration(trophies, currentTrip, players, me);
   const { alerting: leroyAlert, dismiss: dismissLeroyAlert } = useLeroyAlert(
     leroySends,
     players,
     me,
     startLeroyGuessWindow
+  );
+  const incomingTrade =
+    me && currentTrip && currentTrip.status !== "finalized"
+      ? missionTrades.find(
+          (t) => t.recipient_player_id === me.id && t.status === "pending" && t.trip_id === currentTrip.id
+        )
+      : null;
+  const incomingTradeProposer = incomingTrade
+    ? players.find((p) => p.id === incomingTrade.proposer_player_id)
+    : null;
+  // My own missions currently offered into a pending trade — locked out of
+  // Prove it/Decline/Trade (see lib/missionTrades.js's server-side twin of
+  // this same rule) and shown "waiting on them" instead, with a way to back
+  // out via cancelTrade.
+  const outgoingTradeByMissionId = new Map(
+    missionTrades
+      .filter((t) => t.proposer_player_id === me?.id && t.status === "pending")
+      .map((t) => [t.proposer_mission_id, t])
   );
 
   useEffect(() => {
@@ -701,6 +770,7 @@ export default function MissionsPage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
+      <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
       <div className="card header-card">
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
@@ -763,6 +833,8 @@ export default function MissionsPage() {
           const pending = m.status === "pending";
           const uploading = uploadingId === m.id;
           const declining = decliningId === m.id;
+          const outgoingTrade = outgoingTradeByMissionId.get(m.id);
+          const cancelling = cancellingTradeId === outgoingTrade?.id;
           return (
             <div className="card mission-proof-card" key={m.id}>
               <div className="mission-proof-row">
@@ -777,7 +849,26 @@ export default function MissionsPage() {
                   <div className="mission-proof-text">{m.text}</div>
                   <div className="mission-proof-points">Worth {rewardLabel(m.reward_kind, m.points)}</div>
 
-                  {pending && (
+                  {pending && outgoingTrade && (
+                    <div style={{ marginTop: 12 }}>
+                      <p className="muted" style={{ fontSize: 12, marginBottom: 8 }}>
+                        Trade offered — waiting on{" "}
+                        {players.find((p) => p.id === outgoingTrade.recipient_player_id)?.name || "them"} to
+                        answer.
+                      </p>
+                      <div className="btn-row">
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          disabled={cancelling}
+                          onClick={() => handleCancelTrade(outgoingTrade.id)}
+                        >
+                          {cancelling ? "Cancelling…" : "Cancel trade"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {pending && !outgoingTrade && (
                     <div className="btn-row" style={{ marginTop: 12 }}>
                       <label className="btn btn-primary" style={{ margin: 0 }}>
                         {uploading ? "Uploading…" : "Prove it 📸"}
@@ -801,6 +892,14 @@ export default function MissionsPage() {
                         onClick={() => handleDecline(m.id)}
                       >
                         {declining ? "Declining…" : "Decline"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        disabled={uploading || declining}
+                        onClick={() => openTradeModal(m.id)}
+                      >
+                        Trade
                       </button>
                     </div>
                   )}
@@ -851,6 +950,70 @@ export default function MissionsPage() {
           </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="mission-lightbox-img" src={lightboxUrl} alt="" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
+      {tradeModalFor && (
+        <div className="modal-backdrop" onClick={closeTradeModal}>
+          <div
+            className="card modal-card"
+            style={{ maxWidth: 420, textAlign: "left", maxHeight: "80vh", overflowY: "auto" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ textAlign: "center" }}>Trade for what?</h3>
+            <p className="muted" style={{ fontSize: 13, marginTop: 8, textAlign: "center" }}>
+              Pick a player, then which of their pending missions you want instead of yours.
+              They&#39;ll have to accept before anything actually swaps.
+            </p>
+            {tradeError && (
+              <div className="banner-note error" style={{ marginTop: 10 }}>
+                {tradeError}
+              </div>
+            )}
+            {tradableLoading ? (
+              <p className="muted" style={{ fontSize: 13, marginTop: 16, textAlign: "center" }}>
+                Loading&hellip;
+              </p>
+            ) : tradablePlayers.length === 0 ? (
+              <p className="muted" style={{ fontSize: 13, marginTop: 16, textAlign: "center" }}>
+                Nobody else has anything pending to trade right now.
+              </p>
+            ) : (
+              tradablePlayers.map((p) => (
+                <div key={p.playerId} style={{ marginTop: 18 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <PlayerAvatar iconId={p.iconId} emoji={p.emoji} size={22} />
+                    <strong>{p.name}</strong>
+                  </div>
+                  <div className="mission-list">
+                    {p.missions.map((m) => (
+                      <button
+                        type="button"
+                        key={m.id}
+                        className="trade-pick-item"
+                        disabled={!!proposingId}
+                        onClick={() => handleProposeTrade(m.id)}
+                      >
+                        <div className="mission-item">
+                          {m.title && <div className="mission-title">{m.title}</div>}
+                          <div className="mission-text">{m.text}</div>
+                          <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                            Worth {rewardLabel(m.rewardKind, m.points)}
+                            {proposingId === m.id ? " — sending…" : ""}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+            <div className="btn-row" style={{ justifyContent: "center", marginTop: 18 }}>
+              <button type="button" className="btn" onClick={closeTradeModal}>
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

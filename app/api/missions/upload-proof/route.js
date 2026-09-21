@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
+import { hasPendingTrade } from "../../../../lib/missionTrades";
 
 // Any signed-in player can call this — not just the admin — but only for
 // their OWN mission, and only while it's still pending (one shot: once a
@@ -48,6 +49,12 @@ export async function POST(request) {
   // enforced server-side, in case a stale page tries anyway.
   if (mission.trips?.status === "finalized") {
     return NextResponse.json({ error: "That event's already over." }, { status: 400 });
+  }
+  if (await hasPendingTrade(missionId)) {
+    return NextResponse.json(
+      { error: "This mission's tied up in a pending trade — sort that out first." },
+      { status: 400 }
+    );
   }
 
   const ext = (photo.type.split("/")[1] || "jpg").replace(/[^a-z0-9]/gi, "") || "jpg";

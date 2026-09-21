@@ -1654,6 +1654,86 @@ label {
   font-variant-numeric: tabular-nums;
 }
 
+/* incoming trade takeover (components/TradeAlert.js) */
+.celebration-card--trade {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.trade-compare {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  text-align: left;
+}
+.trade-compare-side {
+  flex: 1;
+  min-width: 0;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.trade-compare-arrow {
+  font-size: 20px;
+  color: var(--acid);
+  flex: none;
+}
+.trade-compare-label {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+.trade-compare-title {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  font-size: 15px;
+  color: var(--acid);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.trade-compare-text {
+  font-size: 13px;
+}
+.trade-compare-points {
+  font-family: "Striker", "Archivo", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--acid);
+  margin-top: 6px;
+}
+
+/* trade picker (app/missions/page.js) — a plain button wrapping a
+   .mission-item, so the item itself keeps the same title/date/text
+   styling the task pool and Missions tab already use; the button just
+   resets its own default chrome and adds the row's border-bottom. */
+.trade-pick-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.trade-pick-item .mission-item {
+  text-align: left;
+}
+.trade-pick-item:hover .mission-title {
+  color: var(--pink);
+}
+.trade-pick-item[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* admin sign-in / setup pages */
 .auth-wrap {
   max-width: 420px;

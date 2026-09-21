@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
+import { hasPendingTrade } from "../../../../lib/missionTrades";
 
 // Clears a mission off the player's own missions page without proving it —
 // only for their own mission, and only while it's still pending. Declined
@@ -37,6 +38,12 @@ export async function POST(request) {
   }
   if (mission.trips?.status === "finalized") {
     return NextResponse.json({ error: "That event's already over." }, { status: 400 });
+  }
+  if (await hasPendingTrade(missionId)) {
+    return NextResponse.json(
+      { error: "This mission's tied up in a pending trade — sort that out first." },
+      { status: 400 }
+    );
   }
 
   const { error } = await supabaseAdmin

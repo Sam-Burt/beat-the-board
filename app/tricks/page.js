@@ -9,6 +9,7 @@ import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
+import TradeAlert from "../../components/TradeAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 // Copy for the cheat-code result popup, keyed by outcome (or by reward,
@@ -62,6 +63,8 @@ export default function TricksPage() {
     sendLeroy,
     guessLeroy,
     startLeroyGuessWindow,
+    missionTrades,
+    respondTrade,
     pointBoosts,
     activateBoost,
     confirmBoost,
@@ -79,6 +82,15 @@ export default function TricksPage() {
     me,
     startLeroyGuessWindow
   );
+  const incomingTrade =
+    me && currentTrip && currentTrip.status !== "finalized"
+      ? missionTrades.find(
+          (t) => t.recipient_player_id === me.id && t.status === "pending" && t.trip_id === currentTrip.id
+        )
+      : null;
+  const incomingTradeProposer = incomingTrade
+    ? players.find((p) => p.id === incomingTrade.proposer_player_id)
+    : null;
 
   const [leroyHelpOpen, setLeroyHelpOpen] = useState(false);
   const [boostHelpOpen, setBoostHelpOpen] = useState(false);
@@ -270,6 +282,7 @@ export default function TricksPage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
+      <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
 
       {resultCopy && (
         <div className="celebration-backdrop" onClick={() => setRedeemResult(null)}>

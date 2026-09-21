@@ -981,3 +981,59 @@ begin
     alter publication supabase_realtime add table cheat_code_redemptions;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Mission trades — two players swapping which mission they're stuck with.
+-- Full title/text/points/reward_kind are snapshotted on BOTH sides at
+-- proposal time rather than joined live off missions: a mission's contents
+-- stay private to whoever it was sent to (see "missions read own" above)
+-- right up until the trip finalizes, but the whole point of a trade is that
+-- each player needs to see the OTHER one's mission to decide whether they
+-- want it — snapshotting sidesteps that without loosening missions' RLS for
+-- everyone else. The swap itself (see app/api/missions/respond-trade)
+-- re-checks the live missions rows before moving anything, so a stale
+-- snapshot can never cause an inconsistent trade.
+-- ---------------------------------------------------------------------------
+
+create table if not exists mission_trades (
+  id uuid primary key default gen_random_uuid(),
+  trip_id uuid not null references trips (id) on delete cascade,
+  proposer_player_id uuid not null references players (id) on delete cascade,
+  proposer_mission_id uuid not null references missions (id) on delete cascade,
+  proposer_title text,
+  proposer_text text not null,
+  proposer_points integer not null default 0,
+  proposer_reward_kind text not null default 'points',
+  recipient_player_id uuid not null references players (id) on delete cascade,
+  recipient_mission_id uuid not null references missions (id) on delete cascade,
+  recipient_title text,
+  recipient_text text not null,
+  recipient_points integer not null default 0,
+  recipient_reward_kind text not null default 'points',
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined', 'cancelled')),
+  created_at timestamptz not null default now(),
+  responded_at timestamptz
+);
+alter table mission_trades enable row level security;
+
+-- A player can see a trade if they're either side of it — the recipient
+-- needs to read it to answer the blocking accept/decline popup, the
+-- proposer needs to see it to show "waiting on them" and be able to cancel.
+-- No insert/update/delete policy: only the service-role trade routes
+-- (propose-trade, respond-trade, cancel-trade) ever write here.
+drop policy if exists "mission_trades read own" on mission_trades;
+create policy "mission_trades read own" on mission_trades
+  for select using (
+    exists (select 1 from players p where p.id = mission_trades.proposer_player_id and p.user_id = auth.uid())
+    or exists (select 1 from players p where p.id = mission_trades.recipient_player_id and p.user_id = auth.uid())
+  );
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'mission_trades'
+  ) then
+    alter publication supabase_realtime add table mission_trades;
+  end if;
+end $$;

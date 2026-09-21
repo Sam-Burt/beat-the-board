@@ -18,6 +18,7 @@ import Footer from "../components/Footer";
 import BottomNav from "../components/BottomNav";
 import EventCelebration from "../components/EventCelebration";
 import LeroyAlert from "../components/LeroyAlert";
+import TradeAlert from "../components/TradeAlert";
 
 export default function HomePage() {
   const {
@@ -37,6 +38,8 @@ export default function HomePage() {
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
+    missionTrades,
+    respondTrade,
     boostedIds,
     session,
     isAdmin,
@@ -66,6 +69,20 @@ export default function HomePage() {
     me,
     startLeroyGuessWindow
   );
+  // No dismiss here unlike Leroy's alert — a pending trade just keeps
+  // showing until respondTrade actually resolves it (see
+  // components/TradeAlert.js). Hidden once the trip's finalized so a trade
+  // nobody got to before the whistle can't leave someone stuck on this
+  // popup forever (lib/tripFinalize.js also cancels it server-side).
+  const incomingTrade =
+    me && currentTrip && currentTrip.status !== "finalized"
+      ? missionTrades.find(
+          (t) => t.recipient_player_id === me.id && t.status === "pending" && t.trip_id === currentTrip.id
+        )
+      : null;
+  const incomingTradeProposer = incomingTrade
+    ? players.find((p) => p.id === incomingTrade.proposer_player_id)
+    : null;
   const [tripPanelOpen, setTripPanelOpen] = useState(false);
 
   // Auto-expand the Event panel once there's no active event to show —
@@ -149,6 +166,7 @@ export default function HomePage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
+      <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
       <Header
         tripName={tripName}
         badgeId={currentTrip?.badge_id}

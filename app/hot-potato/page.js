@@ -10,6 +10,7 @@ import { supabase } from "../../lib/supabaseClient";
 import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
+import TradeAlert from "../../components/TradeAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 export default function HotPotatoPage() {
@@ -28,6 +29,8 @@ export default function HotPotatoPage() {
     leroySends,
     guessLeroy,
     startLeroyGuessWindow,
+    missionTrades,
+    respondTrade,
     startHotPotato,
     passHotPotato,
     catchHotPotato,
@@ -40,6 +43,15 @@ export default function HotPotatoPage() {
     me,
     startLeroyGuessWindow
   );
+  const incomingTrade =
+    me && currentTrip && currentTrip.status !== "finalized"
+      ? missionTrades.find(
+          (t) => t.recipient_player_id === me.id && t.status === "pending" && t.trip_id === currentTrip.id
+        )
+      : null;
+  const incomingTradeProposer = incomingTrade
+    ? players.find((p) => p.id === incomingTrade.proposer_player_id)
+    : null;
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
@@ -301,6 +313,7 @@ export default function HotPotatoPage() {
           onDismiss={dismissLeroyAlert}
         />
       )}
+      <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
 
       <div className="card header-card">
         <div className="header-card-title-row">
