@@ -41,7 +41,7 @@ export default function TradeAlert({ trade, proposerName, onRespond }) {
               Worth {rewardLabel(trade.recipient_reward_kind, trade.recipient_points)}
             </div>
           </div>
-          <div className="trade-compare-arrow">⇄</div>
+          <div className="trade-compare-arrow">⇅</div>
           <div className="trade-compare-side">
             <div className="trade-compare-label">You&#39;d get</div>
             {trade.proposer_title && <div className="trade-compare-title">{trade.proposer_title}</div>}
@@ -56,7 +56,12 @@ export default function TradeAlert({ trade, proposerName, onRespond }) {
           <button type="button" className="btn btn-primary" disabled={responding} onClick={() => handle(true)}>
             {responding ? "…" : "Accept"}
           </button>
-          <button type="button" className="btn btn-ghost" disabled={responding} onClick={() => handle(false)}>
+          <button
+            type="button"
+            className="btn btn-ghost btn-outline-pink"
+            disabled={responding}
+            onClick={() => handle(false)}
+          >
             {responding ? "…" : "Decline"}
           </button>
         </div>

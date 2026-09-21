@@ -1659,25 +1659,27 @@ label {
   max-height: 80vh;
   overflow-y: auto;
 }
+/* Stacked, not side-by-side — two columns squeezed the real mission text
+   down into an unreadably narrow strip on an actual phone. */
 .trade-compare {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   margin-top: 16px;
-  text-align: left;
 }
 .trade-compare-side {
-  flex: 1;
   min-width: 0;
   background: var(--card-2);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 12px;
+  padding: 14px;
+  text-align: center;
 }
 .trade-compare-arrow {
   font-size: 20px;
   color: var(--acid);
-  flex: none;
+  text-align: center;
 }
 .trade-compare-label {
   font-family: "Striker", "Archivo", sans-serif;
@@ -1691,13 +1693,14 @@ label {
   font-family: "Striker", "Archivo", sans-serif;
   font-weight: 400;
   letter-spacing: 0.03em;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--acid);
   text-transform: uppercase;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 .trade-compare-text {
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.4;
 }
 .trade-compare-points {
   font-family: "Striker", "Archivo", sans-serif;
