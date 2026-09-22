@@ -6,12 +6,13 @@ import { recordNotification } from "../../../../lib/notifications";
 const REUSE_PENALTY = 5;
 const ADMIN_BONUS_EVERY = 3;
 
-// Leroy's a genuinely strong win (a whole free mugging), so he's rationed
-// harder than the other two: 60% points, 25% Jackpot, 15% Leroy.
+// Points is the common outcome by design — Leroy and Jackpot are both
+// genuinely strong wins, so they're rationed equally hard: 90% points,
+// 5% Jackpot, 5% Leroy.
 function rollReward() {
   const roll = Math.random();
-  if (roll < 0.6) return "points";
-  if (roll < 0.85) return "jackpot";
+  if (roll < 0.9) return "points";
+  if (roll < 0.95) return "jackpot";
   return "leroy";
 }
 
@@ -91,7 +92,7 @@ async function maybeGrantAdminBonus(tripId, excludeAdminIds, rewardAdminIds) {
 }
 
 // Any signed-in player can call this. A real code, entered for the first
-// time this event, rolls 60/25/15: 5 points, an extra Jackpot charge, or
+// time this event, rolls 90/5/5: 5 points, an extra Jackpot charge, or
 // an extra Leroy charge (see lib/useBoardData.js for how those extra
 // charges actually get counted — nothing here touches leroy_sends or
 // point_boosts directly, redeeming just banks the entitlement). A code

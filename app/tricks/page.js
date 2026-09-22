@@ -398,9 +398,9 @@ export default function TricksPage() {
           <div className="card modal-card" onClick={(e) => e.stopPropagation()}>
             <h3>What is this?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              One shot per event. Real double or nothing: come first in your next game and
-              everything you scored gets doubled. Come anything else and that game&#39;s worth
-              precisely zero. No middle ground, no consolation prize.
+              One shot per event. Come first in your next game and everything you scored gets
+              doubled. Come anything else and it just scores normally — no bonus, but no
+              penalty either. Either way, that&#39;s your Jackpot spent.
             </p>
             <h3 style={{ marginTop: 18 }}>Why do I need it confirmed?</h3>
             <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
@@ -534,7 +534,7 @@ export default function TricksPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/jackpot-icon.png" alt="" style={{ width: 110, height: 110, objectFit: "contain" }} />
           <div className="hot-potato-card-label" style={{ marginTop: 4 }}>
-            Double or Nothing
+            Double If You Win
           </div>
         </div>
 
@@ -547,7 +547,7 @@ export default function TricksPage() {
         {eventLive && jackpotRemaining > 0 && (
           <div style={{ marginTop: 16, textAlign: "center" }}>
             <p className="muted" style={{ marginBottom: 10, fontSize: 13 }}>
-              Come first next game and it&#39;s doubled. Anything else and it scores nothing.
+              Come first next game and it&#39;s doubled. Anything else and it scores normally.
               {jackpotAllowed > 1
                 ? ` ${jackpotRemaining} of ${jackpotAllowed} left this event.`
                 : " One shot — don't fumble it."}
@@ -564,13 +564,13 @@ export default function TricksPage() {
             {myBoosts.map((b) => (
               <p className="muted" key={b.id} style={{ textAlign: "center", marginBottom: 8, fontSize: 13 }}>
                 {b.resolved_at
-                  ? "Cashed in. All or nothing, however that round went for you."
+                  ? "Cashed in. Doubled if you came first, scored normally if you didn't."
                   : new Date(b.expires_at) <= now
                   ? b.confirmed_at
                     ? "Expired. You never played. Embarrassing."
                     : "Expired. Nobody confirmed it in time — wasted."
                   : b.confirmed_at
-                  ? "Confirmed and live. Next game you play, it's everything or nothing."
+                  ? "Confirmed and live. Next game you play, come first and it's doubled."
                   : "Activated. Now go find whoever runs this and get them to confirm it — before your next game, not after."}
               </p>
             ))}
