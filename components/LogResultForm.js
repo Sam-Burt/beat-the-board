@@ -33,7 +33,14 @@ export default function LogResultForm({ players, onSave }) {
   const [note, setNote] = useState("");
   const [category, setCategory] = useState(null);
   const [selected, setSelected] = useState([]);
+  // Solo ranking is built as placement GROUPS, not a flat list — normally
+  // each tap opens its own new group (a clean 1st/2nd/3rd), but toggling
+  // "Tied" on opens one shared group that however many taps come next all
+  // land in, so two (or more) players can occupy the same place. Turning
+  // it back off just stops adding to that group; it doesn't retroactively
+  // touch anything already placed.
   const [ranking, setRanking] = useState([]);
+  const [tieMode, setTieMode] = useState(false);
 
   // Team mode: instead of ranking individuals, players get grouped into
   // teams first (e.g. doubles at tennis or badminton), then the teams
@@ -52,6 +59,7 @@ export default function LogResultForm({ players, onSave }) {
     setCategory(null);
     setSelected([]);
     setRanking([]);
+    setTieMode(false);
     setTeamMode(false);
     setTeams([[]]);
     setTeamPhase("assign");
@@ -67,7 +75,7 @@ export default function LogResultForm({ players, onSave }) {
   function toggleSelected(id) {
     setSelected((prev) => {
       if (prev.includes(id)) {
-        setRanking((r) => r.filter((x) => x !== id));
+        setRanking((groups) => groups.map((g) => g.filter((x) => x !== id)).filter((g) => g.length > 0));
         resetTeams();
         return prev.filter((x) => x !== id);
       }
@@ -76,12 +84,41 @@ export default function LogResultForm({ players, onSave }) {
     });
   }
 
+  // Toggling Tied on opens a fresh, empty shared group for whatever taps
+  // come next; toggling it off just stops adding to it (dropping it again
+  // if it never actually got a tap, so it doesn't leave a phantom place).
+  function handleTieMode(checked) {
+    setTieMode(checked);
+    if (checked) {
+      setRanking((prev) => [...prev, []]);
+    } else {
+      setRanking((prev) => (prev.length && prev[prev.length - 1].length === 0 ? prev.slice(0, -1) : prev));
+    }
+  }
+
   function tapRank(id) {
-    setRanking((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    const rankedIds = ranking.flat();
+    if (rankedIds.includes(id)) return;
+    setRanking((prev) => {
+      const next = prev.map((g) => g.slice());
+      if (tieMode && next.length > 0) {
+        next[next.length - 1] = [...next[next.length - 1], id];
+      } else {
+        next.push([id]);
+      }
+      return next;
+    });
   }
 
   function undoRank() {
-    setRanking((prev) => prev.slice(0, -1));
+    setRanking((prev) => {
+      if (!prev.length) return prev;
+      const next = prev.map((g) => g.slice());
+      const last = next[next.length - 1];
+      last.pop();
+      if (last.length === 0) next.pop();
+      return next;
+    });
   }
 
   function assignToCurrentTeam(id) {
@@ -130,13 +167,11 @@ export default function LogResultForm({ players, onSave }) {
           teamRanking.length === nonEmptyTeams.length &&
           nonEmptyTeams.length >= 2
       )
-    : Boolean(name.trim() && category && selected.length >= 2 && ranking.length === selected.length);
+    : Boolean(name.trim() && category && selected.length >= 2 && ranking.flat().length === selected.length);
 
   async function handleSave() {
     if (!canSave) return;
-    const groupedRanking = teamMode
-      ? teamRanking.map((idx) => nonEmptyTeams[idx])
-      : ranking.map((id) => [id]);
+    const groupedRanking = teamMode ? teamRanking.map((idx) => nonEmptyTeams[idx]) : ranking;
     const ok = await onSave({ name, date, note, category, ranking: groupedRanking });
     if (ok !== false) {
       reset();
@@ -239,14 +274,31 @@ export default function LogResultForm({ players, onSave }) {
                 <>
                   <label>Tap in order of finish — winner first</label>
                   <div className="step-hint">
-                    {ranking.length} of {selected.length} placed
+                    {ranking.flat().length} of {selected.length} placed
                   </div>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      textTransform: "none",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={tieMode}
+                      onChange={(e) => handleTieMode(e.target.checked)}
+                      style={{ width: "auto" }}
+                    />
+                    Tied — next taps share this place
+                  </label>
                   <div className="chips">
                     {selected.map((id) => {
                       const p = players.find((pl) => pl.id === id);
                       if (!p) return null;
-                      const rankIdx = ranking.indexOf(id);
-                      const ranked = rankIdx !== -1;
+                      const groupIdx = ranking.findIndex((g) => g.includes(id));
+                      const ranked = groupIdx !== -1;
                       return (
                         <button
                           type="button"
@@ -255,14 +307,14 @@ export default function LogResultForm({ players, onSave }) {
                           disabled={ranked}
                           onClick={() => tapRank(id)}
                         >
-                          {ranked && <span className="badge-num">{rankIdx + 1}</span>}
+                          {ranked && <span className="badge-num">{groupIdx + 1}</span>}
                           <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
                           {p.name}
                         </button>
                       );
                     })}
                   </div>
-                  {ranking.length > 0 && (
+                  {ranking.flat().length > 0 && (
                     <div className="btn-row">
                       <button className="btn btn-ghost" style={{ padding: "6px 10px" }} onClick={undoRank}>
                         Undo last
