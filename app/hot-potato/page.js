@@ -355,11 +355,6 @@ export default function HotPotatoPage() {
               another pass landing on you — another 2 points gone at the end — except the card
               stays right where it is.
             </p>
-            <h3 style={{ marginTop: 18 }}>Fine print</h3>
-            <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>
-              No passing (or confessing to being caught) between 7pm and 10:30pm. Some of us
-              are trying to eat.
-            </p>
             <div className="btn-row modal-close" style={{ justifyContent: "center" }}>
               <button type="button" className="btn" onClick={() => setHelpOpen(false)}>
                 Close

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
 import { pushConfigured, sendHotPotatoPing } from "../../../../lib/webpush";
 import { recordNotification } from "../../../../lib/notifications";
-import { isGayCardBlackout, GAY_CARD_BLACKOUT_MESSAGE } from "../../../../lib/gayCardBlackout";
 
 // Any signed-in player can call this — not just the admin — but only the
 // player who's actually holding the Gay Card right now is allowed to move
@@ -34,10 +33,6 @@ export async function POST(request) {
   const note = (body.note || "").trim();
   if (!toPlayerId) {
     return NextResponse.json({ error: "Pick who you passed it to." }, { status: 400 });
-  }
-
-  if (isGayCardBlackout()) {
-    return NextResponse.json({ error: GAY_CARD_BLACKOUT_MESSAGE }, { status: 400 });
   }
 
   const { data: me } = await supabaseAdmin

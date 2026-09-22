@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, getAuthedUser } from "../../../../lib/supabaseAdmin";
-import { isGayCardBlackout, GAY_CARD_BLACKOUT_MESSAGE } from "../../../../lib/gayCardBlackout";
 
 // The current holder presses this themselves, witnessed by whoever just
 // caught them red-handed — there's no technical verification of that,
@@ -18,10 +17,6 @@ export async function POST(request) {
   const callerId = await getAuthedUser(request);
   if (!callerId) {
     return NextResponse.json({ error: "Not authorized." }, { status: 403 });
-  }
-
-  if (isGayCardBlackout()) {
-    return NextResponse.json({ error: GAY_CARD_BLACKOUT_MESSAGE }, { status: 400 });
   }
 
   const { data: me } = await supabaseAdmin
