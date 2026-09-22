@@ -19,6 +19,7 @@ import BottomNav from "../components/BottomNav";
 import EventCelebration from "../components/EventCelebration";
 import LeroyAlert from "../components/LeroyAlert";
 import TradeAlert from "../components/TradeAlert";
+import PopupAlert from "../components/PopupAlert";
 
 export default function HomePage() {
   const {
@@ -40,6 +41,8 @@ export default function HomePage() {
     startLeroyGuessWindow,
     missionTrades,
     respondTrade,
+    popupAlerts,
+    respondPopupAlert,
     boostedIds,
     session,
     isAdmin,
@@ -83,6 +86,10 @@ export default function HomePage() {
   const incomingTradeProposer = incomingTrade
     ? players.find((p) => p.id === incomingTrade.proposer_player_id)
     : null;
+  // Same forced pattern as a trade, but only one of these ever shows at
+  // once — a trade always takes precedence since it's the one with an
+  // actual game consequence attached.
+  const incomingPopup = !incomingTrade ? popupAlerts.find((p) => p.status === "pending") || null : null;
   const [tripPanelOpen, setTripPanelOpen] = useState(false);
 
   // Auto-expand the Event panel once there's no active event to show —
@@ -167,6 +174,7 @@ export default function HomePage() {
         />
       )}
       <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
+      <PopupAlert popup={incomingPopup} onRespond={respondPopupAlert} />
       <Header
         tripName={tripName}
         badgeId={currentTrip?.badge_id}

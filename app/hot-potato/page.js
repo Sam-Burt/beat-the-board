@@ -11,6 +11,7 @@ import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import TradeAlert from "../../components/TradeAlert";
+import PopupAlert from "../../components/PopupAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 export default function HotPotatoPage() {
@@ -31,6 +32,8 @@ export default function HotPotatoPage() {
     startLeroyGuessWindow,
     missionTrades,
     respondTrade,
+    popupAlerts,
+    respondPopupAlert,
     startHotPotato,
     passHotPotato,
     catchHotPotato,
@@ -52,6 +55,7 @@ export default function HotPotatoPage() {
   const incomingTradeProposer = incomingTrade
     ? players.find((p) => p.id === incomingTrade.proposer_player_id)
     : null;
+  const incomingPopup = !incomingTrade ? popupAlerts.find((p) => p.status === "pending") || null : null;
 
   const [state, setState] = useState(null);
   const [history, setHistory] = useState([]);
@@ -314,6 +318,7 @@ export default function HotPotatoPage() {
         />
       )}
       <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
+      <PopupAlert popup={incomingPopup} onRespond={respondPopupAlert} />
 
       <div className="card header-card">
         <div className="header-card-title-row">

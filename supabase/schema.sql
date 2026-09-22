@@ -1037,3 +1037,49 @@ begin
     alter publication supabase_realtime add table mission_trades;
   end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Popup alerts — one-off, admin-authored full-screen announcements (see the
+-- Pop Up Creator on the Profile page). Not tied to any trip: an admin might
+-- want to announce something before, during, or after an event. One row per
+-- targeted player (same fan-out as notifications/send-notification), each
+-- carrying its own copy of the content, so clearing/editing one recipient's
+-- never touches another's. Forced like a trade proposal — no
+-- backdrop-dismiss, see components/PopupAlert.js — but the admin decides
+-- per popup whether it's a single "confirm" button or confirm + decline.
+-- ---------------------------------------------------------------------------
+
+create table if not exists popup_alerts (
+  id uuid primary key default gen_random_uuid(),
+  player_id uuid not null references players (id) on delete cascade,
+  kicker text,
+  headline text not null,
+  body text,
+  icon text,
+  confirm_label text not null default 'Got it',
+  has_decline boolean not null default false,
+  decline_label text,
+  status text not null default 'pending' check (status in ('pending', 'confirmed', 'declined')),
+  created_at timestamptz not null default now(),
+  responded_at timestamptz
+);
+alter table popup_alerts enable row level security;
+
+drop policy if exists "popup_alerts read own" on popup_alerts;
+create policy "popup_alerts read own" on popup_alerts
+  for select using (
+    exists (select 1 from players p where p.id = popup_alerts.player_id and p.user_id = auth.uid())
+  );
+
+-- No insert/update/delete policy for ordinary clients — only
+-- app/api/admin/send-popup and app/api/popup-alerts/respond (service role)
+-- ever write here.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and tablename = 'popup_alerts'
+  ) then
+    alter publication supabase_realtime add table popup_alerts;
+  end if;
+end $$;

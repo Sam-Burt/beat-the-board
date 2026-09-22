@@ -10,6 +10,7 @@ import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import TradeAlert from "../../components/TradeAlert";
+import PopupAlert from "../../components/PopupAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 
 // Copy for the cheat-code result popup, keyed by outcome (or by reward,
@@ -65,6 +66,8 @@ export default function TricksPage() {
     startLeroyGuessWindow,
     missionTrades,
     respondTrade,
+    popupAlerts,
+    respondPopupAlert,
     pointBoosts,
     activateBoost,
     confirmBoost,
@@ -91,6 +94,7 @@ export default function TricksPage() {
   const incomingTradeProposer = incomingTrade
     ? players.find((p) => p.id === incomingTrade.proposer_player_id)
     : null;
+  const incomingPopup = !incomingTrade ? popupAlerts.find((p) => p.status === "pending") || null : null;
 
   const [leroyHelpOpen, setLeroyHelpOpen] = useState(false);
   const [boostHelpOpen, setBoostHelpOpen] = useState(false);
@@ -283,6 +287,7 @@ export default function TricksPage() {
         />
       )}
       <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
+      <PopupAlert popup={incomingPopup} onRespond={respondPopupAlert} />
 
       {resultCopy && (
         <div className="celebration-backdrop" onClick={() => setRedeemResult(null)}>

@@ -15,6 +15,7 @@ import NotificationBell from "../../components/NotificationBell";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import TradeAlert from "../../components/TradeAlert";
+import PopupAlert from "../../components/PopupAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 import {
   pushSupported,
@@ -147,6 +148,216 @@ function AdminNotificationComposer({ players, onSend }) {
   );
 }
 
+// Builds a one-off, forced full-screen announcement (see
+// components/PopupAlert.js) — same "who's it for" chip picker as the
+// notification composer above, plus the actual popup content and whether
+// it gets one button or two. Fires once; there's no list of past ones to
+// manage or pull back (see the brief this came out of), so this resets to
+// blank on every send rather than tracking any kind of history.
+function PopupAlertComposer({ players, onSend }) {
+  const [open, setOpen] = useState(false);
+  const eligiblePlayers = players.filter((p) => p.user_id);
+
+  const [playerIds, setPlayerIds] = useState([]);
+  const [kicker, setKicker] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [body, setBody] = useState("");
+  const [icon, setIcon] = useState("");
+  const [confirmLabel, setConfirmLabel] = useState("");
+  const [hasDecline, setHasDecline] = useState(false);
+  const [declineLabel, setDeclineLabel] = useState("");
+  const [sending, setSending] = useState(false);
+  const [justSent, setJustSent] = useState(false);
+  const [sentPushInfo, setSentPushInfo] = useState("");
+  const [error, setError] = useState("");
+
+  function togglePlayer(id) {
+    setPlayerIds((ids) => (ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]));
+  }
+
+  function describePush(data) {
+    if (!data?.pushConfigured) return "";
+    if (data.pushed > 0) return ` (pinged ${data.pushed} device${data.pushed === 1 ? "" : "s"})`;
+    return " (no push — they haven't turned on mission alerts, or it's gone stale)";
+  }
+
+  async function handleSend() {
+    if (!playerIds.length || !headline.trim()) return;
+    setError("");
+    setSending(true);
+    const result = await onSend({
+      playerIds,
+      kicker: kicker.trim(),
+      headline: headline.trim(),
+      body: body.trim(),
+      icon: icon.trim(),
+      confirmLabel: confirmLabel.trim(),
+      hasDecline,
+      declineLabel: declineLabel.trim(),
+    });
+    setSending(false);
+    if (result?.ok) {
+      setPlayerIds([]);
+      setKicker("");
+      setHeadline("");
+      setBody("");
+      setIcon("");
+      setConfirmLabel("");
+      setHasDecline(false);
+      setDeclineLabel("");
+      setJustSent(true);
+      setSentPushInfo(describePush(result.data));
+      setTimeout(() => setJustSent(false), 4000);
+    } else {
+      setError(result?.error || "Couldn't send that — try again.");
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <button className="btn toggle-panel-btn" onClick={() => setOpen((o) => !o)}>
+        <h2>Pop Up Creator</h2>
+        <span className={`chevron${open ? " open" : ""}`}>▾</span>
+      </button>
+
+      {open && (
+        <div style={{ marginTop: 14 }}>
+          <p className="muted" style={{ fontSize: 13, marginTop: -6, marginBottom: 14 }}>
+            Same forced, full-screen takeover as the win and trade pop-ups — they can&#39;t swipe
+            it away, only answer it. Fires once, right when they next open the app.
+          </p>
+
+          <div className="field">
+            <label>Who&#39;s it for?</label>
+            {eligiblePlayers.length === 0 ? (
+              <div className="empty">Nobody to ping yet.</div>
+            ) : (
+              <div className="chips">
+                {eligiblePlayers.map((p) => (
+                  <button
+                    type="button"
+                    key={p.id}
+                    className={`chip${playerIds.includes(p.id) ? " selected" : ""}`}
+                    onClick={() => togglePlayer(p.id)}
+                  >
+                    <PlayerAvatar iconId={p.icon_id} emoji={p.emoji} size={20} />
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="field">
+            <label htmlFor="popup-icon">Icon (optional)</label>
+            <input
+              id="popup-icon"
+              type="text"
+              placeholder="e.g. 🚨"
+              maxLength={8}
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              style={{ width: 80 }}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="popup-kicker">Kicker (optional)</label>
+            <input
+              id="popup-kicker"
+              type="text"
+              placeholder="e.g. Heads up"
+              maxLength={40}
+              value={kicker}
+              onChange={(e) => setKicker(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="popup-headline">Headline</label>
+            <input
+              id="popup-headline"
+              type="text"
+              placeholder="The big bold line"
+              maxLength={80}
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+            />
+            <textarea
+              style={{ marginTop: 8 }}
+              placeholder="Body text (optional)"
+              maxLength={280}
+              rows={3}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="popup-confirm-label">Confirm button text</label>
+            <input
+              id="popup-confirm-label"
+              type="text"
+              placeholder="Got it"
+              maxLength={30}
+              value={confirmLabel}
+              onChange={(e) => setConfirmLabel(e.target.value)}
+            />
+          </div>
+
+          <label
+            style={{ display: "flex", alignItems: "center", gap: 8, textTransform: "none", marginBottom: 8 }}
+          >
+            <input
+              type="checkbox"
+              checked={hasDecline}
+              onChange={(e) => setHasDecline(e.target.checked)}
+              style={{ width: "auto" }}
+            />
+            Give them a decline option too
+          </label>
+          {hasDecline && (
+            <div className="field">
+              <label htmlFor="popup-decline-label">Decline button text</label>
+              <input
+                id="popup-decline-label"
+                type="text"
+                placeholder="No"
+                maxLength={30}
+                value={declineLabel}
+                onChange={(e) => setDeclineLabel(e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="btn-row">
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={!playerIds.length || !headline.trim() || sending}
+              onClick={handleSend}
+            >
+              {sending
+                ? "Sending…"
+                : justSent
+                ? "Sent! 📣"
+                : playerIds.length > 1
+                ? `Send to ${playerIds.length}`
+                : "Send it"}
+            </button>
+          </div>
+          {justSent && sentPushInfo && (
+            <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+              {sentPushInfo}
+            </p>
+          )}
+          {error && <div className="banner-note error">{error}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const {
@@ -166,6 +377,9 @@ export default function ProfilePage() {
     startLeroyGuessWindow,
     missionTrades,
     respondTrade,
+    popupAlerts,
+    sendPopupAlert,
+    respondPopupAlert,
     updateMyIcon,
     updateMyName,
     sendNotification,
@@ -187,6 +401,7 @@ export default function ProfilePage() {
   const incomingTradeProposer = incomingTrade
     ? players.find((p) => p.id === incomingTrade.proposer_player_id)
     : null;
+  const incomingPopup = !incomingTrade ? popupAlerts.find((p) => p.status === "pending") || null : null;
 
   // A single "Edit profile" toggle (top-right of the hero card) now covers
   // both the display name and the icon, instead of separate pencils on
@@ -329,6 +544,7 @@ export default function ProfilePage() {
         />
       )}
       <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
+      <PopupAlert popup={incomingPopup} onRespond={respondPopupAlert} />
       <div className="card profile-hero">
         <div className="profile-icon-btn">
           {src ? (
@@ -417,6 +633,7 @@ export default function ProfilePage() {
       </div>
 
       {isAdmin && <AdminNotificationComposer players={players} onSend={sendNotification} />}
+      {isAdmin && <PopupAlertComposer players={players} onSend={sendPopupAlert} />}
 
       <div className="btn-row" style={{ marginTop: 16, marginBottom: 4, justifyContent: "center" }}>
         <button type="button" className="btn btn-signout" onClick={signOut}>

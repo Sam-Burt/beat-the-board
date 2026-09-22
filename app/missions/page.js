@@ -11,6 +11,7 @@ import BottomNav from "../../components/BottomNav";
 import EventCelebration from "../../components/EventCelebration";
 import LeroyAlert from "../../components/LeroyAlert";
 import TradeAlert from "../../components/TradeAlert";
+import PopupAlert from "../../components/PopupAlert";
 import PlayerAvatar from "../../components/PlayerAvatar";
 import { rewardLabel } from "../../lib/missionReward";
 
@@ -559,6 +560,8 @@ export default function MissionsPage() {
     proposeTrade,
     respondTrade,
     cancelTrade,
+    popupAlerts,
+    respondPopupAlert,
   } = useBoardData();
 
   const [missions, setMissions] = useState([]);
@@ -650,6 +653,7 @@ export default function MissionsPage() {
   const incomingTradeProposer = incomingTrade
     ? players.find((p) => p.id === incomingTrade.proposer_player_id)
     : null;
+  const incomingPopup = !incomingTrade ? popupAlerts.find((p) => p.status === "pending") || null : null;
   // My own missions currently offered into a pending trade — locked out of
   // Prove it/Decline/Trade (see lib/missionTrades.js's server-side twin of
   // this same rule) and shown "waiting on them" instead, with a way to back
@@ -771,6 +775,7 @@ export default function MissionsPage() {
         />
       )}
       <TradeAlert trade={incomingTrade} proposerName={incomingTradeProposer?.name} onRespond={respondTrade} />
+      <PopupAlert popup={incomingPopup} onRespond={respondPopupAlert} />
       <div className="card header-card">
         <div className="header-card-title-row">
           <span className="card-help-btn-spacer" aria-hidden="true" />
